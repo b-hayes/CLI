@@ -1,0 +1,39 @@
+{
+    "name": "bhayes/cli",
+    "description": "",
+    "license": "proprietary",
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "http://packages.php7.localhost"
+        }
+    ],
+    "authors": [
+        {
+            "name": "b-hayes",
+            "email": "bradley.hayes@tithe.ly"
+        }
+    ],
+    "require": {
+        "php": "^7.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "BHayes\\CLI\\": "php"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "test\\": "test"
+        }
+    },
+    "config": {
+        "secure-http": false
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^3.5"
+    },
+    "scripts": {
+        "style": "phpcs --standard=.phpcs.xml"
+    }
+}
