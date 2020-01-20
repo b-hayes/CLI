@@ -3,11 +3,8 @@
 <ruleset name="BHayes PSR12">
     <description>PSR-12 with Exclusions</description>
     <rule ref="PSR12">
-        <exclude name="PSR12.Properties.ConstantVisibility"/>
+<!--        <exclude name="PSR12.Properties.ConstantVisibility"/>-->
     </rule>
     <exclude-pattern>*/tests/*</exclude-pattern>
-    <exclude-pattern>*/assets/views*</exclude-pattern>
-    <exclude-pattern>*/public/*</exclude-pattern>
-    <exclude-pattern>*/classes/legacy/*</exclude-pattern>
     <arg name="extensions" value="php" />
 </ruleset>
