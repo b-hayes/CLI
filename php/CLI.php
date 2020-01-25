@@ -48,6 +48,11 @@ class CLI
      */
     private $params = [];
     
+    /**
+     * @var ReflectionMethod
+     */
+    private $method;
+    
     
     /**
      * CLI constructor.
@@ -120,20 +125,29 @@ class CLI
         ini_set('log_errors', 0);
         ini_set('display_errors', 1);
     
-        
-        if (in_array('--help', $this->options)) {
+    
+        echo "Options:";
+        print_r($this->options);
+        echo "Function: ",$this->function,"\n";
+        echo "Params:";
+        print_r($this->params);
+        echo "____________________________________________\n\n";
+    
+    
+        try {
+            $this->method = new ReflectionMethod($this->class, $this->function);
+        } catch (\ReflectionException $e) {
+            $this->error($e, "[" . $this->function . "]" . " is not a recognized command.");
+        }
+    
+        //help?
+        if (in_array('help', $this->options)) {
             $this->help();
             exit(0);
         }
         
         if (!$this->function) {
             echo "No function was specified.\n";
-            $this->listAvailableFunctions();
-            exit(1);
-        }
-        
-        if (! method_exists($this->class, $this->function)) {
-            echo "[",$this->function,"]", " is not a recognized function!\n";
             $this->listAvailableFunctions();
             exit(1);
         }
@@ -180,15 +194,6 @@ class CLI
             $readline = strtolower($readline);
         }
         return $readline;
-    }
-    
-    private function begin()
-    {
-        echo "Options:";
-        print_r($this->options);
-        echo "Function: ",$this->function,"\n";
-        echo "Params:";
-        print_r($this->params);
     }
     
     /**
@@ -246,16 +251,32 @@ class CLI
     
     private function help()
     {
-        if (!$this->function) {
+        echo "ℹ Help\n";
+        if (!$this->method) {
             $this->usage();
             exit(0);
+        } else {
+            echo $this->method->getDocComment();
         }
     }
     
     private function execute()
     {
+        if (! method_exists($this->class, $this->function)) {
+            echo "[",$this->function,"]", " is not a recognized function!\n";
+            $this->listAvailableFunctions();
+            exit(1);
+        }
+        
         try {
             $reflectionMethod = new ReflectionMethod($this->class, $this->function);
+            if (!$reflectionMethod->isPublic()) {
+                //method has to be public
+                echo "[",$this->function,"]", " is not a recognized function!\n";
+                $this->listAvailableFunctions();
+                exit(1);
+            }
+            
             $result = $reflectionMethod->invoke($this->class, ...$this->params);
             print_r($result);
             echo "\n";
