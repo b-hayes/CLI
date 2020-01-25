@@ -31,6 +31,16 @@ class CLI
      */
     private $function;
     
+    /**
+     * @var array
+     */
+    private $options = [];
+    
+    /**
+     * @var array
+     */
+    private $operands = [];
+    
     
     /**
      * CLI constructor.
@@ -51,24 +61,53 @@ class CLI
     
     public function run(): int
     {
-        //get arguments form cli terminal
+        //[ PROCESSING ARGUMENTS ]
         global $argv;
-        //remove argument 0
-        $this->command = array_shift($argv);
+        //keep a copy of the original arguments jic
         $this->argv = $argv;
         
-        //todo: here is where you need to strip out all the --flags so they dont affect function name and params etc
-        // ** also remember that a -- for most applications means the end of the params for this command
-        // and subsequent args should be passed along.
-        // (not sure how to handle this yet tho)
+        //remove argument 0 is often the first word the user typed (usually dont care about or use it for anything)
+        $this->command = array_shift($argv);
         
-        //the very next argument should be the function to call
+        //if no arguments just skip all the processing and display usage
+        if (empty($argv)) {
+            $this->usage();
+            exit(0);
+        }
+        
+        //next should process all the flags
+        /*
+         * todo:  for flags perhaps check out some conventions:
+         *  https://unix.stackexchange.com/questions/108058/common-flag-designations-and-standards-for-shell-scripts-and-functions
+         *  https://unix.stackexchange.com/questions/285575/whats-the-difference-between-a-flag-an-option-and-an-argument
+         *  https://www.math.uni-hamburg.de/doc/java/tutorial/essential/attributes/_posix.html
+         *  https://en.wikipedia.org/wiki/POSIX
+         *  This one is probably th eone to follow : https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
+         */
+        foreach ($argv as $key => $arg) {
+            //check for --long-options first
+            if (substr($arg, 0, 2) == "--") {
+                $this->options[] = substr($arg, 2);
+                unset($argv[$key]);
+            }
+            //then for options -o
+            if (substr($arg, 0, 1) == "-") {
+                $arg = substr($arg, 1); //remove dash
+                //multiple options grouped together
+                array_merge($this->options, str_split($arg));
+                unset($argv[$key]);
+            }
+            //todo: options can have arguments eg, mysql -u username,
+            // need to detect if an option needs a param.
+        }
+        
+        //the very next argument should be the class method to call
         $this->function = array_shift($argv);
         
         //everything after that is a parameter for the function
+        $this->operands = $argv;
         
-        
-        //todo: would be nice to detect if the user has setup their own configs.
+        //todo: would be nice to detect if the user has setup their own ini configs at run time in php.
         //cli often shows errors twice if you have both of them on because log goes to stdout
         ini_set('log_errors', 0);
         ini_set('display_errors', 1);
@@ -78,7 +117,6 @@ class CLI
         } catch (\Throwable $e) {
             $this->handleException($e);
         }
-        
         
         return 0;
     }
@@ -125,15 +163,19 @@ class CLI
     private function begin()
     {
         if (empty($argv)) {
-            $this->usage();
+            $this->help();
             exit(1);
         }
     }
     
-    private function usage()
+    private function help()
     {
+        if (empty($this->function)){
+            //no function was called display basic usage info
+            $help = $this->reflection->getDocComment();
+        }
+        
         if (count($this->argv) > 0) {
-            
             $class_method = new ReflectionMethod($runningClass, $function);
             $help = $class_method->getDocComment();
             echo "    ";//4 spaces coz docs are likely to be indented
@@ -168,5 +210,16 @@ class CLI
         }
         //todo: check if there is a convention for fatal error codes in cli (follow bash/unix /posix standard?)
         exit(1);
+    }
+    
+    /**
+     * Display basic commandline use.
+     */
+    private function usage()
+    {
+        echo get_class($this), "\n";
+        echo "usage: ", $this->command,
+        "[function] [-a][-b][-c option_argument][-d|-e][-f[option_argument]][operands...]\n";
+        echo "use --help for more information or [function] --help for more specific help.\n";
     }
 }
