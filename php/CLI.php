@@ -85,14 +85,9 @@ class CLI
             exit(0);
         }
         
-        //next should process all the flags
         /*
-         * todo:  for flags perhaps check out some conventions:
-         *  https://unix.stackexchange.com/questions/108058/common-flag-designations-and-standards-for-shell-scripts-and-functions
-         *  https://unix.stackexchange.com/questions/285575/whats-the-difference-between-a-flag-an-option-and-an-argument
-         *  https://www.math.uni-hamburg.de/doc/java/tutorial/essential/attributes/_posix.html
-         *  https://en.wikipedia.org/wiki/POSIX
-         *  This one is probably th eone to follow : https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
+         * TODO: Process flags according to:
+         *  https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
          */
         foreach ($argv as $key => $arg) {
             //check for --long-options first
