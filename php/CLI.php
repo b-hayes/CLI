@@ -2,6 +2,8 @@
 
 namespace BHayes\CLI;
 
+use ReflectionMethod;
+
 /**
  * Class CLI
  *
@@ -64,7 +66,7 @@ class CLI
         }
     }
     
-    public function run(): int
+    public function run()
     {
         //[ PROCESSING ARGUMENTS ]
         global $argv;
@@ -118,13 +120,25 @@ class CLI
         ini_set('log_errors', 0);
         ini_set('display_errors', 1);
     
-        try {
-            $this->begin();
-        } catch (\Throwable $e) {
-            $this->error($e);
+        
+        if (in_array('--help', $this->options)) {
+            $this->help();
+            exit(0);
         }
         
-        return 0;
+        if (!$this->function) {
+            echo "No function was specified.\n";
+            $this->listAvailableFunctions();
+            exit(1);
+        }
+        
+        if (! method_exists($this->class, $this->function)) {
+            echo "[",$this->function,"]", " is not a recognized function!\n";
+            $this->listAvailableFunctions();
+            exit(1);
+        }
+    
+        $this->execute();
     }
     
     /**
@@ -150,9 +164,12 @@ class CLI
      * @param bool $lowercase if true returns input as lowercase
      * @return string
      */
-    public function prompt($message = '', $default = "", $lowercase = true)
+    public function prompt(string $message = 'enter response>', string $default = '', bool $lowercase = true): string
     {
-        $readline = self::readline($message . "\nenter response>");
+        if ($default) {
+            $message .= "($default)";
+        }
+        $readline = self::readline($message);
         if (strlen($readline) === 0) {
             $readline = $default;
         }
@@ -162,7 +179,6 @@ class CLI
         if ($lowercase) {
             $readline = strtolower($readline);
         }
-        echo "\n";
         return $readline;
     }
     
@@ -189,6 +205,7 @@ class CLI
         
         //todo: possible elevate all errors to exceptions to handle ever possible scenario?
         if (ini_get('display_errors')) {
+            echo get_class($e),": ";
             echo $e->getMessage(), "\n";
             print_r($e->getTraceAsString());
         }
@@ -224,6 +241,27 @@ class CLI
                 continue;//only public methods are listed
             }
             echo "    - {$class_method->getName()}\n";
+        }
+    }
+    
+    private function help()
+    {
+        if (!$this->function) {
+            $this->usage();
+            exit(0);
+        }
+    }
+    
+    private function execute()
+    {
+        try {
+            $reflectionMethod = new ReflectionMethod($this->class, $this->function);
+            $result = $reflectionMethod->invoke($this->class, ...$this->params);
+            print_r($result);
+            echo "\n";
+            exit(0);
+        } catch (\Throwable $e) {
+            $this->error($e);
         }
     }
 }
