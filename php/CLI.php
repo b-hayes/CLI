@@ -2,6 +2,11 @@
 
 namespace BHayes\CLI;
 
+/**
+ * Class CLI
+ *
+ * @package BHayes\CLI
+ */
 class CLI
 {
     /**
@@ -39,7 +44,7 @@ class CLI
     /**
      * @var array
      */
-    private $operands = [];
+    private $params = [];
     
     
     /**
@@ -55,7 +60,7 @@ class CLI
         try {
             $this->reflection = new \ReflectionClass($this->class);
         } catch (\ReflectionException $e) {
-            $this->handleException($e);
+            $this->error($e);
         }
     }
     
@@ -63,8 +68,6 @@ class CLI
     {
         //[ PROCESSING ARGUMENTS ]
         global $argv;
-        //keep a copy of the original arguments jic
-        $this->argv = $argv;
         
         //remove argument 0 is often the first word the user typed (usually dont care about or use it for anything)
         $this->command = array_shift($argv);
@@ -89,13 +92,16 @@ class CLI
             if (substr($arg, 0, 2) == "--") {
                 $this->options[] = substr($arg, 2);
                 unset($argv[$key]);
+                continue;
             }
-            //then for options -o
+            
+            //then for short options -o
             if (substr($arg, 0, 1) == "-") {
                 $arg = substr($arg, 1); //remove dash
                 //multiple options grouped together
-                array_merge($this->options, str_split($arg));
+                $this->options = array_merge($this->options, str_split($arg));
                 unset($argv[$key]);
+                continue;
             }
             //todo: options can have arguments eg, mysql -u username,
             // need to detect if an option needs a param.
@@ -105,7 +111,7 @@ class CLI
         $this->function = array_shift($argv);
         
         //everything after that is a parameter for the function
-        $this->operands = $argv;
+        $this->params = $argv;
         
         //todo: would be nice to detect if the user has setup their own ini configs at run time in php.
         //cli often shows errors twice if you have both of them on because log goes to stdout
@@ -115,7 +121,7 @@ class CLI
         try {
             $this->begin();
         } catch (\Throwable $e) {
-            $this->handleException($e);
+            $this->error($e);
         }
         
         return 0;
@@ -162,52 +168,34 @@ class CLI
     
     private function begin()
     {
-        if (empty($argv)) {
-            $this->help();
-            exit(1);
-        }
-    }
-    
-    private function help()
-    {
-        if (empty($this->function)){
-            //no function was called display basic usage info
-            $help = $this->reflection->getDocComment();
-        }
-        
-        if (count($this->argv) > 0) {
-            $class_method = new ReflectionMethod($runningClass, $function);
-            $help = $class_method->getDocComment();
-            echo "    ";//4 spaces coz docs are likely to be indented
-            echo $help;
-            echo "\navailable options:\n";
-            listParams($class_method, $config);
-        } else {
-            //no more args get help for class object only GENERAL HELP
-            $help = $reflection_class->getDocComment();
-            echo $help;
-            echo "\n";
-            echo " available functions:\n";
-            list_functions($reflection_class);
-            echo "Note that default values for ANY function can be set in the config\n",
-            "You can also use --config to interact with the config file instead of the code generator.";
-        }
+        echo "Options:";
+        print_r($this->options);
+        echo "Function: ",$this->function,"\n";
+        echo "Params:";
+        print_r($this->params);
     }
     
     /**
      * Display / log generic error message acording to php ini settings.
      *
      * @param \Throwable $e
+     * @param null $userFriendlyMessage
      */
-    private function handleException(\Throwable $e)
+    private function error(\Throwable $e, $userFriendlyMessage = null)
     {
-        //todo: possible elevate all errors to exceptions to handle ever possible senario?
+        if ($userFriendlyMessage) {
+            echo $userFriendlyMessage, "\n";
+        }
+        
+        //todo: possible elevate all errors to exceptions to handle ever possible scenario?
         if (ini_get('display_errors')) {
             echo $e->getMessage(), "\n";
+            print_r($e->getTraceAsString());
         }
         if (ini_get('log_errors')) {
             log($e->getMessage() . ' ' . $e->getTraceAsString());
         }
+        
         //todo: check if there is a convention for fatal error codes in cli (follow bash/unix /posix standard?)
         exit(1);
     }
@@ -217,9 +205,25 @@ class CLI
      */
     private function usage()
     {
-        echo get_class($this), "\n";
-        echo "usage: ", $this->command,
-        "[function] [-a][-b][-c option_argument][-d|-e][-f[option_argument]][operands...]\n";
-        echo "use --help for more information or [function] --help for more specific help.\n";
+        $usage = $this->class->usage
+            ?? $this->reflection->getDocComment()
+            ?? "usage: " . $this->command . "[function] [-?][operands...]";
+        echo $usage, "\n";
+        $this->listAvailableFunctions();
+        echo "Use --help for more information or [function] --help for more specific help.\n";
+    }
+    
+    private function listAvailableFunctions()
+    {
+        echo "Functions available:\n";
+        foreach ($this->reflection->getMethods() as $class_method) {
+            if ($class_method->getName() == '__construct') {
+                continue;//construct is ignored
+            }
+            if (!$class_method->isPublic()) {
+                continue;//only public methods are listed
+            }
+            echo "    - {$class_method->getName()}\n";
+        }
     }
 }
