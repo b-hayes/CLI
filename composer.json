@@ -24,7 +24,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "test\\": "test"
+            "BHayes\\CLI\\test\\": "tests"
         }
     },
     "config": {

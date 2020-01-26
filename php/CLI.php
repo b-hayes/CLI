@@ -2,6 +2,7 @@
 
 namespace BHayes\CLI;
 
+use ArgumentCountError;
 use ReflectionMethod;
 
 /**
@@ -119,15 +120,6 @@ class CLI
         //cli often shows errors twice if you have both of them on because log goes to stdout
         ini_set('log_errors', 0);
         ini_set('display_errors', 1);
-    
-    
-        echo "Options:";
-        print_r($this->options);
-        echo "Function: ",$this->function,"\n";
-        echo "Params:";
-        print_r($this->params);
-        echo "____________________________________________\n\n";
-    
     
         try {
             $this->method = new ReflectionMethod($this->class, $this->function);
@@ -276,6 +268,8 @@ class CLI
             print_r($result);
             echo "\n";
             exit(0);
+        } catch (ArgumentCountError $argumentCountError) {
+            echo str_replace(['()',get_class($this->class), '::'], "", $argumentCountError->getMessage()),"\n";
         } catch (\Throwable $e) {
             $this->error($e);
         }
