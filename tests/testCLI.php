@@ -9,11 +9,15 @@ chdir(__DIR__);
 // mingwin = file opens in notepad.
 
 //running with no params should show available functions
-assert(stripos(`./run_TestSubject.php`,'functions available'));
+assert(stripos(`./run_TestSubject.php`,'functions available') !== false);
 
 //[ can execute ]
-assert(stripos(`./run_TestSubject.php simple`,'TestSubject::simple was executed'));
+//functions can be run by name
+assert(stripos(`./run_TestSubject.php simple`,'TestSubject::simple was executed') !== false);
+//function name is case insensitive
+assert(stripos(`./run_TestSubject.php SiMplE`,'TestSubject::simple was executed') !== false);
 
-//[ cant execute ]
-//should not be able to pass arguments toa function that are not defined
-assert(stripos(`./run_TestSubject.php simple with extra params sould cause an error`,'TestSubject::simple was executed'));
+//[ should fail ]
+//should not be able to pass additional arguments to functions
+assert(stripos(`./run_TestSubject.php simple with extra params should cause an error`,'Too many arguments.') !== false);
+assert(stripos(`./run_TestSubject.php simple with extra params should not be run`,'TestSubject::simple was executed') === false);
