@@ -197,9 +197,11 @@ class CLI
         
         //todo: possible elevate all errors to exceptions to handle ever possible scenario?
         if (ini_get('display_errors')) {
+            echo "\n";//todo maybe have some colour ?
             echo get_class($e),": ";
             echo $e->getMessage(), "\n";
             print_r($e->getTraceAsString());
+            echo "\n";
         }
         if (ini_get('log_errors')) {
             log($e->getMessage() . ' ' . $e->getTraceAsString());
@@ -243,7 +245,7 @@ class CLI
             $this->usage();
             exit(0);
         } else {
-            echo $this->method->getDocComment();
+            echo $this->method->getDocComment() ?: "No documentation found for [{$this->method->getName()}] \n";
         }
     }
     
@@ -269,7 +271,8 @@ class CLI
             echo "\n";
             exit(0);
         } catch (ArgumentCountError $argumentCountError) {
-            echo str_replace(['()',get_class($this->class), '::'], "", $argumentCountError->getMessage()),"\n";
+            $message = str_replace(['()', get_class($this->class), '::'], "", $argumentCountError->getMessage());
+            $this->error($argumentCountError, $message);
         } catch (\Throwable $e) {
             $this->error($e);
         }
