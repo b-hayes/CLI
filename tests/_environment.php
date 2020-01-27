@@ -18,7 +18,7 @@ ini_set('log_errors', 0);
 ini_set('display_errors', 1);
 
 //Check the PHP version at run time because user might be swapping php versions at will
-if (phpversion()<7.1)die('This package only works with php 7.1');
+if (phpversion()<7.1)die('This package only works with php 7.1 or higher');
 
 //check two locations for autoloader as it will be different when installed.
 $realpath = realpath(__DIR__ . '/../vendor/autoload.php')//the normal path during development
