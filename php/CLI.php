@@ -16,45 +16,45 @@ class CLI
      * @var object
      */
     private $class;
-    
+
     /**
      * @var \ReflectionClass
      */
     private $reflection;
-    
+
     /**
      * @var array
      */
     private $argv;
-    
+
     /**
      * @var string|null
      *
      * argument zero, usually the command typed into the terminal
      */
     private $command;
-    
+
     /**
      * @var string|null
      */
     private $function;
-    
+
     /**
      * @var array
      */
     private $options = [];
-    
+
     /**
      * @var array
      */
     private $params = [];
-    
+
     /**
      * @var ReflectionMethod
      */
     private $reflectionMethod;
-    
-    
+
+
     /**
      * CLI constructor.
      *
@@ -71,21 +71,21 @@ class CLI
             $this->error($e);
         }
     }
-    
+
     public function run()
     {
         //[ PROCESSING ARGUMENTS ]
         global $argv;
-        
-        //remove argument 0 is often the first word the user typed (usually dont care about or use it for anything)
+
+        //remove argument 0 is often the first word the user typed. Only used for usage.
         $this->command = array_shift($argv);
-        
+
         //if no arguments just skip all the processing and display usage
         if (empty($argv)) {
             $this->usage();
             exit(0);
         }
-        
+
         /*
          * TODO: Process flags according to:
          *  https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
@@ -97,7 +97,7 @@ class CLI
                 unset($argv[$key]);
                 continue;
             }
-            
+
             //then for short options -o
             if (substr($arg, 0, 1) == "-") {
                 $arg = substr($arg, 1); //remove dash
@@ -109,47 +109,47 @@ class CLI
             //todo: options can have arguments eg, mysql -u username,
             // need to detect if an option needs a param.
         }
-        
+
         //the very next argument should be the class method to call
         $this->function = array_shift($argv);
-        
+
         //everything after that is a parameter for the function
         $this->params = $argv;
-        
+
         //todo: would be nice to detect if the user has setup their own ini configs at run time in php.
         //cli often shows errors twice if you have both of them on because log goes to stdout
         ini_set('log_errors', 0);
         ini_set('display_errors', 1);
-    
+
         //if we cant get a reflection then the method does not exist
         try {
             $this->reflectionMethod = new ReflectionMethod($this->class, $this->function);
         } catch (\ReflectionException $e) {
             $this->error($e, "[" . $this->function . "]" . " is not a recognized command.");
         }
-        
+
         //intentionally prevent all functions from being run with any number of arguments by default
         if (count($this->params) > $this->reflectionMethod->getNumberOfParameters()) {
             $errorMessage = 'Too many arguments. Function ' . $this->reflectionMethod->getName() . ' can only accept ' .
                 $this->reflectionMethod->getNumberOfParameters();
             $this->error(new \Exception($errorMessage . ' see line ' . __LINE__), $errorMessage);
         }
-    
+
         //help?
         if (in_array('help', $this->options)) {
             $this->help();
             exit(0);
         }
-        
+
         if (!$this->function) {
             echo "No function was specified.\n";
             $this->listAvailableFunctions();
             exit(1);
         }
-    
+
         $this->execute();
     }
-    
+
     private function execute()
     {
         if (! method_exists($this->class, $this->function)) {
@@ -157,7 +157,7 @@ class CLI
             $this->listAvailableFunctions();
             exit(1);
         }
-        
+
         try {
             $reflectionMethod = new ReflectionMethod($this->class, $this->function);
             if (!$reflectionMethod->isPublic()) {
@@ -166,7 +166,7 @@ class CLI
                 $this->listAvailableFunctions();
                 exit(1);
             }
-            
+
             $result = $reflectionMethod->invoke($this->class, ...$this->params);
             print_r($result);
             echo "\n";
@@ -178,7 +178,7 @@ class CLI
             $this->error($e);
         }
     }
-    
+
     /**
      * Replicates the readline function form the readline php extension (so the php ext is no longer required)
      *
@@ -193,7 +193,7 @@ class CLI
         $fp = fopen("php://stdin", "r");
         return rtrim(fgets($fp, 1024));
     }
-    
+
     /**
      * Prompts the user for keyboard input.
      *
@@ -219,7 +219,7 @@ class CLI
         }
         return $readline;
     }
-    
+
     /**
      * Display / log generic error message according to php ini settings.
      * Note that an exception is enforced for debugging during development.
@@ -232,7 +232,7 @@ class CLI
         if ($printMessage) {
             echo $printMessage, "\n";
         }
-        
+
         //todo: possibly elevate all errors to exceptions to handle ever possible scenario?
         if (ini_get('display_errors')) {
             echo "\n";//todo maybe have some colour ?
@@ -244,11 +244,11 @@ class CLI
         if (ini_get('log_errors')) {
             log($e->getMessage() . ' ' . $e->getTraceAsString());
         }
-        
+
         //todo: check if there is a convention for fatal error codes in cli (follow bash/unix /posix standard?)
         exit(1);
     }
-    
+
     /**
      * Display basic commandline use.
      */
@@ -261,7 +261,7 @@ class CLI
         $this->listAvailableFunctions();
         echo "Use --help for more information or [function] --help for more specific help.\n";
     }
-    
+
     private function listAvailableFunctions()
     {
         echo "Functions available:\n";
@@ -275,7 +275,7 @@ class CLI
             echo "    - {$class_method->getName()}\n";
         }
     }
-    
+
     private function help()
     {
         echo "ℹ Help\n";
