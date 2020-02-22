@@ -1,18 +1,18 @@
 <?php
 
-
-namespace BHayes\CLI\test;
+namespace BHayes\CLI\Test;
 
 /**
  * Class TestSubject
  *
  * This is just to test what methods and params on a class via CLI.
  *
- * @package BHayes\CLI\test
+ * @package BHayes\CLI\Test
  */
 class TestSubject
 {
-    function simple(){
+    public function simple()
+    {
         echo __METHOD__ , " was executed";
         $func_get_args = func_get_args();
         if (count($func_get_args) > 0) {
@@ -20,8 +20,9 @@ class TestSubject
             print_r($func_get_args);
         }
     }
-    
-    function requiresTwo($required, int $mustBeInt){
+
+    public function requiresTwo($required, int $mustBeInt)
+    {
         echo __METHOD__ , " was executed";
         $func_get_args = func_get_args();
         if (count($func_get_args) > 0) {
@@ -29,8 +30,9 @@ class TestSubject
             print_r($func_get_args);
         }
     }
-    
-    function requiredAndOptional($required , $optional = null){
+
+    public function requiredAndOptional($required, $optional = null)
+    {
         echo __METHOD__ , " was executed";
         $func_get_args = func_get_args();
         if (count($func_get_args) > 0) {

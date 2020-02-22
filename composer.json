@@ -1,6 +1,6 @@
 {
     "name": "bhayes/cli",
-    "description": "",
+    "description": "Runs a given class methods via cli",
     "license": "proprietary",
     "repositories": [
         {
@@ -11,7 +11,7 @@
     "authors": [
         {
             "name": "b-hayes",
-            "email": ""
+            "email": "bradozman@gmail.com"
         }
     ],
     "require": {
@@ -24,7 +24,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "BHayes\\CLI\\test\\": "tests"
+            "BHayes\\CLI\\Test\\": "test"
         }
     },
     "config": {
