@@ -95,12 +95,18 @@ class CLI
         //[ PROCESSING ARGUMENTS ]
         global $argv;
 
-        //remove argument 0 is often the first word the user typed. Only used for usage.
+        //remove argument 0 is the first word the user typed and only used for usage statement.
         $this->command = array_shift($argv);
 
         //if no arguments just skip all the processing and display usage
         if (empty($argv)) {
             $this->usage();
+            exit(0);
+        }
+        
+        //if there is only one argument and it is a help option then just show help and exit
+        if (count($argv) === 1 && $argv[0] === '--help') {
+            $this->help();
             exit(0);
         }
 
@@ -126,6 +132,11 @@ class CLI
             }
             //todo: options can have arguments eg, mysql -u username,
             // need to detect if an option requires a param.
+            /*
+             * Note: thinking about the best way to achieve this would be to have the datatype specified in,
+             * an options class or as public class properties on the subject itself.
+             * Php7.4 property syntax would be the best way but it's not common enough yet to rely on.
+             */
         }
 
         //the very next argument should be the class method to call
@@ -275,7 +286,8 @@ class CLI
      */
     private function usage()
     {
-        $usage = $this->class->usage
+        $usage =
+            $this->class->usage
             ?? $this->reflection->getDocComment()
             ?? "usage: " . $this->command . "[function] [-?][operands...]";
         echo $usage, "\n";
@@ -288,7 +300,7 @@ class CLI
         echo "Functions available:\n";
         foreach ($this->reflection->getMethods() as $class_method) {
             if ($class_method->getName() == '__construct') {
-                continue;//construct is ignored
+                continue;//construct is not listed
             }
             if (!$class_method->isPublic()) {
                 continue;//only public methods are listed
@@ -299,12 +311,13 @@ class CLI
 
     private function help()
     {
-        echo "ℹ Help\n";
         if (!$this->reflectionMethod) {
             $this->usage();
             exit(0);
         } else {
-            echo $this->reflectionMethod->getDocComment() ?: "No documentation found for [{$this->reflectionMethod->getName()}] \n";
+            echo $this->reflectionMethod->getDocComment()
+//                ?: $this->reflectionMethod->__toString() //not useful unless there params and exposes class names
+                ?: "No documentation found for [{$this->reflectionMethod->getName()}] \n";
         }
     }
 }

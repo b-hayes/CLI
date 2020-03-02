@@ -7,7 +7,10 @@ class Options
     /**
      * @var bool
      */
-    public $verbose;
-
+    public $debug;
+    
+    /**
+     * @var bool
+     */
     public $help;
 }
