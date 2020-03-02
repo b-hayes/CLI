@@ -57,7 +57,7 @@ class CLI
     /**
      * @var bool
      */
-    private $verbose;
+    private $debug;
 
 
     /**
@@ -143,8 +143,8 @@ class CLI
 
         //CLI RESERVED OPTIONS
         //debug messages from CLI class
-        if (in_array('verbose', $this->options)) {
-            $this->verbose = true;
+        if (in_array('debug-cli', $this->options)) {
+            $this->debug = true;
         }
         //help?
         if (in_array('help', $this->options)) {
@@ -246,10 +246,7 @@ class CLI
 
         //todo: possibly elevate all errors to exceptions to handle every possible scenario
 
-        if (
-            ini_get('display_errors')//note: this is likley to always be on so perhaps not use this.
-            //todo: change to a verbose or debug flag?
-        ) {
+        if ($this->debug) {
             echo "\n";//todo maybe have some colour ?
             echo get_class($e),": ";
             echo $e->getMessage(), "\n";
