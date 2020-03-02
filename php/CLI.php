@@ -75,6 +75,23 @@ class CLI
         } catch (\ReflectionException $e) {
             $this->error($e);
         }
+        
+        
+        /*
+         * We only want to see errors once in terminal window.
+         *
+         * In the default php cli installation both display and log errors are directed to stdout.
+         * So we disable the log errors but only if both are enabled and no log file was configured.
+         * IF the user has setup their own error log than we dont want to touch anything.
+         */
+        if (
+            ini_get('log_errors') && //but only if both are enabled
+            ini_get('display_errors') &&
+            ini_get('error_log') === ""//and only if they haven't configured a log file
+        ) {
+            ini_set('log_errors', 0);
+        }
+        //todo: load config from json file if one is specified
     }
 
     public function run()
