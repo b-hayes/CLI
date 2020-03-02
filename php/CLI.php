@@ -54,6 +54,11 @@ class CLI
      */
     private $reflectionMethod;
 
+    /**
+     * @var bool
+     */
+    private $verbose;
+
 
     /**
      * CLI constructor.
@@ -107,7 +112,7 @@ class CLI
                 continue;
             }
             //todo: options can have arguments eg, mysql -u username,
-            // need to detect if an option needs a param.
+            // need to detect if an option requires a param.
         }
 
         //the very next argument should be the class method to call
@@ -135,6 +140,12 @@ class CLI
             $this->error(new \Exception($errorMessage . ' see line ' . __LINE__), $errorMessage);
         }
 
+
+        //CLI RESERVED OPTIONS
+        //debug messages from CLI class
+        if (in_array('verbose', $this->options)) {
+            $this->verbose = true;
+        }
         //help?
         if (in_array('help', $this->options)) {
             $this->help();
@@ -233,8 +244,12 @@ class CLI
             echo $printMessage, "\n";
         }
 
-        //todo: possibly elevate all errors to exceptions to handle ever possible scenario?
-        if (ini_get('display_errors')) {
+        //todo: possibly elevate all errors to exceptions to handle every possible scenario
+
+        if (
+            ini_get('display_errors')//note: this is likley to always be on so perhaps not use this.
+            //todo: change to a verbose or debug flag?
+        ) {
             echo "\n";//todo maybe have some colour ?
             echo get_class($e),": ";
             echo $e->getMessage(), "\n";
@@ -245,7 +260,6 @@ class CLI
             log($e->getMessage() . ' ' . $e->getTraceAsString());
         }
 
-        //todo: check if there is a convention for fatal error codes in cli (follow bash/unix /posix standard?)
         exit(1);
     }
 
