@@ -4,6 +4,7 @@ namespace BHayes\CLI;
 
 use ArgumentCountError;
 use ReflectionMethod;
+use Throwable;
 
 /**
  * Class CLI
@@ -21,11 +22,6 @@ class CLI
      * @var \ReflectionClass
      */
     private $reflection;
-
-    /**
-     * @var array
-     */
-    private $argv;
 
     /**
      * @var string|null
@@ -73,7 +69,7 @@ class CLI
         try {
             $this->reflection = new \ReflectionClass($this->class);
         } catch (\ReflectionException $e) {
-            $this->error($e);
+            $this->error($e, $e->getMessage());
         }
         
         
@@ -155,7 +151,7 @@ class CLI
 
         //CLI RESERVED OPTIONS
         //debug messages from CLI class
-        if (in_array('debug-cli', $this->options)) {
+        if (in_array('debug', $this->options)) {
             $this->debug = true;
         }
         //help?
@@ -197,7 +193,7 @@ class CLI
         } catch (ArgumentCountError $argumentCountError) {
             $message = str_replace(['()', get_class($this->class), '::'], "", $argumentCountError->getMessage());
             $this->error($argumentCountError, $message);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->error($e);
         }
     }
@@ -242,15 +238,17 @@ class CLI
         }
         return $readline;
     }
-
+    
     /**
-     * Display / log generic error message according to php ini settings.
-     * Note that an exception is enforced for debugging during development.
+     * Display error message depending on input and debug settings.
+     * - always outputs $printMessage.
+     * - if debug mode is on then also prints the exception message.
+     * - if logs are enabled in php ini a log entry is also created
      *
-     * @param \Throwable $e
-     * @param null $printMessage
+     * @param Throwable $e
+     * @param string $printMessage
      */
-    private function error(\Throwable $e, $printMessage = null)
+    private function error(Throwable $e, string $printMessage)
     {
         if ($printMessage) {
             echo $printMessage, "\n";
@@ -266,7 +264,7 @@ class CLI
             echo "\n";
         }
         if (ini_get('log_errors')) {
-            log($e->getMessage() . ' ' . $e->getTraceAsString());
+            log('CLI Internal Error: ' . $e->getMessage() . ' ' . $e->getTraceAsString());
         }
 
         exit(1);
