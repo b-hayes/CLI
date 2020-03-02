@@ -138,11 +138,6 @@ class CLI
         //everything after that is a parameter for the function
         $this->params = $argv;
 
-        //todo: would be nice to detect if the user has setup their own ini configs at run time in php.
-        //cli often shows errors twice if you have both of them on because log goes to stdout
-        ini_set('log_errors', 0);
-        ini_set('display_errors', 1);
-
         //if we cant get a reflection then the method does not exist
         try {
             $this->reflectionMethod = new ReflectionMethod($this->class, $this->function);
