@@ -55,6 +55,11 @@ class CLI
      */
     private $debug;
 
+    /**
+     * @var string
+     */
+    public $inputStream = "php://stdin";
+
 
     /**
      * CLI constructor.
@@ -71,8 +76,8 @@ class CLI
         } catch (\ReflectionException $e) {
             $this->error($e, $e->getMessage());
         }
-        
-        
+
+
         /*
          * We only want to see errors once in terminal window.
          *
@@ -103,7 +108,7 @@ class CLI
             $this->usage();
             exit(0);
         }
-        
+
         //if there is only one argument and it is a help option then just show help and exit
         if (count($argv) === 1 && $argv[0] === '--help') {
             $this->help();
@@ -220,7 +225,7 @@ class CLI
         if ($prompt) {
             echo $prompt;
         }
-        $fp = fopen("php://stdin", "r");
+        $fp = fopen($this->inputStream, "r");
         return rtrim(fgets($fp, 1024));
     }
 
@@ -235,7 +240,7 @@ class CLI
     public function prompt(string $message = 'enter response>', string $default = '', bool $lowercase = true): string
     {
         if ($default) {
-            $message .= "($default)";
+            $message .= " [$default]";
         }
         $readline = self::readline($message);
         if (strlen($readline) === 0) {
@@ -249,7 +254,7 @@ class CLI
         }
         return $readline;
     }
-    
+
     /**
      * Display error message depending on input and debug settings.
      * - always outputs $printMessage.

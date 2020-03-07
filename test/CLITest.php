@@ -8,9 +8,15 @@ use PHPUnit\Framework\TestCase;
 class CLITest extends TestCase
 {
 
+    /**
+     * @var CLI
+     */
+    private $cli;
+
     public function setUp(): void
     {
-        self::assertInstanceOf(CLI::class, new CLI());
+        $this->cli = new CLI();
+        self::assertInstanceOf(CLI::class, $this->cli);
     }
 
 
@@ -27,9 +33,11 @@ class CLITest extends TestCase
 
     public function testPrompt()
     {
-        $CLI = new CLI();
-//        $prompt = $CLI->prompt('enter your name');
-        self::assertTrue(true);
+        $prompt = 'enter your name';
+        $this->cli->inputStream = __DIR__ . '/../test/test_input';
+        self::expectOutputString($prompt);
+        $input = $this->cli->prompt($prompt);
+        self::assertEquals('bill', $input);
     }
 
     public function testRun()
