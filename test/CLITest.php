@@ -16,6 +16,7 @@ class CLITest extends TestCase
     public function setUp(): void
     {
         $this->cli = new CLI();
+        $this->cli->inputStream = __DIR__ . '/../test/test_input';
         self::assertInstanceOf(CLI::class, $this->cli);
     }
 
@@ -31,17 +32,29 @@ class CLITest extends TestCase
         self::assertEquals('bill', $rtrim);
     }
 
+    /**
+     * Test the different behaviours of the prompt command with a replacement input stream
+     */
     public function testPrompt()
     {
         $prompt = 'enter your name';
-        $this->cli->inputStream = __DIR__ . '/../test/test_input';
-        self::expectOutputString($prompt);
+        $this->setInput('bill');
+
+        //test that the prompt and the return value of prompt is correct
+        ob_start();
         $input = $this->cli->prompt($prompt);
+        $output = ob_get_clean();
+        self::assertEquals($prompt, $output);
         self::assertEquals('bill', $input);
     }
 
     public function testRun()
     {
         self::assertTrue(true);
+    }
+
+    private function setInput($response): void
+    {
+        $this->cli->inputStream = 'data://text/plain,' . $response;
     }
 }

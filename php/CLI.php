@@ -225,8 +225,8 @@ class CLI
         if ($prompt) {
             echo $prompt;
         }
-        $fp = fopen($this->inputStream, "r");
-        return rtrim(fgets($fp, 1024));
+        $handle = $handle ?? fopen($this->inputStream, "r");
+        return rtrim(fgets($handle, 1024));
     }
 
     /**
@@ -273,7 +273,7 @@ class CLI
         //todo: possibly elevate all errors to exceptions to handle every possible scenario
 
         if ($this->debug) {
-            echo "\n";//todo maybe have some colour ?
+            echo "\n";//todo maybe have some colour for error?
             echo get_class($e),": ";
             echo $e->getMessage(), "\n";
             print_r($e->getTraceAsString());
