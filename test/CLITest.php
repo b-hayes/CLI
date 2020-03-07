@@ -16,7 +16,6 @@ class CLITest extends TestCase
     public function setUp(): void
     {
         $this->cli = new CLI();
-        $this->cli->inputStream = __DIR__ . '/../test/test_input';
         self::assertInstanceOf(CLI::class, $this->cli);
     }
 
@@ -27,9 +26,9 @@ class CLITest extends TestCase
      */
     public function testReadlineMethod()
     {
-        $fp = fopen(__DIR__ . '/../test/test_input', "r");
+        $fp = fopen('data://text/plain,' . 'a value', "r");
         $rtrim = rtrim(fgets($fp, 1024));
-        self::assertEquals('bill', $rtrim);
+        self::assertEquals('a value', $rtrim);
     }
 
     /**
@@ -71,8 +70,12 @@ class CLITest extends TestCase
         self::assertTrue(true);
     }
 
-    private function setInput($response): void
+    private function setInput($stringOrFile): void
     {
-        $this->cli->inputStream = 'data://text/plain,' . $response;
+        if (is_file($stringOrFile)) {
+            $this->cli->inputStream = $stringOrFile;
+            return;
+        }
+        $this->cli->inputStream = 'data://text/plain,' . $stringOrFile;
     }
 }

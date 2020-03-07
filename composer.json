@@ -31,7 +31,8 @@
         "secure-http": false
     },
     "require-dev": {
-        "squizlabs/php_codesniffer": "^3.5"
+        "squizlabs/php_codesniffer": "^3.5",
+        "phpunit/phpunit": "^8.5"
     },
     "scripts": {
         "style": "phpcs --standard=.phpcs.xml"
