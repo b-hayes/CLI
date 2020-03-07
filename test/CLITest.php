@@ -39,23 +39,31 @@ class CLITest extends TestCase
     {
         $prompt = 'enter your name';
 
-        //test that the prompt and the return value of prompt is correct
+        //prompt must echo the prompt message and return the input received
         $this->setInput('bill');
         ob_start();
         $input = $this->cli->prompt($prompt);
         $output = ob_get_clean();
         self::assertEquals($prompt, $output);
         self::assertEquals('bill', $input);
+        
+        //trailing white space and new line chars are removed from return value.
+        $this->setInput("bill higgins    \n \n \r\n");
+        ob_start();
+        $input = $this->cli->prompt($prompt);
+        $output = ob_get_clean();
+        self::assertEquals($prompt, $output);
+        self::assertEquals('bill higgins', $input);
 
-        //test that an empty string can be received
-        $this->setInput('');
+        //an empty string will be returned from pressing only enter
+        $this->setInput("\n");
         ob_start();
         $input = $this->cli->prompt($prompt);
         $output = ob_get_clean();
         self::assertEquals($prompt, $output);
         self::assertEquals('', $input);
 
-        //test that a default value will be returned from a return
+        //default value must be displayed in the prompt with square brackets and be returned when user preses enter
         $this->setInput("\n");
         ob_start();
         $defaultValue = 'a default value';
@@ -63,6 +71,39 @@ class CLITest extends TestCase
         $output = ob_get_clean();
         self::assertEquals("$prompt [$defaultValue]", $output);
         self::assertEquals($defaultValue, $input);
+        
+        //all return values will be lowercase by default
+        $this->setInput("UPPER CASE");
+        ob_start();
+        $input = $this->cli->prompt($prompt, $defaultValue);
+        $output = ob_get_clean();
+        self::assertEquals('upper case', $input);
+        
+        //default value is used the case IS STILL converted to lower by default
+        $this->setInput("\n");
+        ob_start();
+        $defaultValue = 'A DEFAULT VALUE IN UPPER CASE';
+        $input = $this->cli->prompt($prompt, $defaultValue);
+        $output = ob_get_clean();
+        self::assertEquals("$prompt [$defaultValue]", $output);
+        self::assertEquals('a default value in upper case', $input);
+        
+        //case is always preserved when convert to lowercase is disabled.
+        $this->setInput("\n");
+        ob_start();
+        $defaultValue = 'A Default Mixed Case Value';
+        $input = $this->cli->prompt($prompt, $defaultValue, false);
+        $output = ob_get_clean();
+        self::assertEquals("$prompt [$defaultValue]", $output);
+        self::assertEquals($defaultValue, $input);
+    
+        //case can be preserved without being forced to sue a default value
+        $this->setInput("A Mixed Case Value\n");
+        ob_start();
+        $input = $this->cli->prompt($prompt, '', false);
+        $output = ob_get_clean();
+        self::assertEquals("$prompt", $output);
+        self::assertEquals("A Mixed Case Value", $input);
     }
 
     public function testRun()
