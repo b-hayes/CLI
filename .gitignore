@@ -29,6 +29,5 @@ composer.phar
 #############################
 ## BEGIN UNIT TEST IGNORES ##
 #############################
-test/phpunit.xml
 test/report/*
 test/.phpunit.result.cache
