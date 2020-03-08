@@ -26,4 +26,9 @@ composer.phar
 ## .idea/webResources.xml appears after setting resource root.. might want to specifically track this file
 ## for dir settings only. However, when I did track this file it cause a new clone opened in phpstorm to get confused.
 
-
+#############################
+## BEGIN UNIT TEST IGNORES ##
+#############################
+test/phpunit.xml
+test/report/*
+test/.phpunit.result.cache
