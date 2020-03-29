@@ -10,6 +10,11 @@ use Throwable;
  * Class CLI
  *
  * @package BHayes\CLI
+ *
+ * CLI allows you to interact with php class objects from the terminal,
+ * allowing you to write terminal application simply by defining the class methods and,
+ * creating an executable wrapper file.
+ *
  */
 class CLI
 {
@@ -107,17 +112,20 @@ class CLI
      *  - The first argument is the name of the class method that will be run.
      *  - All remaining arguments will be passed on as parameters to the above method.
      *
-     * Options are not passed along as method params. Options are according to the following:
-     *  https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
-     *
      * IF the first argument does not match a public method name || no arguments are specified then:
      *  - listing the public methods on the class is printed.
      *
      * If the minimum required parameters are not met OR there are too many arguments then:
-     *  - a help message is displayed informing the user how to use the method.
+     *  - the arguments for the method are listed.
      *
-     * Help messages are defined by the class objects doc blocks.
+     * Options / Flags are recognizes as per the posix standard:
+     *  https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
      *
+     * Options are not passed along as method params.
+     *  They are stored in memory for the class to decide if it shall used them.
+     *
+     *  There are a number of reserved options that this CLI class uses such as the,
+     *   --help option that will display additional information about any given method
      */
     public function run()
     {
