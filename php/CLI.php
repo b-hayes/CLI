@@ -64,6 +64,12 @@ class CLI
     /**
      * CLI constructor.
      *
+     * Creates a reflection of the class for introspection.
+     * Detects if the default error reporting and changes it to only show errors once in terminal output.
+     *
+     * TODO: loads a configuration file from ClassName.json file if it exists,
+     *  the json file can contain default values for method arguments.
+     *
      * @param object|null $class if unspecified, $this is used.
      */
     public function __construct(object $class = null)
@@ -95,7 +101,20 @@ class CLI
         //todo: load config from json file if one is specified
     }
 
-    public function run()
+    /**
+     * Runs the class object with the given arguments:
+     *  - The first argument is the name of the class method that will be run.
+     *  - All remaining arguments will be passed on as parameters to the above method.
+     *
+     * IF the first argument does not match a public method name || no arguments are specified then:
+     *  - a help message is displayed listing the public methods on the class.
+     *
+     * If the minimum required parameters are not met correctly then then:
+     *  - a help message is displayed informing the use how to use the method.
+     *
+     * @param array|null $arguments if null the global $argv from terminal input will be used.
+     */
+    public function run(array $arguments = null)
     {
         //[ PROCESSING ARGUMENTS ]
         global $argv;

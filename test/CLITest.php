@@ -109,7 +109,7 @@ class CLITest extends TestCase
     public function testRun()
     {
         //todo: test the aspects of run with a test subject
-        self::assertTrue(true);
+
     }
 
     private function setInput($stringOrFile): void
