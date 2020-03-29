@@ -103,19 +103,23 @@ class CLI
     }
 
     /**
-     * Runs the class object with the given arguments:
+     * Runs the class object with the arguments from terminal input:
      *  - The first argument is the name of the class method that will be run.
      *  - All remaining arguments will be passed on as parameters to the above method.
      *
-     * IF the first argument does not match a public method name || no arguments are specified then:
-     *  - a help message is displayed listing the public methods on the class.
+     * Options are not passed along as method params. Options are according to the following:
+     *  https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
      *
-     * If the minimum required parameters are not met correctly then then:
+     * IF the first argument does not match a public method name || no arguments are specified then:
+     *  - listing the public methods on the class is printed.
+     *
+     * If the minimum required parameters are not met OR there are too many arguments then:
      *  - a help message is displayed informing the user how to use the method.
      *
-     * @param array|null $arguments if null the global $argv from terminal input will be used.
+     * Help messages are defined by the class objects doc blocks.
+     *
      */
-    public function run(array $arguments = null)
+    public function run()
     {
         //[ PROCESSING ARGUMENTS ]
         global $argv;
