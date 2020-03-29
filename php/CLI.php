@@ -89,15 +89,16 @@ class CLI
          *
          * In the default php cli installation both display and log errors are directed to stdout.
          * So we disable the log errors but only if both are enabled and no log file was configured.
-         * IF the user has setup their own error log than we dont want to touch anything.
+         * If the user has setup their own error log than we dont want to touch anything.
          */
         if (
-            ini_get('log_errors') && //but only if both are enabled
+            ini_get('log_errors') &&
             ini_get('display_errors') &&
-            ini_get('error_log') === ""//and only if they haven't configured a log file
+            ini_get('error_log') === ""
         ) {
             ini_set('log_errors', 0);
         }
+
         //todo: load config from json file if one is specified
     }
 
@@ -110,7 +111,7 @@ class CLI
      *  - a help message is displayed listing the public methods on the class.
      *
      * If the minimum required parameters are not met correctly then then:
-     *  - a help message is displayed informing the use how to use the method.
+     *  - a help message is displayed informing the user how to use the method.
      *
      * @param array|null $arguments if null the global $argv from terminal input will be used.
      */
