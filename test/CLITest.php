@@ -46,7 +46,7 @@ class CLITest extends TestCase
         $output = ob_get_clean();
         self::assertEquals($prompt, $output);
         self::assertEquals('bill', $input);
-        
+
         //trailing white space and new line chars are removed from return value.
         $this->setInput("bill higgins    \n \n \r\n");
         ob_start();
@@ -71,14 +71,14 @@ class CLITest extends TestCase
         $output = ob_get_clean();
         self::assertEquals("$prompt [$defaultValue]", $output);
         self::assertEquals($defaultValue, $input);
-        
+
         //all return values will be lowercase by default
         $this->setInput("UPPER CASE");
         ob_start();
         $input = $this->cli->prompt($prompt, $defaultValue);
         $output = ob_get_clean();
         self::assertEquals('upper case', $input);
-        
+
         //default value is used the case IS STILL converted to lower by default
         $this->setInput("\n");
         ob_start();
@@ -87,7 +87,7 @@ class CLITest extends TestCase
         $output = ob_get_clean();
         self::assertEquals("$prompt [$defaultValue]", $output);
         self::assertEquals('a default value in upper case', $input);
-        
+
         //case is always preserved when convert to lowercase is disabled.
         $this->setInput("\n");
         ob_start();
@@ -96,7 +96,7 @@ class CLITest extends TestCase
         $output = ob_get_clean();
         self::assertEquals("$prompt [$defaultValue]", $output);
         self::assertEquals($defaultValue, $input);
-    
+
         //case can be preserved without being forced to sue a default value
         $this->setInput("A Mixed Case Value\n");
         ob_start();
@@ -108,6 +108,7 @@ class CLITest extends TestCase
 
     public function testRun()
     {
+        //todo: test the aspects of run with a test subject
         self::assertTrue(true);
     }
 
