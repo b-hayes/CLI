@@ -60,6 +60,7 @@ class CLITest extends TestCase
         ob_start();
         $input = $this->cli->prompt($prompt);
         $output = ob_get_clean();
+
         self::assertEquals($prompt, $output);
         self::assertEquals('', $input);
 
