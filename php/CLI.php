@@ -303,7 +303,7 @@ class CLI
     private function error(Throwable $e, string $printMessage = null)
     {
         if ($printMessage) {
-            //todo: add some colour with a print fucntion
+            //todo: add some colour with a print function
             //todo: is this even necessary? should exceptions just fall back to php reporting?
             echo $printMessage, "\n";
         }
