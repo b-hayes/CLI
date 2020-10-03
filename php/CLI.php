@@ -3,6 +3,9 @@
 namespace BHayes\CLI;
 
 use ArgumentCountError;
+use Exception;
+use ReflectionClass;
+use ReflectionException;
 use ReflectionMethod;
 use Throwable;
 
@@ -24,7 +27,7 @@ class CLI
     private $class;
 
     /**
-     * @var \ReflectionClass
+     * @var ReflectionClass
      */
     private $reflection;
 
@@ -83,8 +86,8 @@ class CLI
         $this->class = $class ??  $this;
         //get a reflection of said class
         try {
-            $this->reflection = new \ReflectionClass($this->class);
-        } catch (\ReflectionException $e) {
+            $this->reflection = new ReflectionClass($this->class);
+        } catch (ReflectionException $e) {
             $this->error($e, $e->getMessage());
         }
 
@@ -113,7 +116,7 @@ class CLI
      *  - All remaining arguments will be passed on as parameters to the above method.
      *
      * IF the first argument does not match a public method name || no arguments are specified then:
-     *  - listing the public methods on the class is printed.
+     *  - a list of the public methods on the class is printed.
      *
      * If the minimum required parameters are not met OR there are too many arguments then:
      *  - the arguments for the method are listed.
@@ -122,10 +125,11 @@ class CLI
      *  https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
      *
      * Options are not passed along as method params.
-     *  They are stored in memory for the class to decide if it shall used them.
+     *  They are stored in memory for the class to decide if it shall use them or not.
      *
+     * RESERVED OPTIONS
      *  There are a number of reserved options that this CLI class uses such as the,
-     *   --help option that will display additional information about any given method
+     *   --help option that will display additional information about any given method.
      */
     public function run()
     {
@@ -185,7 +189,7 @@ class CLI
         //if we cant get a reflection then the method does not exist
         try {
             $this->reflectionMethod = new ReflectionMethod($this->class, $this->function);
-        } catch (\ReflectionException $e) {
+        } catch (ReflectionException $e) {
             $this->error($e, "[" . $this->function . "]" . " is not a recognized command.");
         }
 
@@ -193,7 +197,7 @@ class CLI
         if (count($this->params) > $this->reflectionMethod->getNumberOfParameters()) {
             $errorMessage = 'Too many arguments. Function ' . $this->reflectionMethod->getName() . ' can only accept ' .
                 $this->reflectionMethod->getNumberOfParameters();
-            $this->error(new \Exception($errorMessage . ' see line ' . __LINE__), $errorMessage);
+            $this->error(new Exception($errorMessage . ' see line ' . __LINE__), $errorMessage);
         }
 
 
@@ -294,11 +298,13 @@ class CLI
      * - if logs are enabled in php ini a log entry is also created
      *
      * @param Throwable $e
-     * @param string $printMessage
+     * @param string|null $printMessage If null the exception message is used.
      */
-    private function error(Throwable $e, string $printMessage)
+    private function error(Throwable $e, string $printMessage = null)
     {
         if ($printMessage) {
+            //todo: add some colour with a print fucntion
+            //todo: is this even necessary? should exceptions just fall back to php reporting?
             echo $printMessage, "\n";
         }
 
