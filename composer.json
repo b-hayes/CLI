@@ -35,7 +35,7 @@
         "phpunit/phpunit": "^8.5"
     },
     "scripts": {
-        "style": "phpcs --standard=.phpcs.xml",
+        "style_DISABLED": "phpcs --standard=.phpcs.xml",
         "test": "phpunit -c test/phpunit.xml test --coverage-html test/report"
     }
 }

@@ -166,7 +166,7 @@ class CLI
             //then for short options -o
             if (substr($arg, 0, 1) == "-") {
                 $arg = substr($arg, 1); //remove dash
-                //multiple options grouped together
+                //multiple options can be grouped together eg -abc
                 $this->options = array_merge($this->options, str_split($arg));
                 unset($argv[$key]);
                 continue;
@@ -309,19 +309,6 @@ class CLI
         }
 
         //todo: possibly elevate all errors to exceptions to handle every possible scenario
-
-        if ($this->debug) {
-            echo "\n";//todo maybe have some colour for error?
-            echo get_class($e),": ";
-            echo $e->getMessage(), "\n";
-            print_r($e->getTraceAsString());
-            echo "\n";
-        }
-        if (ini_get('log_errors')) {
-            log('CLI Internal Error: ' . $e->getMessage() . ' ' . $e->getTraceAsString());
-        }
-
-        exit(1);
     }
 
     /**
@@ -362,5 +349,47 @@ class CLI
 //                ?: $this->reflectionMethod->__toString() //not useful unless there params and exposes class names
                 ?: "No documentation found for [{$this->reflectionMethod->getName()}] \n";
         }
+    }
+
+    private function runWithErrorHandling()
+    {
+        try {
+            $this->run();
+        } catch (\Exception $exception) {
+            //it is generally assumed that any unhandled \Exception and alike is a general message for the user to see.
+            $this->exitWithErrorMessage($exception->getMessage(), $exception->getCode(), $exception);
+        } catch (Throwable $throwable) {
+            //These will usually be internal php errors that only developers should see.
+            $this->exitWithErrorMessage("An unexpected error occurred contact developers for help.");
+        }
+    }
+
+    /**
+     * Used to handle exceptions left uncaught by the running subject.
+     *  - The message is printed to the terminal.
+     *  - The exception code is used as the exit code to allow devs to pass back specific codes form their class.
+     *      Unless it is zero, then error code 1 is used to prevent false positive interpretations by the shell/user.
+     *  - The original exception details are shown if --debug option was used.
+     *
+     * @param string         $userMessage
+     * @param int            $errorCode
+     * @param Throwable|null $throwable
+     */
+    private function exitWithErrorMessage(string $userMessage, int $errorCode = 1, Throwable $throwable = null)
+    {
+        //todo maybe have some colour for error? (perhaps implement a print function for easy colour output)
+        echo $userMessage, "\n";
+
+        if ($this->debug && $throwable) {
+            echo "\n";
+            echo get_class($throwable),": ";
+            echo $throwable->getMessage(), "\n";
+            print_r($throwable->getTraceAsString());
+            echo "\n";
+        } elseif (ini_get('log_errors')) {
+            log('CLI Internal Error: ' . $throwable->getMessage() . ' ' . $throwable->getTraceAsString());
+        }
+
+        exit($errorCode ?: 1);
     }
 }
