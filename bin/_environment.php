@@ -17,14 +17,18 @@
 ini_set('log_errors', 0);
 ini_set('display_errors', 1);
 
-//Check the PHP version at run time because user might be swapping php versions at will
+//Check the PHP version at run time because user might be swapping php versions at will (i do it all the time).
 if (phpversion() < 7.2) {
-    die('This package only works with php 7.1');
+    die('This package only works with php 7.2 or higher.');
 }
 
-//check two locations for autoloader as it will be different when installed.
+//check two locations for autoloader as it will be different when installed as a package.
 $realpath = realpath(__DIR__ . '/../vendor/autoload.php')//the normal path during development
     ?: realpath(__DIR__ . '/../../../autoload.php'); //the path if installed by a parent project
+if (!$realpath) {
+    echo "can not find autoload.php, you might need to run composer install.\n";
+    exit(1);
+}
 require_once $realpath;
 
 //remove any globalised variables you created in the process of setting up your environment

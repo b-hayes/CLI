@@ -4,11 +4,9 @@ namespace BHayes\CLI;
 
 class Options
 {
-    public function __construct(array $options = null)
+    public function __construct(array $options = [])
     {
-        foreach (getopt('f', ['help','list']) as $option => $value) {
-            $this->{$option} = $value ?: true;
-        }
+        
     }
 
     /**

@@ -36,7 +36,7 @@ class CLI
      *
      * argument zero, usually the command typed into the terminal
      */
-    private $command;
+    private $self;
 
     /**
      * @var string|null
@@ -137,7 +137,7 @@ class CLI
         global $argv;
 
         //remove argument 0 is the first word the user typed and only used for usage statement.
-        $this->command = array_shift($argv);
+        $this->self = array_shift($argv);
 
         //if no arguments just skip all the processing and display usage
         if (empty($argv)) {
@@ -145,7 +145,7 @@ class CLI
             exit(0);
         }
 
-        //if there is only one argument and it is a help option then just show help and exit
+        //if there is only one argument and it is a help option then just show help and exit (faster)
         if (count($argv) === 1 && $argv[0] === '--help') {
             $this->help();
             exit(0);
@@ -154,6 +154,11 @@ class CLI
         /*
          * TODO: Process flags according to:
          *  https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
+         *
+         * Note: I am aware (afterwards) of php's built in getopt function but cant detect invalid options.
+         *  I did think perhaps to use getopt() to grab expect valid options and then check fo any left over ones,
+         *  but then getopt doesnt remove any options you grab so you still need to manually check ever argv
+         *  scenario to enable the feature of "-x is not a valid option"
          */
         foreach ($argv as $key => $arg) {
             //check for --long-options first
@@ -163,7 +168,7 @@ class CLI
                 continue;
             }
 
-            //then for short options -o
+            //then for short options -a
             if (substr($arg, 0, 1) == "-") {
                 $arg = substr($arg, 1); //remove dash
                 //multiple options can be grouped together eg -abc
@@ -172,7 +177,7 @@ class CLI
                 continue;
             }
             //todo: options can have arguments eg, mysql -u username,
-            // need to detect if an option requires a param.
+            // need to detect if an option requires a param. (could also use getopt funciton for this?)
             /*
              * Note: thinking about the best way to achieve this would be to have the datatype specified in,
              * an options class or as public class properties on the subject itself.
@@ -319,7 +324,7 @@ class CLI
         $usage =
             $this->class->usage
             ?? $this->reflection->getDocComment()
-            ?? "usage: " . $this->command . "[function] [-?][operands...]";
+            ?? "usage: " . $this->self . "[function] [-?][operands...]";
         echo $usage, "\n";
         $this->listAvailableFunctions();
         echo "Use --help for more information or [function] --help for more specific help.\n";

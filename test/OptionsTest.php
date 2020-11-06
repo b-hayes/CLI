@@ -7,11 +7,11 @@ use PHPUnit\Framework\TestCase;
 
 class OptionsTest extends TestCase
 {
-    public function test__construct()
+    public function testConstruct()
     {
         var_dump(ini_get('register_argc_argv'));
         $GLOBALS['argv'] = ['-f','filename'];
         var_dump(new Options());
-        self::assertTrue(true);
+         self::assertTrue(true);
     }
 }
