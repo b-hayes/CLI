@@ -107,7 +107,7 @@ class CLITest extends TestCase
         self::assertEquals("A Mixed Case Value", $input);
     }
 
-    public function testRun()
+    public function testRunningTestSubject()
     {
         //todo: test the aspects of run with a test subject
         $output = `php test/run_TestSubject.php simple`;

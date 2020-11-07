@@ -156,6 +156,11 @@ class CLI
          *  https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
          *
          * Note: I am aware (afterwards) of php's built in getopt function but cant detect invalid options.
+         *  why not use getopt() ?
+         *      - support for "-x" is not a valid option. Options are:.....
+         *      - options do not get removed from $argv so still have to find and remove them.
+         *          -   could however have have if option exits remove from arg v I guess but not optimal.
+         *
          *  I did think perhaps to use getopt() to grab expect valid options and then check fo any left over ones,
          *  but then getopt doesnt remove any options you grab so you still need to manually check ever argv
          *  scenario to enable the feature of "-x is not a valid option"
@@ -177,7 +182,7 @@ class CLI
                 continue;
             }
             //todo: options can have arguments eg, mysql -u username,
-            // need to detect if an option requires a param. (could also use getopt funciton for this?)
+            // need to detect if an option requires a param. (could also use getopt function for this?)
             /*
              * Note: thinking about the best way to achieve this would be to have the datatype specified in,
              * an options class or as public class properties on the subject itself.
