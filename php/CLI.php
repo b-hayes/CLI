@@ -160,6 +160,8 @@ class CLI
          *      - support for "-x" is not a valid option. Options are:.....
          *      - options do not get removed from $argv so still have to find and remove them.
          *          -   could however have have if option exits remove from arg v I guess but not optimal.
+         *      - unable to have unlimited options (no idea why you'd want it tho tbh)
+         *      - getopt can not detect '--' empty option has passthroughs argument behaviour
          *
          *  I did think perhaps to use getopt() to grab expect valid options and then check fo any left over ones,
          *  but then getopt doesnt remove any options you grab so you still need to manually check ever argv
