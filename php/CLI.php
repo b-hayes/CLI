@@ -34,9 +34,9 @@ class CLI
     /**
      * @var string|null
      *
-     * argument zero, usually the command typed into the terminal
+     * argument zero, usually the command typed into the terminal that initiated the execution of this script.
      */
-    private $self;
+    private $initiator;
 
     /**
      * @var string|null
@@ -137,7 +137,7 @@ class CLI
         global $argv;
 
         //remove argument 0 is the first word the user typed and only used for usage statement.
-        $this->self = array_shift($argv);
+        $this->initiator = array_shift($argv);
 
         //if no arguments just skip all the processing and display usage
         if (empty($argv)) {
@@ -152,16 +152,20 @@ class CLI
         }
 
         /*
-         * TODO: Process flags according to:
+         * Process options/flags according to posix conventions:
          *  https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
          *
-         * Note: I am aware (afterwards) of php's built in getopt function but cant detect invalid options.
-         *  why not use getopt() ?
+         * Note: why did I not use built in getopt() function?
          *      - support for "-x" is not a valid option. Options are:.....
-         *      - options do not get removed from $argv so still have to find and remove them.
-         *          -   could however have have if option exits remove from arg v I guess but not optimal.
-         *      - unable to have unlimited options (no idea why you'd want it tho tbh)
-         *      - getopt can not detect '--' empty option has passthroughs argument behaviour
+         *      - options do not get removed from $argv so still have to manually go find and remove them
+         *        before processing the remaining arguments as function parameters.
+         *          -   could however have have if getopt(...) exits remove from arg v I guess but not optimal at all.
+         *      - unable to have unlimited/unrestricted options in the case the
+         *        subject class just wants to check it on the fly or dynamic use with this->optionAsProperty
+         *      - getopt can not detect '--' empty option as passthroughs
+         *        (a common convention when one command runs another)
+         *        eg your class might be a wrapper for running phpunit with default options you like to always have on
+         *        but allows the user to pass through additional options directly to phpunit themselves.
          *
          *  I did think perhaps to use getopt() to grab expect valid options and then check fo any left over ones,
          *  but then getopt doesnt remove any options you grab so you still need to manually check ever argv
@@ -189,6 +193,7 @@ class CLI
              * Note: thinking about the best way to achieve this would be to have the datatype specified in,
              * an options class or as public class properties on the subject itself.
              * Php7.4 property syntax would be the best way but it's not common enough yet to rely on.
+             * TODO: commit a php-5.6 version then a 7.0 version before adding more features and only support 7.4+
              */
         }
 
@@ -305,7 +310,7 @@ class CLI
 
     /**
      * Display error message depending on input and debug settings.
-     * - always outputs $printMessage.
+     * - always outputs $printMessage when specified.
      * - if debug mode is on then also prints the exception message.
      * - if logs are enabled in php ini a log entry is also created
      *
@@ -331,7 +336,7 @@ class CLI
         $usage =
             $this->class->usage
             ?? $this->reflection->getDocComment()
-            ?? "usage: " . $this->self . "[function] [-?][operands...]";
+            ?? "usage: " . $this->initiator . "[function] [-?][operands...]";
         echo $usage, "\n";
         $this->listAvailableFunctions();
         echo "Use --help for more information or [function] --help for more specific help.\n";
