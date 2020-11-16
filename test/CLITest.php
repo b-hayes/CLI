@@ -111,7 +111,7 @@ class CLITest extends TestCase
     {
         //todo: test the aspects of run with a test subject
         $output = `php test/run_TestSubject.php simple`;
-        self::assertEquals(TestSubject::class . '::simple was executed', $output);
+        self::assertEquals(TestSubject::class . '::simple was executed' . "\n", $output);
     }
 
     private function setInput($stringOrFile): void
