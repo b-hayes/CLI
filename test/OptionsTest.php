@@ -9,9 +9,7 @@ class OptionsTest extends TestCase
 {
     public function testConstruct()
     {
-        var_dump(ini_get('register_argc_argv'));
-        $GLOBALS['argv'] = ['-f','filename'];
-        var_dump(new Options());
-         self::assertTrue(true);
+        $options = new Options();
+         self::assertInstanceOf(Options::class, $options);
     }
 }

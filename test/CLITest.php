@@ -33,7 +33,7 @@ class CLITest extends TestCase
 
     /**
      * Test the different behaviours of the prompt command with a replacement input stream.
-     * Note: there is an expectOutput() function in phpunit but it only works once.
+     * Note: there is an expectOutput() function in phpunit but it only works once so I didnt use it.
      */
     public function testPrompt()
     {
@@ -107,13 +107,11 @@ class CLITest extends TestCase
         self::assertEquals("A Mixed Case Value", $input);
     }
 
-    public function testRunningTestSubject()
-    {
-        //todo: test the aspects of run with a test subject
-        $output = `php test/run_TestSubject.php simple`;
-        self::assertEquals(TestSubject::class . '::simple was executed' . "\n", $output);
-    }
-
+    /**
+     * Used only for testing the prompt function.
+     *
+     * @param $stringOrFile
+     */
     private function setInput($stringOrFile): void
     {
         if (is_file($stringOrFile)) {
@@ -121,5 +119,12 @@ class CLITest extends TestCase
             return;
         }
         $this->cli->inputStream = 'data://text/plain,' . $stringOrFile;
+    }
+
+    public function testRunningTestSubject()
+    {
+        //todo: test the aspects of run with a test subject
+        $output = `php test/run_TestSubject.php simple`;
+        self::assertEquals(TestSubject::class . '::simple was executed' . "\n", $output);
     }
 }
