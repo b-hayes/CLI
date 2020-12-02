@@ -121,10 +121,19 @@ class CLITest extends TestCase
         $this->cli->inputStream = 'data://text/plain,' . $stringOrFile;
     }
 
-    public function testRunningTestSubject()
+    //NOTE: Test all the functionality of cli on a test subject.
+
+    public function testRunSimple()
     {
-        //todo: test the aspects of run with a test subject
         $output = `php test/run_TestSubject.php simple`;
         self::assertEquals(TestSubject::class . '::simple was executed' . "\n", $output);
+    }
+
+    public function testRequiredParams()
+    {
+        $one = 'one';
+        $two = 2;
+        $output = `php test/run_TestSubject.php requiresTwo $one $two`;
+        self::assertEquals(TestSubject::class . "::requiresTwo was executed with params $one $two\n", $output);
     }
 }
