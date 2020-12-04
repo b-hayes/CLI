@@ -262,8 +262,9 @@ class CLI
         } catch (ArgumentCountError $argumentCountError) {
             $message = str_replace(['()', get_class($this->class), '::'], "", $argumentCountError->getMessage());
             $this->error($argumentCountError, $message);
-        } catch (Throwable $e) {
-            $this->error($e);
+        } catch (\TypeError $typeError) {
+            $message = str_replace(['()', get_class($this->class), '::'], "", $typeError->getMessage());
+            $this->error($typeError, $message);
         }
     }
 
@@ -381,6 +382,7 @@ class CLI
             $this->run();
         } catch (\Exception $exception) {
             //it is generally assumed that any unhandled \Exception and alike is a general message for the user to see.
+            //todo: should this be the case? or no?
             $this->exitWithErrorMessage($exception->getMessage(), $exception->getCode(), $exception);
         } catch (Throwable $throwable) {
             //These will usually be internal php errors that only developers should see.

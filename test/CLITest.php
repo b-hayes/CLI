@@ -153,4 +153,12 @@ class CLITest extends TestCase
         $output = `php test/run_TestSubject.php requiresTwo $one $two $three`;
         self::assertEquals("Too many arguments. Function requiresTwo can only accept 2\n", $output);
     }
+
+    public function testIncorrectDataTypeFailsWithAppropriateMessage()
+    {
+        $one = 'one';
+        $two = 'two';
+        $output = `php test/run_TestSubject.php requiresTwo $one $two`;
+        self::assertEquals("Argument 2 passed to requiresTwo must be of the type integer, string given\n", $output);
+    }
 }
