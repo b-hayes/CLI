@@ -161,4 +161,31 @@ class CLITest extends TestCase
         $output = `php test/run_TestSubject.php requiresTwo $one $two`;
         self::assertEquals("Argument 2 passed to requiresTwo must be of the type integer, string given\n", $output);
     }
+
+    public function testPrimitives()
+    {
+        $one = 'true';
+        $two = 'cats';
+        $three = '7';
+        $four = '0.1';
+        $output = `php test/run_TestSubject.php primitives $one $two $three $four`;
+        self::assertEquals(TestSubject::class . "::primitives was executed!\n", $output);
+
+        $one = 'false';
+        $two = 'dogs';
+        $three = '0';
+        $four = '237845';
+        $output = `php test/run_TestSubject.php primitives $one $two $three $four`;
+        self::assertEquals(TestSubject::class . "::primitives was executed!\n", $output);
+    }
+
+//    public function testPrimitivesFailWithTypeError()
+//    {
+//        $one = 'true';
+//        $two = 'cats';
+//        $three = '7';
+//        $four = '0.1';
+//        $output = `php test/run_TestSubject.php primitives $one $two $three $four`;
+//        self::assertEquals(TestSubject::class . "::primitives was executed! was executed!\n", $output);
+//    }
 }

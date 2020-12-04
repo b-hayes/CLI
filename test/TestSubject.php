@@ -26,6 +26,11 @@ class TestSubject
         echo __METHOD__ , " was executed with params $required $mustBeInt";
     }
 
+    public function primitives(bool $mustBeBool, string $mustBeString, int $mustBeInt, float $mustBeFloat)
+    {
+        echo __METHOD__ . " was executed!";
+    }
+
     public function requiredAndOptional($required, $optional = null)
     {
         echo __METHOD__ , " was executed";
