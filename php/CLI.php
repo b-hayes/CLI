@@ -190,9 +190,8 @@ class CLI
             //todo: options can have arguments eg, mysql -u username,
             // need to detect if an option requires a param. (could also use getopt function for this?)
             /*
-             * Note: thinking about the best way to achieve this would be to have the datatype specified in,
-             * an options class or as public class properties on the subject itself.
-             * Php7.4 property syntax would be the best way but it's not common enough yet to rely on.
+             * Note: thinking about the best way to achieve this would be to use typed properties from
+             *  Php7.4 but i might do without this, releaser a php7.2 version first.
              * TODO: commit a php-5.6 version then a 7.0 version before adding more features and only support 7.4+
              */
         }
@@ -201,17 +200,16 @@ class CLI
         $this->function = array_shift($argv);
 
         //everything after that is a parameter for the function
-        $this->params = array_map(function ($arg){
-            return json_decode($arg);//todo: this works for everything except a normal string
-            //todo hence we might need to do our own type matching before execution.
-        }, $argv);
-        var_dump($this->params);die();
+        $this->params = $argv;
 
+        //HELP and other functions rely on the reflection to already exist.
         //if we cant get a reflection then the method does not exist
         try {
             $this->reflectionMethod = new ReflectionMethod($this->class, $this->function);
         } catch (ReflectionException $e) {
-            $this->error($e, "[" . $this->function . "]" . " is not a recognized command.");
+            echo "[" . $this->function . "]" . " is not a recognized command.\n";
+            $this->listAvailableFunctions();
+            exit(0);
         }
 
         //intentionally prevent all functions from being run with any number of arguments by default
@@ -221,12 +219,12 @@ class CLI
             $this->error(new Exception($errorMessage . ' see line ' . __LINE__), $errorMessage);
         }
 
-
         //CLI RESERVED OPTIONS
         //debug messages from CLI class
         if (in_array('debug', $this->options)) {
             $this->debug = true;
         }
+
         //help?
         if (in_array('help', $this->options)) {
             $this->help();

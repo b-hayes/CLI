@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace BHayes\CLI\Test;
 
 /**
@@ -11,6 +13,21 @@ namespace BHayes\CLI\Test;
  */
 class TestSubject
 {
+    public $optionOne;
+    public $optionTwo;
+
+    public function __construct()
+    {
+        if ($this->optionOne) {
+            echo "optionOne was enabled with:";
+            var_dump($this->optionOne);
+        }
+        if ($this->optionTwo) {
+            echo "optionTwo was enabled with:";
+            var_dump($this->optionOne);
+        }
+    }
+
     public function simple()
     {
         echo __METHOD__ , " was executed";
