@@ -148,7 +148,7 @@ class CLITest extends TestCase
     public function testTooManyParamsFailsWithAppropriateMessage()
     {
         $one = 'one';
-        $two = '2';//todo: there is a bug with this not detecting the incorrect amount of parameters. Fix.
+        $two = '2';
         $three = 'three';
         $output = `php test/run_TestSubject.php requiresTwo $one $two $three`;
         self::assertEquals("Too many arguments. Function requiresTwo can only accept 2\n", $output);

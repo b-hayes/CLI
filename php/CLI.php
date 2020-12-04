@@ -323,6 +323,13 @@ class CLI
             //todo: add some colour with a print function
             //todo: is this even necessary? should exceptions just fall back to php reporting?
             echo $printMessage, "\n";
+
+            //provide the ability to specify the exit code with an exception but dont let an error exit with 0.
+            $code = $e->getCode();
+            if ($code < 1) {
+                $code = 1;
+            }
+            exit($code);
         }
 
         //todo: possibly elevate all errors to exceptions to handle every possible scenario
