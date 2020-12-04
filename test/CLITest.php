@@ -136,4 +136,21 @@ class CLITest extends TestCase
         $output = `php test/run_TestSubject.php requiresTwo $one $two`;
         self::assertEquals(TestSubject::class . "::requiresTwo was executed with params $one $two\n", $output);
     }
+
+    public function testRequiredParamsMissingWillFailWithAppropriateMessage()
+    {
+        $one = 'one';
+        $two = '';
+        $output = `php test/run_TestSubject.php requiresTwo $one $two`;
+        self::assertEquals("Too few arguments to function requiresTwo, 1 passed and exactly 2 expected\n", $output);
+    }
+
+    public function testTooManyParamsFailsWithAppropriateMessage()
+    {
+        $one = 'one';
+        $two = '2';//todo: there is a bug with this not detecting the incorrect amount of parameters. Fix.
+        $three = 'three';
+        $output = `php test/run_TestSubject.php requiresTwo $one $two $three`;
+        self::assertEquals("Too many arguments. Function requiresTwo can only accept 2\n", $output);
+    }
 }
