@@ -179,13 +179,13 @@ class CLITest extends TestCase
         self::assertEquals(TestSubject::class . "::primitives was executed!\n", $output);
     }
 
-//    public function testPrimitivesFailWithTypeError()
-//    {
-//        $one = 'true';
-//        $two = 'cats';
-//        $three = '7';
-//        $four = '0.1';
-//        $output = `php test/run_TestSubject.php primitives $one $two $three $four`;
-//        self::assertEquals(TestSubject::class . "::primitives was executed! was executed!\n", $output);
-//    }
+    public function testBoolMismatch()
+    {
+        $one = 'notAbool';
+        $two = 'cats';
+        $three = '7';
+        $four = '0.1';
+        $output = `php test/run_TestSubject.php primitives $one $two $three $four`;
+        self::assertEquals(TestSubject::class . "::primitives was executed! was executed!\n", $output);
+    }
 }

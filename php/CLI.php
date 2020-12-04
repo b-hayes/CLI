@@ -1,5 +1,5 @@
 <?php
-
+declare(strict_types=1);
 namespace BHayes\CLI;
 
 use ArgumentCountError;
@@ -201,7 +201,11 @@ class CLI
         $this->function = array_shift($argv);
 
         //everything after that is a parameter for the function
-        $this->params = $argv;
+        $this->params = array_map(function ($arg){
+            return json_decode($arg);//todo: this works for everything except a normal string
+            //todo hence we might need to do our own type matching before execution.
+        }, $argv);
+        var_dump($this->params);die();
 
         //if we cant get a reflection then the method does not exist
         try {

@@ -1,5 +1,5 @@
 <?php
-
+declare(strict_types=1);
 namespace BHayes\CLI\Test;
 
 /**
@@ -28,6 +28,7 @@ class TestSubject
 
     public function primitives(bool $mustBeBool, string $mustBeString, int $mustBeInt, float $mustBeFloat)
     {
+        var_dump(func_get_args());
         echo __METHOD__ . " was executed!";
     }
 
