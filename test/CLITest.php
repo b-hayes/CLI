@@ -34,18 +34,24 @@ class CLITest extends TestCase
     }
 
     /**
-     * This is a helper to ensure that I am asserting failure messages for the correct function name.
+     * This is a helper to ensure my tests cover essential assertions.
      *
-     * @param       $output
-     * @param       $methodNameCalled
-     * @param mixed ...$expectedErrorMessages
+     * @param string $method
+     * @param string $arguments
+     * @param mixed  ...$expectedErrorMessages
      */
-    private function assertFailureToExecute($output, $methodNameCalled, ...$expectedErrorMessages)
+    private function assertFailureToExecute(string $method, string $arguments, string ...$expectedErrorMessages)
     {
+        ob_start();
+        passthru("php test/run_TestSubject.php $method $arguments", $exitCode);
+        $output = ob_get_clean();
+
+        self::assertNotEquals(0, $exitCode, "A failed command should exit with an error code!");
+
         self::assertStringContainsString(
-            $methodNameCalled,
+            $method,
             $output,
-            "Failure message does not contain the correct method name. Expected '$methodNameCalled'"
+            "Failure message does not contain the correct method name. Expected '$method'"
         );
         foreach ($expectedErrorMessages as $expectedErrorMessage) {
             self::assertStringContainsString(
@@ -54,7 +60,50 @@ class CLITest extends TestCase
                 "Failure message does not contain appropriate message component. Expected: '$expectedErrorMessage'"
             );
         }
-        self::assertStringContainsString("\n", $output, "Output should always end in a new line");
+        self::assertStringContainsString("\n", $output, "Output should always end in a new line.");
+
+        if (strpos($arguments, '--debug') === false) {
+            //todo: assert that the fill class name is not included in error messages displayed to the user.
+            // and that stack traces and uncaught errors are never shown to a normal user.
+        }
+
+        return $output;
+    }
+
+    /**
+     * This is a helper to ensure my tests cover essential assertions.
+     *
+     * @param       $method
+     * @param       $arguments
+     * @param mixed ...$expectedResponseMessages
+     *
+     * @return false|string
+     */
+    private function assertSuccessfulExecution($method, $arguments, ...$expectedResponseMessages)
+    {
+        ob_start();
+        passthru("php test/run_TestSubject.php $method $arguments", $exitCode);
+        $output = ob_get_clean();
+
+        self::assertEquals(0, $exitCode, "A successful command should exit with code 0!");
+
+        //method should have been executed.
+        self::assertStringContainsString(
+            "$method was executed",
+            $output,
+            "Expected '$method' to be executed and let us know that it was."
+        );
+
+        foreach ($expectedResponseMessages as $responseMessage) {
+            self::assertStringContainsString(
+                $responseMessage,
+                $output,
+                "Response does not contain appropriate message component. Expected: '$responseMessage'"
+            );
+        }
+        self::assertStringContainsString("\n", $output, "Output should always end in a new line.");
+
+        return $output;
     }
 
     /**
@@ -147,70 +196,70 @@ class CLITest extends TestCase
     //NOTE: From here on we test all the functionality of cli on a test subject class with functions for us to run.
 
     /**
-     * Assert Bahavour: execute function by name.
-     * The first cli argument will execute a function by the same name on the test subject.
+     * Assert Behaviour: execute function by name.
      */
     public function testRunSimple()
     {
-        $output = `php test/run_TestSubject.php simple`;
-        self::assertEquals(TestSubject::class . '::simple was executed' . "\n", $output);
+        self::assertSuccessfulExecution('simple', '');
     }
 
     /**
-     * If a function with the same name as argument one does not exist then failure message is given,
-     * along with a list of available functions.
+     * Failure if first argument does not match function name.
      */
-    public function testMethodDoesntExist()
+    public function testMethodDoesntExistOrCanNotBeAccessed()
     {
-        $output = `php test/run_TestSubject.php doesntExist`;
-        $this->assertFailureToExecute(
-            $output,
+        $output = $this->assertFailureToExecute(
             'doesntExist',
+            'arguments should not matter',
             'is not a recognized command',
+            //Failure message should include a list of available functions.
             "Functions available:\n",
             ...get_class_methods(TestSubject::class)//all the public methods defined on the class.
         );
-        //private methods should not be listed
-        self::assertStringNotContainsString($output, 'shouldNotBeSeen');
+        //only public methods should not be listed.
+        self::assertStringNotContainsString($output, 'aPrivateMethod');
+        self::assertStringNotContainsString($output, 'aProtectedMethod');
+
+        //same response if you try to execute a private method
+        $this->assertFailureToExecute(
+            'aPrivateMethod',
+            'arguments should not matter',
+            'is not a recognized command',
+            //Failure message should include a list of available functions.
+            "Functions available:\n",
+            ...get_class_methods(TestSubject::class)//all the public methods defined on the class.
+        );
+
+        //same response if you try to execute a protected method
+        $this->assertFailureToExecute(
+            'aProtectedMethod',
+            'arguments should not matter',
+            'is not a recognized command',
+            //Failure message should include a list of available functions.
+            "Functions available:\n",
+            ...get_class_methods(TestSubject::class)//all the public methods defined on the class.
+        );
     }
 
     public function testRequiredParams()
     {
-        $one = 'one';
-        $two = 2;
-        $output = `php test/run_TestSubject.php requiresTwo $one $two`;
-        self::assertEquals(TestSubject::class . "::requiresTwo was executed with params $one $two\n", $output);
-    }
-
-    public function testRequiredParamsMissingWillFailWithAppropriateMessage()
-    {
-        $methodName = 'requiresTwo';
-        $one = 'one';
-        $two = '';
-        $output = `php test/run_TestSubject.php $methodName $one $two`;
-        $this->assertFailureToExecute($output, $methodName, 'Too few arguments');
+        $this->assertSuccessfulExecution('requiresTwo', 'one two', 'one two');
+        $this->assertFailureToExecute('requiresTwo', 'one', 'Too few arguments');
     }
 
     /**
      * Assert Behaviour: Too many arguments.
      * You can not overload a function with more arguments than specified like you normally can in php.
      */
-    public function testTooManyParamsFailsWithAppropriateMessage()
+    public function testTooManyArguments()
     {
-        $methodName = 'requiresTwo';
-        $one = 'one';
-        $two = '2';
-        $three = 'three';
-        $output = `php test/run_TestSubject.php $methodName $one $two $three`;
-        $this->assertFailureToExecute($output, $methodName, 'Too many arguments');
+        $this->assertFailureToExecute('requiresTwo', 'one two three', 'Too many arguments');
     }
 
-    public function testRequiredAndOptional()
+    public function testOptionalArguments()
     {
-        $one = 'big';
-        $two = 'cats';
-        $output = `php test/run_TestSubject.php requiredAndOptional $one $two`;
-        self::assertEquals(TestSubject::class . "::requiredAndOptional was executed with $one, $two\n", $output);
+        self::assertSuccessfulExecution('requiredAndOptional', 'required optional');
+        self::assertSuccessfulExecution('requiredAndOptional', 'required');
     }
 
     // \/ SANITY CHECKS and NOTES \/

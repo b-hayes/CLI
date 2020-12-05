@@ -16,12 +16,7 @@ class TestSubject
 
     public function simple()
     {
-        echo __METHOD__ , " was executed";
-        $func_get_args = func_get_args();
-        if (count($func_get_args) > 0) {
-            echo " with args:\n";
-            print_r($func_get_args);
-        }
+        echo __METHOD__ , " was executed!";
     }
 
     public function requiresTwo($required, $requiredAlso)
@@ -34,7 +29,12 @@ class TestSubject
         echo __METHOD__ , " was executed with $required, $optional";
     }
 
-    private function shouldNotBeSeen()
+    private function aPrivateMethod()
+    {
+        echo __METHOD__ . " was executed!";
+    }
+
+    protected function aProtectedMethod()
     {
         echo __METHOD__ . " was executed!";
     }
@@ -53,5 +53,4 @@ class TestSubject
     {
         echo __METHOD__, " was executed!";
     }
-
 }

@@ -221,12 +221,12 @@ class CLI
             echo "Too many arguments! '", $this->subjectMethod,
                 "' can only accept ", $this->reflectionMethod->getNumberOfParameters(),
                 ' and you gave me ', count($this->subjectArguments), "\n";
-
             if ($this->debug) {
                 echo '❌ Php normally allows excess parameters but CLI is preventing this behaviour. ',
-                ' You should consider using variadic parameters instead of relying on func_get_args.';
+                ' You should consider using variadic parameters instead of relying on func_get_args.',
+                "\n";
             }
-            exit(0);
+            exit(1);
         }
 
         //help?
