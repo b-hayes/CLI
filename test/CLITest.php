@@ -213,33 +213,4 @@ class CLITest extends TestCase
         self::assertEquals(TestSubject::class . "::requiredAndOptional was executed with $one, $two\n", $output);
     }
 
-    public function testPrimitives()
-    {
-        $one = 'true';
-        $two = 'cats';
-        $three = '7';
-        $four = '0.1';
-        $output = `php test/run_TestSubject.php primitives $one $two $three $four`;
-        self::assertEquals(TestSubject::class . "::primitives was executed!\n", $output);
-
-        $one = 'false';
-        $two = 'dogs';
-        $three = '0';
-        $four = '237845';
-        $output = `php test/run_TestSubject.php primitives $one $two $three $four`;
-        self::assertEquals(TestSubject::class . "::primitives was executed!\n", $output);
-    }
-
-    //TODO: might need to setup a custom data type system to get the desired behaviours
-    // I want it to fail if you dont pass ture or false for booleans etc
-    public function testBoolMismatch()
-    {
-        (new TestSubject())->primitives('Notabool', 'string', 5, 0.1);
-        $one = 'notAbool';
-        $two = 'cats';
-        $three = '7';
-        $four = '0.1';
-        $output = `php test/run_TestSubject.php primitives $one $two $three $four`;
-        self::assertEquals("Argument 1 passed to primitives must be of the type boolean, string given\n", $output);
-    }
 }
