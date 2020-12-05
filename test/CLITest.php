@@ -46,8 +46,6 @@ class CLITest extends TestCase
         passthru("php test/run_TestSubject.php $method $arguments", $exitCode);
         $output = ob_get_clean();
 
-        self::assertNotEquals(0, $exitCode, "A failed command should exit with an error code!");
-
         self::assertStringContainsString(
             $method,
             $output,
@@ -67,6 +65,8 @@ class CLITest extends TestCase
             // and that stack traces and uncaught errors are never shown to a normal user.
         }
 
+        self::assertNotEquals(0, $exitCode, "A failed command should exit with an error code!");
+
         return $output;
     }
 
@@ -85,8 +85,6 @@ class CLITest extends TestCase
         passthru("php test/run_TestSubject.php $method $arguments", $exitCode);
         $output = ob_get_clean();
 
-        self::assertEquals(0, $exitCode, "A successful command should exit with code 0!");
-
         //method should have been executed.
         self::assertStringContainsString(
             "$method was executed",
@@ -101,7 +99,10 @@ class CLITest extends TestCase
                 "Response does not contain appropriate message component. Expected: '$responseMessage'"
             );
         }
+
         self::assertStringContainsString("\n", $output, "Output should always end in a new line.");
+
+        self::assertEquals(0, $exitCode, "A successful command should exit with code 0!");
 
         return $output;
     }
@@ -260,6 +261,11 @@ class CLITest extends TestCase
     {
         self::assertSuccessfulExecution('requiredAndOptional', 'required optional');
         self::assertSuccessfulExecution('requiredAndOptional', 'required');
+    }
+
+    public function testInt()
+    {
+        $this->assertSuccessfulExecution('requiresInt', '5');//todo get this working
     }
 
     // \/ SANITY CHECKS and NOTES \/

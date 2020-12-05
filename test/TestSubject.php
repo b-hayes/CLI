@@ -39,12 +39,14 @@ class TestSubject
         echo __METHOD__ . " was executed!";
     }
 
-    public function requiresBool(bool $mustBeBool)
+    //todo: test the following classes next
+
+    public function requiresInt(int $mustBeInt)
     {
         echo __METHOD__, " was executed!";
     }
 
-    public function requiresInt(int $mustBeInt)
+    public function requiresBool(bool $mustBeBool)
     {
         echo __METHOD__, " was executed!";
     }
@@ -52,5 +54,10 @@ class TestSubject
     public function requiresFloat(float $mustBeFloat)
     {
         echo __METHOD__, " was executed!";
+    }
+
+    public function throwsAnError()
+    {
+        throw new \Error(__METHOD__ . " hates you!");
     }
 }
