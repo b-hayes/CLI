@@ -24,14 +24,9 @@ class TestSubject
         }
     }
 
-    public function requiresTwo($required, int $mustBeInt)
+    public function requiresTwo($required, $requiredAlso)
     {
-        echo __METHOD__ , " was executed with params $required $mustBeInt";
-    }
-
-    public function primitives(bool $mustBeBool, string $mustBeString, int $mustBeInt, float $mustBeFloat)
-    {
-        echo __METHOD__ . " was executed!";
+        echo __METHOD__ , " was executed with params $required $requiredAlso";
     }
 
     public function requiredAndOptional($required, $optional = null)
@@ -39,14 +34,24 @@ class TestSubject
         echo __METHOD__ , " was executed with $required, $optional";
     }
 
-    public function causeErrorToFewArguments()
-    {
-        /** @noinspection PhpParamsInspection */
-        $this->requiresTwo('only-one');
-    }
-
     private function shouldNotBeSeen()
     {
         echo __METHOD__ . " was executed!";
     }
+
+    public function requiresBool(bool $mustBeBool)
+    {
+        echo __METHOD__, " was executed!";
+    }
+
+    public function requiresInt(int $mustBeInt)
+    {
+        echo __METHOD__, " was executed!";
+    }
+
+    public function requiresFloat(float $mustBeFloat)
+    {
+        echo __METHOD__, " was executed!";
+    }
+
 }
