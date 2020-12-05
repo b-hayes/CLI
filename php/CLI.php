@@ -6,6 +6,7 @@ namespace BHayes\CLI;
 
 use ArgumentCountError;
 use Exception;
+use phpDocumentor\Reflection\Types\This;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
@@ -67,7 +68,7 @@ class CLI
     /**
      * @var bool
      */
-    private $debug;
+    private $debug = false;
 
     /**
      * @var string
@@ -89,12 +90,12 @@ class CLI
     public function __construct(object $class = null)
     {
         //set the class to interface with
-        $this->subjectClass = $class ??  $this;
+        $this->subjectClass = $class ?? $this;
         //get a reflection of said class
         try {
             $this->reflection = new ReflectionClass($this->subjectClass);
         } catch (ReflectionException $e) {
-            $this->error($e, $e->getMessage());
+            $this->exitWithError($e, $e->getMessage());
         }
 
 
@@ -112,7 +113,6 @@ class CLI
         ) {
             ini_set('log_errors', 0);
         }
-
         //todo: load config from json file if one is specified
     }
 
@@ -190,21 +190,36 @@ class CLI
         //everything after that is a parameter for the function
         $this->subjectArguments = $argv;
 
-        //HELP and other functions rely on the reflection to already exist.
-        //if we cant get a reflection then the method does not exist
+        //HELP and other functions rely on the reflection to already exist so lets just get it now.
         try {
             $this->reflectionMethod = new ReflectionMethod($this->subjectClass, $this->subjectMethod);
         } catch (ReflectionException $e) {
-            echo "[" . $this->subjectMethod . "]" . " is not a recognized command.\n";
+            //if we cant get a reflection then the method does not exist
+            echo "'{$this->subjectMethod}' is not a recognized command!\n";
             $this->listAvailableFunctions();
-            exit(0);
+            exit(1);
+        }
+
+        //method has to be public
+        if (!$this->reflectionMethod->isPublic()) {
+            echo "'{$this->subjectMethod}' is not a recognized command!\n";
+            if ($this->debug) {
+                echo "❌ Only public methods can be executed. Make your methods public.\n";
+            }
+            $this->listAvailableFunctions();
+            exit(1);
         }
 
         //intentionally prevent all functions from being run with any number of arguments by default
         if (count($this->subjectArguments) > $this->reflectionMethod->getNumberOfParameters()) {
-            $errorMessage = 'Too many arguments. Function ' . $this->reflectionMethod->getName() . ' can only accept ' .
-                $this->reflectionMethod->getNumberOfParameters();
-            $this->error(new Exception($errorMessage . ' see line ' . __LINE__), $errorMessage);
+            echo "Too many arguments! '" . $this->subjectMethod .
+                "' can only accept " . $this->reflectionMethod->getNumberOfParameters() .
+                ' and you gave me ' . count($this->subjectArguments);
+            if ($this->debug) {
+                echo '❌ Php normally allows excess parameters but CLI is preventing this behaviour. ',
+                ' You should consider using variadic parameters instead of relying on func_get_args.';
+            }
+            exit(0);
         }
 
         //CLI RESERVED OPTIONS
@@ -230,40 +245,17 @@ class CLI
 
     private function execute()
     {
-        if (! method_exists($this->subjectClass, $this->subjectMethod)) {
-            echo "[",$this->subjectMethod,"]", " is not a recognized function!\n";
-            $this->listAvailableFunctions();
-            exit(1);
-        }
-
-        try {
-            $reflectionMethod = new ReflectionMethod($this->subjectClass, $this->subjectMethod);
-            if (!$reflectionMethod->isPublic()) {
-                //method has to be public
-                echo "[",$this->subjectMethod,"]", " is not a recognized function!\n";
-                $this->listAvailableFunctions();
-                exit(1);
-            }
-
-//            $result = $reflectionMethod->invoke($this->class, ...$this->params);
-            //Note: using reflection bypasses strict type declaration, so we must call it in php only.
-            $result = $this->subjectClass->{$this->subjectMethod}(...$this->subjectArguments);
-            print_r($result);
-            echo "\n";
-            exit(0);
-        } catch (ArgumentCountError $argumentCountError) {
-            $message = str_replace(['()', get_class($this->subjectClass), '::'], "", $argumentCountError->getMessage());
-            $this->error($argumentCountError, $message);
-        } catch (\TypeError $typeError) {
-            $message = str_replace(['()', get_class($this->subjectClass), '::'], "", $typeError->getMessage());
-            $this->error($typeError, $message);
-        }
+        $result = $this->subjectClass->{$this->subjectMethod}(...$this->subjectArguments);
+        print_r($result);
+        echo "\n";
+        exit(0);
     }
 
     /**
      * Replicates the readline function form the readline php extension (so the php ext is no longer required)
      *
      * @param null $prompt
+     *
      * @return string
      */
     private function readline($prompt = null)
@@ -278,9 +270,10 @@ class CLI
     /**
      * Prompts the user for keyboard input.
      *
-     * @param string $message a prompt messages to display
-     * @param string $default if set will show up in prompt
-     * @param bool $lowercase if true returns input as lowercase
+     * @param string $message   a prompt messages to display
+     * @param string $default   if set will show up in prompt
+     * @param bool   $lowercase if true returns input as lowercase
+     *
      * @return string
      */
     public function prompt(string $message = 'enter response>', string $default = '', bool $lowercase = true): string
@@ -302,35 +295,50 @@ class CLI
     }
 
     /**
-     * Display error message depending on input and debug settings.
-     * - always outputs $printMessage when specified.
-     * - if debug mode is on then also prints the exception message.
-     * - if logs are enabled in php ini a log entry is also created
+     * Displays error message depending on input and debug settings.
      *
-     * @param Throwable $e
-     * @param string|null $printMessage If null the exception message is used.
+     * - always outputs $printMessage.
+     * - always ensures output ends with a new line.
+     * - If an error/exception is provided:
+     *      - if debug mode is on, then the internal error message is displayed.
+     *      - if logs are enabled in php ini the internal error is logged.
+     *
+     * @param string|null    $printMessage If null the exception message is used.
+     * @param Throwable|null $throwable
      */
-    private function error(Throwable $e, string $printMessage = null)
+    private function exitWithError(string $printMessage, Throwable $throwable = null)
     {
-        if ($printMessage) {
-            //todo: add some colour with a print function
-            //todo: is this even necessary? should exceptions just fall back to php reporting?
-            echo $printMessage, "\n";
+        echo $printMessage, "\n";//todo: add some colour with a special print function?
 
-            //provide the ability to specify the exit code with an exception but dont let an error exit with 0.
-            $code = $e->getCode();
-            if ($code < 1) {
-                $code = 1;
+        if (!$throwable) {
+            if ($this->debug) {
+                echo "🤷 No additional error information reported.\n";
             }
-            exit($code);
+            exit(1);
         }
 
-        //todo: possibly elevate all errors to exceptions to handle every possible scenario
+        if ($this->debug) {
+            echo "❌ ", get_class($throwable),
+            " {$throwable->getMessage()} in {$throwable->getFile()} on line {$throwable->getLine()}\n";
+            print_r($throwable->getTraceAsString());
+            echo "\n";
+        }
+
+        //use default php error log
+        if (ini_get('log_errors')) {
+            error_log(
+                'CLI Execution Error: ' . get_class($throwable) .
+                ' ' . $throwable->getMessage() . ' ' . $throwable->getTraceAsString()
+            );
+            if ($this->debug) {
+                echo "Errors like this are also being logged according to in php.ini settings.";
+            }
+        }
+
+        //allow exit code from exception but never exit with 0.
+        exit($throwable->getCode() ?: 1);
     }
 
-    /**
-     * Display basic commandline use.
-     */
     private function usage()
     {
         $usage =
@@ -363,51 +371,7 @@ class CLI
             exit(0);
         } else {
             echo $this->reflectionMethod->getDocComment()
-//                ?: $this->reflectionMethod->__toString() //not useful unless there params and exposes class names
                 ?: "No documentation found for [{$this->reflectionMethod->getName()}] \n";
         }
-    }
-
-    private function runWithErrorHandling()
-    {
-        try {
-            $this->run();
-        } catch (\Exception $exception) {
-            //it is generally assumed that any unhandled \Exception and alike is a general message for the user to see.
-            //todo: should this be the case? or no?
-            $this->exitWithErrorMessage($exception->getMessage(), $exception->getCode(), $exception);
-        } catch (Throwable $throwable) {
-            //These will usually be internal php errors that only developers should see.
-            $this->exitWithErrorMessage("An unexpected error occurred contact developers for help.");
-        }
-    }
-
-    /**
-     * Used to handle exceptions left uncaught by the running subject.
-     *  - The message is printed to the terminal.
-     *  - The exception code is used as the exit code to allow devs to pass back specific codes form their class.
-     *      Unless it is zero, then error code 1 is used to prevent false positive interpretations by the shell/user.
-     *  - The original exception details are shown if --debug option was used.
-     *
-     * @param string         $userMessage
-     * @param int            $errorCode
-     * @param Throwable|null $throwable
-     */
-    private function exitWithErrorMessage(string $userMessage, int $errorCode = 1, Throwable $throwable = null)
-    {
-        //todo maybe have some colour for error? (perhaps implement a print function for easy colour output)
-        echo $userMessage, "\n";
-
-        if ($this->debug && $throwable) {
-            echo "\n";
-            echo get_class($throwable),": ";
-            echo $throwable->getMessage(), "\n";
-            print_r($throwable->getTraceAsString());
-            echo "\n";
-        } elseif (ini_get('log_errors')) {
-            log('CLI Internal Error: ' . $throwable->getMessage() . ' ' . $throwable->getTraceAsString());
-        }
-
-        exit($errorCode ?: 1);
     }
 }
