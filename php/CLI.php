@@ -11,6 +11,8 @@ use ReflectionException;
 use ReflectionMethod;
 use Throwable;
 
+//TODO: commit a php5.6, 7.0, and 7.2 version? before adding more features and only support 7.4+?
+
 /**
  * Class CLI
  *
@@ -158,22 +160,6 @@ class CLI
         /*
          * Process options/flags according to posix conventions:
          *  https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
-         *
-         * Note: why did I not use built in getopt() function?
-         *      - support for "-x" is not a valid option. Options are:.....
-         *      - options do not get removed from $argv so still have to manually go find and remove them
-         *        before processing the remaining arguments as function parameters.
-         *          -   could however have have if getopt(...) exits remove from arg v I guess but not optimal at all.
-         *      - unable to have unlimited/unrestricted options in the case the
-         *        subject class just wants to check it on the fly or dynamic use with this->optionAsProperty
-         *      - getopt can not detect '--' empty option as passthroughs
-         *        (a common convention when one command runs another)
-         *        eg your class might be a wrapper for running phpunit with default options you like to always have on
-         *        but allows the user to pass through additional options directly to phpunit themselves.
-         *
-         *  I did think perhaps to use getopt() to grab expect valid options and then check fo any left over ones,
-         *  but then getopt doesnt remove any options you grab so you still need to manually check ever argv
-         *  scenario to enable the feature of "-x is not a valid option"
          */
         foreach ($argv as $key => $arg) {
             //check for --long-options first
@@ -191,12 +177,10 @@ class CLI
                 unset($argv[$key]);
                 continue;
             }
-            //todo: options can have arguments eg, mysql -u username,
-            // need to detect if an option requires a param. (could also use getopt function for this?)
+            //todo: support options with arguments eg. mysql -u username eg2. -files ...fileNames.
             /*
              * Note: thinking about the best way to achieve this would be to use typed properties from
              *  Php7.4 but i might do without this, releaser a php7.2 version first.
-             * TODO: commit a php-5.6 version then a 7.0 version before adding more features and only support 7.4+
              */
         }
 
