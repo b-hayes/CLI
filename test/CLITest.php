@@ -54,6 +54,7 @@ class CLITest extends TestCase
                 "Failure message does not contain appropriate message component. Expected: '$expectedErrorMessage'"
             );
         }
+        self::assertStringContainsString("\n", $output, "Output should always end in a new line");
     }
 
     /**

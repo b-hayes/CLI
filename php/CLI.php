@@ -184,6 +184,12 @@ class CLI
              */
         }
 
+        //CLI RESERVED OPTIONS
+        //debug messages from CLI class
+        if (in_array('debug', $this->options)) {
+            $this->debug = true;
+        }
+
         //the very next argument should be the class method to call
         $this->subjectMethod = array_shift($argv);
 
@@ -203,29 +209,24 @@ class CLI
         //method has to be public
         if (!$this->reflectionMethod->isPublic()) {
             echo "'{$this->subjectMethod}' is not a recognized command!\n";
+            $this->listAvailableFunctions();
             if ($this->debug) {
                 echo "❌ Only public methods can be executed. Make your methods public.\n";
             }
-            $this->listAvailableFunctions();
             exit(1);
         }
 
         //intentionally prevent all functions from being run with any number of arguments by default
         if (count($this->subjectArguments) > $this->reflectionMethod->getNumberOfParameters()) {
-            echo "Too many arguments! '" . $this->subjectMethod .
-                "' can only accept " . $this->reflectionMethod->getNumberOfParameters() .
-                ' and you gave me ' . count($this->subjectArguments);
+            echo "Too many arguments! '", $this->subjectMethod,
+                "' can only accept ", $this->reflectionMethod->getNumberOfParameters(),
+                ' and you gave me ', count($this->subjectArguments), "\n";
+
             if ($this->debug) {
                 echo '❌ Php normally allows excess parameters but CLI is preventing this behaviour. ',
                 ' You should consider using variadic parameters instead of relying on func_get_args.';
             }
             exit(0);
-        }
-
-        //CLI RESERVED OPTIONS
-        //debug messages from CLI class
-        if (in_array('debug', $this->options)) {
-            $this->debug = true;
         }
 
         //help?
