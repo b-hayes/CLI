@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace BHayes\CLI;
 
 use ArgumentCountError;
@@ -22,9 +24,11 @@ use Throwable;
 class CLI
 {
     /**
+     * This is the class that CLI will be allowing the user to interact with.
+     *
      * @var object
      */
-    private $class;
+    private $subjectClass;
 
     /**
      * @var ReflectionClass
@@ -41,7 +45,7 @@ class CLI
     /**
      * @var string|null
      */
-    private $function;
+    private $subjectMethod;
 
     /**
      * @var array
@@ -51,7 +55,7 @@ class CLI
     /**
      * @var array
      */
-    private $params = [];
+    private $subjectArguments = [];
 
     /**
      * @var ReflectionMethod
@@ -83,10 +87,10 @@ class CLI
     public function __construct(object $class = null)
     {
         //set the class to interface with
-        $this->class = $class ??  $this;
+        $this->subjectClass = $class ??  $this;
         //get a reflection of said class
         try {
-            $this->reflection = new ReflectionClass($this->class);
+            $this->reflection = new ReflectionClass($this->subjectClass);
         } catch (ReflectionException $e) {
             $this->error($e, $e->getMessage());
         }
@@ -197,23 +201,23 @@ class CLI
         }
 
         //the very next argument should be the class method to call
-        $this->function = array_shift($argv);
+        $this->subjectMethod = array_shift($argv);
 
         //everything after that is a parameter for the function
-        $this->params = $argv;
+        $this->subjectArguments = $argv;
 
         //HELP and other functions rely on the reflection to already exist.
         //if we cant get a reflection then the method does not exist
         try {
-            $this->reflectionMethod = new ReflectionMethod($this->class, $this->function);
+            $this->reflectionMethod = new ReflectionMethod($this->subjectClass, $this->subjectMethod);
         } catch (ReflectionException $e) {
-            echo "[" . $this->function . "]" . " is not a recognized command.\n";
+            echo "[" . $this->subjectMethod . "]" . " is not a recognized command.\n";
             $this->listAvailableFunctions();
             exit(0);
         }
 
         //intentionally prevent all functions from being run with any number of arguments by default
-        if (count($this->params) > $this->reflectionMethod->getNumberOfParameters()) {
+        if (count($this->subjectArguments) > $this->reflectionMethod->getNumberOfParameters()) {
             $errorMessage = 'Too many arguments. Function ' . $this->reflectionMethod->getName() . ' can only accept ' .
                 $this->reflectionMethod->getNumberOfParameters();
             $this->error(new Exception($errorMessage . ' see line ' . __LINE__), $errorMessage);
@@ -231,7 +235,7 @@ class CLI
             exit(0);
         }
 
-        if (!$this->function) {
+        if (!$this->subjectMethod) {
             echo "No function was specified.\n";
             $this->listAvailableFunctions();
             exit(1);
@@ -242,30 +246,32 @@ class CLI
 
     private function execute()
     {
-        if (! method_exists($this->class, $this->function)) {
-            echo "[",$this->function,"]", " is not a recognized function!\n";
+        if (! method_exists($this->subjectClass, $this->subjectMethod)) {
+            echo "[",$this->subjectMethod,"]", " is not a recognized function!\n";
             $this->listAvailableFunctions();
             exit(1);
         }
 
         try {
-            $reflectionMethod = new ReflectionMethod($this->class, $this->function);
+            $reflectionMethod = new ReflectionMethod($this->subjectClass, $this->subjectMethod);
             if (!$reflectionMethod->isPublic()) {
                 //method has to be public
-                echo "[",$this->function,"]", " is not a recognized function!\n";
+                echo "[",$this->subjectMethod,"]", " is not a recognized function!\n";
                 $this->listAvailableFunctions();
                 exit(1);
             }
 
-            $result = $reflectionMethod->invoke($this->class, ...$this->params);
+//            $result = $reflectionMethod->invoke($this->class, ...$this->params);
+            //Note: using reflection bypasses strict type declaration, so we must call it in php only.
+            $result = $this->subjectClass->{$this->subjectMethod}(...$this->subjectArguments);
             print_r($result);
             echo "\n";
             exit(0);
         } catch (ArgumentCountError $argumentCountError) {
-            $message = str_replace(['()', get_class($this->class), '::'], "", $argumentCountError->getMessage());
+            $message = str_replace(['()', get_class($this->subjectClass), '::'], "", $argumentCountError->getMessage());
             $this->error($argumentCountError, $message);
         } catch (\TypeError $typeError) {
-            $message = str_replace(['()', get_class($this->class), '::'], "", $typeError->getMessage());
+            $message = str_replace(['()', get_class($this->subjectClass), '::'], "", $typeError->getMessage());
             $this->error($typeError, $message);
         }
     }
@@ -302,7 +308,7 @@ class CLI
         if (strlen($readline) === 0) {
             $readline = $default;
         }
-        if (strtolower($readline === 'exit')) {
+        if (strtolower($readline) === 'exit') {
             exit();
         }
         if ($lowercase) {
@@ -344,7 +350,7 @@ class CLI
     private function usage()
     {
         $usage =
-            $this->class->usage
+            $this->subjectClass->usage
             ?? $this->reflection->getDocComment()
             ?? "usage: " . $this->initiator . "[function] [-?][operands...]";
         echo $usage, "\n";

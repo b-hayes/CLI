@@ -21,6 +21,43 @@ class CLITest extends TestCase
 
 
     /**
+     * Used only for testing the prompt function.
+     *
+     * @param $stringOrFile
+     */
+    private function setInput($stringOrFile): void
+    {
+        if (is_file($stringOrFile)) {
+            $this->cli->inputStream = $stringOrFile;
+            return;
+        }
+        $this->cli->inputStream = 'data://text/plain,' . $stringOrFile;
+    }
+
+    /**
+     * This is a helper to ensure that I am asserting failure messages for the correct function name.
+     *
+     * @param       $output
+     * @param       $methodNameCalled
+     * @param mixed ...$expectedErrorMessages
+     */
+    private function assertFailureToExecute($output, $methodNameCalled, ...$expectedErrorMessages)
+    {
+        self::assertStringContainsString(
+            $methodNameCalled,
+            $output,
+            "Failure message does not contain the correct method name. Expected '$methodNameCalled'"
+        );
+        foreach ($expectedErrorMessages as $expectedErrorMessage) {
+            self::assertStringContainsString(
+                $expectedErrorMessage,
+                $output,
+                "Failure message does not contain appropriate message component. Expected: '$expectedErrorMessage'"
+            );
+        }
+    }
+
+    /**
      * This is the method that the prompt/readline function uses internally.
      * (this was a temporary test setup before I made the input stream swappable)
      */
@@ -107,26 +144,34 @@ class CLITest extends TestCase
         self::assertEquals("A Mixed Case Value", $input);
     }
 
+    //NOTE: From here on we test all the functionality of cli on a test subject class with functions for us to run.
+
     /**
-     * Used only for testing the prompt function.
-     *
-     * @param $stringOrFile
+     * Assert Bahavour: execute function by name.
+     * The first cli argument will execute a function by the same name on the test subject.
      */
-    private function setInput($stringOrFile): void
-    {
-        if (is_file($stringOrFile)) {
-            $this->cli->inputStream = $stringOrFile;
-            return;
-        }
-        $this->cli->inputStream = 'data://text/plain,' . $stringOrFile;
-    }
-
-    //NOTE: Test all the functionality of cli on a test subject.
-
     public function testRunSimple()
     {
         $output = `php test/run_TestSubject.php simple`;
         self::assertEquals(TestSubject::class . '::simple was executed' . "\n", $output);
+    }
+
+    /**
+     * If a function with the same name as argument one does not exist then failure message is given,
+     * along with a list of available functions.
+     */
+    public function testMethodDoesntExist()
+    {
+        $output = `php test/run_TestSubject.php doesntExist`;
+        $this->assertFailureToExecute(
+            $output,
+            'doesntExist',
+            'is not a recognized command',
+            "Functions available:\n",
+            ...get_class_methods(TestSubject::class)//all the public methods defined on the class.
+        );
+        //private methods should not be listed
+        self::assertStringNotContainsString($output, 'shouldNotBeSeen');
     }
 
     public function testRequiredParams()
@@ -139,27 +184,33 @@ class CLITest extends TestCase
 
     public function testRequiredParamsMissingWillFailWithAppropriateMessage()
     {
+        $methodName = 'requiresTwo';
         $one = 'one';
         $two = '';
-        $output = `php test/run_TestSubject.php requiresTwo $one $two`;
-        self::assertEquals("Too few arguments to function requiresTwo, 1 passed and exactly 2 expected\n", $output);
+        $output = `php test/run_TestSubject.php $methodName $one $two`;
+        $this->assertFailureToExecute($output, $methodName, 'Too few arguments');
     }
 
+    /**
+     * Assert Behaviour: Too many arguments.
+     * You can not overload a function with more arguments than specified like you normally can in php.
+     */
     public function testTooManyParamsFailsWithAppropriateMessage()
     {
+        $methodName = 'requiresTwo';
         $one = 'one';
         $two = '2';
         $three = 'three';
-        $output = `php test/run_TestSubject.php requiresTwo $one $two $three`;
-        self::assertEquals("Too many arguments. Function requiresTwo can only accept 2\n", $output);
+        $output = `php test/run_TestSubject.php $methodName $one $two $three`;
+        $this->assertFailureToExecute($output, $methodName, 'Too many arguments');
     }
 
-    public function testIncorrectDataTypeFailsWithAppropriateMessage()
+    public function testRequiredAndOptional()
     {
-        $one = 'one';
-        $two = 'two';
-        $output = `php test/run_TestSubject.php requiresTwo $one $two`;
-        self::assertEquals("Argument 2 passed to requiresTwo must be of the type integer, string given\n", $output);
+        $one = 'big';
+        $two = 'cats';
+        $output = `php test/run_TestSubject.php requiredAndOptional $one $two`;
+        self::assertEquals(TestSubject::class . "::requiredAndOptional was executed with $one, $two\n", $output);
     }
 
     public function testPrimitives()
@@ -179,13 +230,16 @@ class CLITest extends TestCase
         self::assertEquals(TestSubject::class . "::primitives was executed!\n", $output);
     }
 
+    //TODO: might need to setup a custom data type system to get the desired behaviours
+    // I want it to fail if you dont pass ture or false for booleans etc
     public function testBoolMismatch()
     {
+        (new TestSubject())->primitives('Notabool', 'string', 5, 0.1);
         $one = 'notAbool';
         $two = 'cats';
         $three = '7';
         $four = '0.1';
         $output = `php test/run_TestSubject.php primitives $one $two $three $four`;
-        self::assertEquals(TestSubject::class . "::primitives was executed! was executed!\n", $output);
+        self::assertEquals("Argument 1 passed to primitives must be of the type boolean, string given\n", $output);
     }
 }
