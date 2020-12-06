@@ -86,6 +86,8 @@ class CLI
      *  the json file can contain default values for method arguments.
      *
      * @param object|null $class if unspecified, $this is used.
+     *
+     * @throws Throwable
      */
     public function __construct(object $class = null)
     {
@@ -339,25 +341,7 @@ class CLI
         echo $printMessage, "\n";//todo: add some colour with a special print function?
 
         if ($this->debug) {
-//            if (ini_get('display_errors')) {
-//                //if dev is used to seeing errors in terminal keep their usual output..
-//                throw $throwable;
-//            }
-            echo "❌ ", get_class($throwable),
-            " {$throwable->getMessage()} in {$throwable->getFile()} on line {$throwable->getLine()}\n";
-            print_r($throwable->getTraceAsString());
-            echo "\n";
-        }
-
-        //use default php error log
-        if (ini_get('log_errors')) {
-            error_log(
-                'CLI Execution Error: ' . get_class($throwable) .
-                ' ' . $throwable->getMessage() . ' ' . $throwable->getTraceAsString()
-            );
-            if ($this->debug) {
-                echo "Errors like this are also being logged according to in php.ini settings.";
-            }
+            throw $throwable;
         }
 
         //allow exit code from exception but never exit with 0.
