@@ -267,6 +267,7 @@ class CLITest extends TestCase
     {
         $this->assertSuccessfulExecution('requiresInt', '5');
         $this->assertFailureToExecute('requiresInt', 'five', 'must be of the type int');
+        $this->assertFailureToExecute('requiresInt', '5.5', 'must be of the type int');
     }
 
     // \/ SANITY CHECKS and NOTES \/
