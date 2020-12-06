@@ -263,10 +263,18 @@ class CLI
 
     private function execute()
     {
-        $result = $this->subjectClass->{$this->subjectMethod}(...$this->subjectArguments);
-        print_r($result);
-        echo "\n";
-        exit(0);
+        try {
+            $result = $this->subjectClass->{$this->subjectMethod}(...$this->subjectArguments);
+            print_r($result);
+            echo "\n";
+            exit(0);
+        } catch (Throwable $throwable) {
+            $this->exitWithError(
+                "Failed to execute '{$this->subjectMethod}', the program crashed." .
+                " Please contact the developers if this keeps happening.",
+                $throwable
+            );
+        }
     }
 
     /**
@@ -323,19 +331,18 @@ class CLI
      *
      * @param string|null    $printMessage If null the exception message is used.
      * @param Throwable|null $throwable
+     *
+     * @throws Throwable
      */
-    private function exitWithError(string $printMessage, Throwable $throwable = null)
+    private function exitWithError(string $printMessage, Throwable $throwable)
     {
         echo $printMessage, "\n";//todo: add some colour with a special print function?
 
-        if (!$throwable) {
-            if ($this->debug) {
-                echo "🤷 No additional error information reported.\n";
-            }
-            exit(1);
-        }
-
         if ($this->debug) {
+//            if (ini_get('display_errors')) {
+//                //if dev is used to seeing errors in terminal keep their usual output..
+//                throw $throwable;
+//            }
             echo "❌ ", get_class($throwable),
             " {$throwable->getMessage()} in {$throwable->getFile()} on line {$throwable->getLine()}\n";
             print_r($throwable->getTraceAsString());

@@ -292,7 +292,18 @@ class CLITest extends TestCase
 
     public function testInternalError()
     {
-        $this->assertFailureToExecute('throwsAnError', '');
+        $output = $this->assertFailureToExecute(
+            'throwsAnError',
+            '',
+            'the program crashed'
+        );
+        self::assertStringNotContainsString(
+            ' hates you!',
+            $output,
+            "❌ Internal error information should be hidden rom the user!"
+        );
+        //debug mode should provide the internal error details
+        $this->assertFailureToExecute('throwsAnError', '--debug', 'throwsAnError hates you!');
     }
 
     // \/ SANITY CHECKS and NOTES \/
