@@ -142,6 +142,8 @@ class CLI
      *   --debug option for those developing a cli application using this as the executor
      *      todo displays additional information from internal errors
      *       and sometimes provides advice for CLI usage when it refuses to execute a command etc.
+     *
+     * @throws Throwable
      */
     public function run()
     {
@@ -264,11 +266,21 @@ class CLI
             if ($reflectionType !== 'string') {
                 $this->subjectArguments[$pos] = json_decode($this->subjectArguments[$pos]);
             }
+            if (stripos(getType($this->subjectArguments[$pos]), "$reflectionType") === false) {
+                echo "Argument $pos must be of the type $reflectionType.";
+                $this->help();
+                exit(1);
+            }
         }
 
         $this->execute();
     }
 
+    /**
+     * Runs the method.
+     *
+     * @throws Throwable
+     */
     private function execute()
     {
         try {
@@ -292,7 +304,7 @@ class CLI
      *
      * @return string
      */
-    private function readline($prompt = null)
+    private function readline($prompt = null): string
     {
         if ($prompt) {
             echo $prompt;
@@ -386,6 +398,7 @@ class CLI
     {
         if (!$this->reflectionMethod) {
             $this->usage();
+            return;
         }
 
         if ($this->reflectionMethod->getDocComment()) {

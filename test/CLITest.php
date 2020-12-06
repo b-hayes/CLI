@@ -254,8 +254,8 @@ class CLITest extends TestCase
             'one',
             'Too few arguments',
             //the name of the params should be listed as part of help for the function
-            '$required',
-            '$requiredAlso'
+            'required',
+            'requiredAlso'
         );
     }
 
