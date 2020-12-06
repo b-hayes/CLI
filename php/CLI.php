@@ -257,9 +257,6 @@ class CLI
             exit(1);
         }
 
-        //TODO:
-        //  should I revert back to relying on type errors
-        //  and check the back trace instead to make sure it comes from here and not nested execution?
         //arguments must be able to pass strict scalar typing.
         foreach ($this->reflectionMethod->getParameters() as $pos => $reflectionParameter) {
             $reflectionType = $reflectionParameter->getType();
@@ -268,11 +265,6 @@ class CLI
             }
             if ($reflectionType !== 'string') {
                 $this->subjectArguments[$pos] = json_decode($this->subjectArguments[$pos]);
-            }
-            if (stripos(getType($this->subjectArguments[$pos]), "$reflectionType") === false) {
-                echo "Argument $pos must be of the type $reflectionType.";
-                $this->help();
-                exit(1);
             }
         }
 
@@ -292,6 +284,26 @@ class CLI
             echo "\n";
             exit(0);
         } catch (Throwable $throwable) {
+            //Is it an error caused user input?
+            if (
+                $throwable instanceof \TypeError &&
+                strpos($throwable->getMessage(), $this->subjectMethod) !== false &&
+                isset($throwable->getTrace()[1]) &&
+                $throwable->getTrace()[1]['file'] === __FILE__ &&
+                $throwable->getTrace()[1]['function'] === __FUNCTION__
+            ) {
+                //We caused the type error based on the users input so lets tell them its their fault.
+                $message = str_replace(
+                    ' passed to ' . get_class($this->subjectClass) . "::{$this->subjectMethod}()",
+                    '',
+                    $throwable->getMessage()
+                );
+                echo '❌ ' . explode(', ', $message)[0], ". ";
+                $this->help();
+                exit(1);
+            }
+
+            //its a real error
             $this->exitWithError(
                 "Failed to execute '{$this->subjectMethod}', the program crashed." .
                 " Please contact the developers if this keeps happening.",
