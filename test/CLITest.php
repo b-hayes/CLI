@@ -284,6 +284,14 @@ class CLITest extends TestCase
         $this->assertFailureToExecute('requiresBool', 'null', 'must be of the type bool');
     }
 
+    public function testFloat()
+    {
+        $this->assertSuccessfulExecution('requiresFloat', '1.1');
+        $this->assertSuccessfulExecution('requiresFloat', '1');
+        $this->assertFailureToExecute('requiresFloat', '1f');
+        $this->assertFailureToExecute('requiresFloat', 'one');
+    }
+
     // \/ SANITY CHECKS and NOTES \/
 
     public function testNeverUseReflectionToExecute()
