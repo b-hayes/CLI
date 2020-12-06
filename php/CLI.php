@@ -238,8 +238,8 @@ class CLI
         //intentionally prevent all functions from being run with any number of arguments by default
         if (count($this->subjectArguments) > $this->reflectionMethod->getNumberOfParameters()) {
             echo "Too many arguments! '", $this->subjectMethod,
-                "' can only accept ", $this->reflectionMethod->getNumberOfParameters(),
-                ' and you gave me ', count($this->subjectArguments), "\n";
+            "' can only accept ", $this->reflectionMethod->getNumberOfParameters(),
+            ' and you gave me ', count($this->subjectArguments), "\n";
             if ($this->debug) {
                 echo '❌ Php normally allows excess parameters but CLI is preventing this behaviour. ',
                 ' You should consider using variadic parameters instead of relying on func_get_args.',
@@ -248,6 +248,12 @@ class CLI
             exit(1);
         }
 
+        //prevent too few arguments instead of catching Argument error.
+        if (count($this->subjectArguments) < $this->reflectionMethod->getNumberOfRequiredParameters()) {
+            echo "❌ Too few arguments. ";
+            $this->help();
+            exit(1);
+        }
 
         //arguments must be able to pass strict scalar typing.
         foreach ($this->reflectionMethod->getParameters() as $pos => $reflectionParameter) {
@@ -373,14 +379,22 @@ class CLI
         }
     }
 
+    /**
+     * Prints doc blocks or derives details from the class definition to guide the user.
+     */
     private function help()
     {
         if (!$this->reflectionMethod) {
             $this->usage();
-            exit(0);
-        } else {
-            echo $this->reflectionMethod->getDocComment()
-                ?: "No documentation found for [{$this->reflectionMethod->getName()}] \n";
+        }
+
+        if ($this->reflectionMethod->getDocComment()) {
+            echo $this->reflectionMethod->getDocComment(), "\n";
+        }
+
+        echo "'{$this->subjectMethod}' has the following parameters:\n";
+        foreach ($this->reflectionMethod->getParameters() as $reflectionParameter) {
+            echo $reflectionParameter, "\n";
         }
     }
 }

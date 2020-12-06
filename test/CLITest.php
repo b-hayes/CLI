@@ -249,7 +249,14 @@ class CLITest extends TestCase
     public function testRequiredParams()
     {
         $this->assertSuccessfulExecution('requiresTwo', 'one two', 'one two');
-        $this->assertFailureToExecute('requiresTwo', 'one', 'Too few arguments');
+        $this->assertFailureToExecute(
+            'requiresTwo',
+            'one',
+            'Too few arguments',
+            //the name of the params should be listed as part of help for the function
+            '$required',
+            '$requiredAlso'
+        );
     }
 
     public function testTooManyArguments()
