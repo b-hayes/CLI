@@ -249,7 +249,11 @@ class CLI
 
         //arguments must be able to pass strict scalar typing.
         foreach ($this->reflectionMethod->getParameters() as $pos => $reflectionParameter) {
-            if ($reflectionParameter->getType() !== 'string') {
+            $reflectionType = $reflectionParameter->getType();
+            if (empty($reflectionType) || $reflectionType === 'string' || $reflectionType === 'mixed') {
+                continue;//no conversion needed.
+            }
+            if ($reflectionType !== 'string') {
                 $this->subjectArguments[$pos] = json_decode($this->subjectArguments[$pos]);
             }
         }

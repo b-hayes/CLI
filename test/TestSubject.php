@@ -63,4 +63,7 @@ class TestSubject
     {
         throw new \Error(__METHOD__ . " hates you!");
     }
+
+    //TODO: test a method with the MIXED types when moving to php8
+    //TODO: test a method with the UNION types when moving to php8
 }
