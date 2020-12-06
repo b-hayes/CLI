@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BHayes\CLI\Test;
 
 /**
@@ -44,6 +46,7 @@ class TestSubject
     public function requiresInt(int $mustBeInt)
     {
         echo __METHOD__, " was executed!";
+        var_dump($mustBeInt);
     }
 
     public function requiresBool(bool $mustBeBool)

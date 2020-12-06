@@ -91,13 +91,16 @@ class CLI
     {
         //set the class to interface with
         $this->subjectClass = $class ?? $this;
+
         //get a reflection of said class
         try {
             $this->reflection = new ReflectionClass($this->subjectClass);
-        } catch (ReflectionException $e) {
-            $this->exitWithError($e, $e->getMessage());
+        } catch (ReflectionException $reflectionException) {
+            $this->exitWithError(
+                "Command Line Interface failed to initialize.",
+                $reflectionException
+            );
         }
-
 
         /*
          * We only want to see errors once in terminal window.
@@ -113,7 +116,7 @@ class CLI
         ) {
             ini_set('log_errors', 0);
         }
-        //todo: load config from json file if one is specified
+        //todo: load config from json file with the same name as the class || if a file is specified
     }
 
     /**
@@ -125,17 +128,18 @@ class CLI
      *  - a list of the public methods on the class is printed.
      *
      * If the minimum required parameters are not met OR there are too many arguments then:
-     *  - the arguments for the method are listed.
+     *  - todo the arguments for the method are listed.
      *
      * Options / Flags are recognizes as per the posix standard:
      *  https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
-     *
-     * Options are not passed along as method params.
-     *  They are stored in memory for the class to decide if it shall use them or not.
+     *  todo Options are stored in for the class to decide if it shall use them or not.
      *
      * RESERVED OPTIONS
      *  There are a number of reserved options that this CLI class uses such as the,
      *   --help option that will display additional information about any given method.
+     *   --debug option for those developing a cli application using this as the executor
+     *      todo displays additional information from internal errors
+     *       and sometimes provides advice for CLI usage when it refuses to execute a command etc.
      */
     public function run()
     {
@@ -151,7 +155,7 @@ class CLI
             exit(0);
         }
 
-        //if there is only one argument and it is a help option then just show help and exit (faster)
+        //if there is only one argument and it is a help option then just show help now and exit (faster)
         if (count($argv) === 1 && $argv[0] === '--help') {
             $this->help();
             exit(0);
@@ -192,11 +196,18 @@ class CLI
 
         //the very next argument should be the class method to call
         $this->subjectMethod = array_shift($argv);
+        if (!$this->subjectMethod) {
+            //todo: might be good in future to allow for _invoke() when no method is specified
+            // just in case there are those who just want the script to run without any arguments?
+            echo "No function was specified.\n";
+            $this->listAvailableFunctions();
+            exit(1);
+        }
 
         //everything after that is a parameter for the function
         $this->subjectArguments = $argv;
 
-        //HELP and other functions rely on the reflection to already exist so lets just get it now.
+        //From here on other functions rely on the reflection method to exist.
         try {
             $this->reflectionMethod = new ReflectionMethod($this->subjectClass, $this->subjectMethod);
         } catch (ReflectionException $e) {
@@ -216,6 +227,12 @@ class CLI
             exit(1);
         }
 
+        //help? should be executed before checking anything else.
+        if (in_array('help', $this->options)) {
+            $this->help();
+            exit(0);
+        }
+
         //intentionally prevent all functions from being run with any number of arguments by default
         if (count($this->subjectArguments) > $this->reflectionMethod->getNumberOfParameters()) {
             echo "Too many arguments! '", $this->subjectMethod,
@@ -226,18 +243,6 @@ class CLI
                 ' You should consider using variadic parameters instead of relying on func_get_args.',
                 "\n";
             }
-            exit(1);
-        }
-
-        //help?
-        if (in_array('help', $this->options)) {
-            $this->help();
-            exit(0);
-        }
-
-        if (!$this->subjectMethod) {
-            echo "No function was specified.\n";
-            $this->listAvailableFunctions();
             exit(1);
         }
 

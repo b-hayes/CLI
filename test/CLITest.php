@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BHayes\CLI\Test;
 
 use BHayes\CLI\CLI;
@@ -39,6 +41,8 @@ class CLITest extends TestCase
      * @param string $method
      * @param string $arguments
      * @param mixed  ...$expectedErrorMessages
+     *
+     * @return false|string
      */
     private function assertFailureToExecute(string $method, string $arguments, string ...$expectedErrorMessages)
     {
@@ -248,10 +252,6 @@ class CLITest extends TestCase
         $this->assertFailureToExecute('requiresTwo', 'one', 'Too few arguments');
     }
 
-    /**
-     * Assert Behaviour: Too many arguments.
-     * You can not overload a function with more arguments than specified like you normally can in php.
-     */
     public function testTooManyArguments()
     {
         $this->assertFailureToExecute('requiresTwo', 'one two three', 'Too many arguments');
@@ -265,7 +265,8 @@ class CLITest extends TestCase
 
     public function testInt()
     {
-        $this->assertSuccessfulExecution('requiresInt', '5');//todo get this working
+        $this->assertSuccessfulExecution('requiresInt', '5');
+        $this->assertFailureToExecute('requiresInt', 'five', 'must be of the type int');
     }
 
     // \/ SANITY CHECKS and NOTES \/
