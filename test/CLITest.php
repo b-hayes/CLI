@@ -279,8 +279,6 @@ class CLITest extends TestCase
         $this->assertFailureToExecute('requiresBool', 'not_a_bool', 'must be of the type bool');
         $this->assertFailureToExecute('requiresBool', '1', 'must be of the type bool');
         $this->assertFailureToExecute('requiresBool', '0', 'must be of the type bool');
-        $this->assertFailureToExecute('requiresBool', 't', 'must be of the type bool');
-        $this->assertFailureToExecute('requiresBool', 'f', 'must be of the type bool');
         $this->assertFailureToExecute('requiresBool', 'null', 'must be of the type bool');
     }
 
