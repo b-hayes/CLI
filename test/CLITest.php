@@ -292,6 +292,11 @@ class CLITest extends TestCase
         $this->assertFailureToExecute('requiresFloat', 'one');
     }
 
+    public function testInternalError()
+    {
+        $this->assertFailureToExecute('throwsAnError', '');
+    }
+
     // \/ SANITY CHECKS and NOTES \/
 
     public function testNeverUseReflectionToExecute()
@@ -301,26 +306,8 @@ class CLITest extends TestCase
         $definition = file_get_contents($fileName);
         self::assertTrue(
             stripos($definition, '->invoke(') === false,
-            "Never use reflection to execute the subject method! Please read comments in this test."
+            "Never use the reflection method to execute the subject method!"
         );
-        /**
-         * So because I'll likely be away from this project for some time I may forget why.
-         *  - reflection bypasses strict type declaration.
-         *  - reflection will break injected dependencies on the subject if provided whole by the user.
-         *
-         * However I'll likely need to use the reflection method due to the complex behaviour I am after.
-         *
-         * I wont be able to rely on catching type and argument errors because:
-         *  - in order to use strict types I'll have to manually convert them from strings before execution.
-         *  - i cant simply use json_encode as strings will break, I need to manually check the types required.
-         *  - I also cant assume that the type/arg errors come from the user passing in bad arguments because:
-         *      - uncaught errors of the same types could occur in the subject
-         *          and these internal should be hidden from a user.
-         *      - even if checking the method name within the error message can not be relied on due to potential
-         *         recursion or simple being executed again at another level.
-         *
-         * TODO: all these edge cases should be tested.
-         */
     }
 
     public function testForBreakingChanges()

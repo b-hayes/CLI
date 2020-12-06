@@ -61,7 +61,10 @@ class TestSubject
         throw new \Error(__METHOD__ . " hates you!");
     }
 
-    //todo: test variadic function
+    public function typedVariadicFunction(int ...$amounts)
+    {
+        echo __METHOD__, " was executed!";
+    }
 
     //TODO: test a method with the MIXED types when moving to php8
     //TODO: test a method with the UNION types when moving to php8
