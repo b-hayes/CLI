@@ -41,8 +41,6 @@ class TestSubject
         echo __METHOD__ . " was executed!";
     }
 
-    //todo: test the following classes next
-
     public function requiresInt(int $mustBeInt)
     {
         echo __METHOD__, " was executed!";
@@ -63,6 +61,8 @@ class TestSubject
     {
         throw new \Error(__METHOD__ . " hates you!");
     }
+
+    //todo: test variadic function
 
     //TODO: test a method with the MIXED types when moving to php8
     //TODO: test a method with the UNION types when moving to php8
