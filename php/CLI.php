@@ -257,6 +257,9 @@ class CLI
             exit(1);
         }
 
+        //TODO:
+        //  should I revert back to relying on type errors
+        //  and check the back trace instead to make sure it comes from here and not nested execution?
         //arguments must be able to pass strict scalar typing.
         foreach ($this->reflectionMethod->getParameters() as $pos => $reflectionParameter) {
             $reflectionType = $reflectionParameter->getType();
