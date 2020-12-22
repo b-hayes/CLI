@@ -419,9 +419,14 @@ class CLI
             echo $this->reflectionMethod->getDocComment(), "\n";
         }
 
-        echo "'{$this->subjectMethod}' has the following parameters:\n";
-        foreach ($this->reflectionMethod->getParameters() as $reflectionParameter) {
-            echo $reflectionParameter, "\n";
+        $reflectionParameters = $this->reflectionMethod->getParameters();
+        if (empty($reflectionParameters)) {
+            echo "'{$this->reflectionMethod->getName()}' does not require any parameters.\n";
+        } else {
+            echo "'{$this->reflectionMethod->getName()}' has the following parameters:\n";
+            foreach ($reflectionParameters as $reflectionParameter) {
+                echo $reflectionParameter, "\n";
+            }
         }
     }
 }
