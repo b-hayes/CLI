@@ -31,6 +31,11 @@ class TestSubject
         echo __METHOD__ , " was executed with $required, $optional";
     }
 
+    public function allOptional(string $optionalString = '', int $optionalInt = 5, object $optionalObject = null)
+    {
+        echo __METHOD__, " was executed!";
+    }
+
     private function aPrivateMethod()
     {
         echo __METHOD__ . " was executed!";

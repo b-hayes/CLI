@@ -264,6 +264,7 @@ class CLITest extends TestCase
     {
         self::assertSuccessfulExecution('requiredAndOptional', 'required optional');
         self::assertSuccessfulExecution('requiredAndOptional', 'required');
+        self::assertSuccessfulExecution('allOptional', '');
     }
 
     public function testInt()
