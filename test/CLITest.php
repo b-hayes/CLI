@@ -316,7 +316,9 @@ class CLITest extends TestCase
             'the program crashed. Please contact the developers'
         );
         // they should also never see the stack trace or file and line info.
-        self::assertStringNotContainsString('cli\test\TestSubject.php', $output);
+        $reflectionClass = new \ReflectionClass(TestSubject::class);
+        $fileName = $reflectionClass->getFileName();
+        self::assertStringNotContainsString($fileName, $output);
         self::assertStringNotContainsString('stack trace', $output);
     }
 
