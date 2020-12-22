@@ -62,12 +62,8 @@ class CLITest extends TestCase
                 "Failure message does not contain appropriate message component. Expected: '$expectedErrorMessage'"
             );
         }
-        self::assertStringContainsString("\n", $output, "Output should always end in a new line.");
 
-        if (strpos($arguments, '--debug') === false) {
-            //todo: assert that the fill class name is not included in error messages displayed to the user.
-            // and that stack traces and uncaught errors are never shown to a normal user.
-        }
+        self::assertStringContainsString("\n", $output, "Output should always end in a new line.");
 
         self::assertNotEquals(0, $exitCode, "A failed command should exit with an error code!");
 
@@ -309,8 +305,19 @@ class CLITest extends TestCase
             $output,
             "❌ Internal error information should be hidden rom the user!"
         );
-        //debug mode should provide the internal error details
+
+        //however with debug mode enabled we should provide the internal error details
         $this->assertFailureToExecute('throwsAnError', '--debug', 'throwsAnError hates you!');
+
+        //A standard user should never see the real error message.
+        $output = $this->assertFailureToExecute(
+            'throwsAnError',
+            '',
+            'the program crashed. Please contact the developers'
+        );
+        // they should also never see the stack trace or file and line info.
+        self::assertStringNotContainsString('cli\test\TestSubject.php', $output);
+        self::assertStringNotContainsString('stack trace', $output);
     }
 
     // \/ SANITY CHECKS and NOTES \/

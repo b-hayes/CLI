@@ -118,7 +118,6 @@ class CLI
         ) {
             ini_set('log_errors', 0);
         }
-        //todo: load config from json file with the same name as the class || if a file is specified
     }
 
     /**
