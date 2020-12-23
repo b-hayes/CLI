@@ -397,8 +397,13 @@ class CLI
 
     private function listAvailableFunctions()
     {
+        $reflectionMethods = $this->reflection->getMethods();
+        if (empty($reflectionMethods)) {
+            echo "{$this->reflection->getShortName()} as no functions for you to execute.";
+            return;
+        }
         echo "Functions available:\n";
-        foreach ($this->reflection->getMethods() as $class_method) {
+        foreach ($reflectionMethods as $class_method) {
             if ($class_method->getName() == '__construct') {
                 continue;//construct is not listed
             }
