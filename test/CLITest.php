@@ -15,10 +15,14 @@ class CLITest extends TestCase
      */
     private $cli;
 
+    /**
+     * @var string
+     */
+    private $command;
+
     public function setUp(): void
     {
-        $this->cli = new CLI();
-        self::assertInstanceOf(CLI::class, $this->cli);
+        $this->command = "php test/run_TestSubject.php";
     }
 
     /**
@@ -47,7 +51,7 @@ class CLITest extends TestCase
     private function assertFailureToExecute(string $method, string $arguments, string ...$expectedErrorMessages)
     {
         ob_start();
-        passthru("php test/run_TestSubject.php $method $arguments", $exitCode);
+        passthru("{$this->command} $method $arguments", $exitCode);
         $output = ob_get_clean();
 
         self::assertStringContainsString(
@@ -82,7 +86,7 @@ class CLITest extends TestCase
     private function assertSuccessfulExecution($method, $arguments, ...$expectedResponseMessages)
     {
         ob_start();
-        passthru("php test/run_TestSubject.php $method $arguments", $exitCode);
+        passthru("{$this->command} $method $arguments", $exitCode);
         $output = ob_get_clean();
 
         //method should have been executed.
@@ -124,6 +128,8 @@ class CLITest extends TestCase
      */
     public function testPrompt()
     {
+        $this->cli = new CLI();//moved here instead od setup since this is the only funciton needing it.
+        // (dramatically increase speed of the rest of the unit tests)
         $prompt = 'enter your name';
 
         //prompt must echo the prompt message and return the input received
@@ -341,5 +347,13 @@ class CLITest extends TestCase
         self::assertTrue(true);
         //todo: alert me if I make any breaking changes once I tag a major version.
         // (check out your old blueprints method that used to do this)
+    }
+
+    public function testBin()
+    {
+        //the bin file is able to run a class by name if specified
+        $this->command = 'php bin/cli ' . TestSubject::class;
+        $this->assertSuccessfulExecution('binCheck', '0');
+        $this->assertFailureToExecute('binCheck', '1');
     }
 }

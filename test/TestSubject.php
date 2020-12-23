@@ -70,7 +70,13 @@ class TestSubject
     {
         echo __METHOD__, " was executed!";
     }
-
     //TODO: test a method with the MIXED types when moving to php8
     //TODO: test a method with the UNION types when moving to php8
+
+    public function binCheck(int $exitCode)
+    {
+        echo __METHOD__ . " was executed!";
+        echo "\n";//because we are about to exit before cli can add the new line on the end of the output
+        exit($exitCode);
+    }
 }

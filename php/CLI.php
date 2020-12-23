@@ -267,7 +267,6 @@ class CLI
                 continue;//no conversion needed.
             }
             if ($reflectionType !== 'string') {
-                var_dump($this->subjectArguments, $this->reflectionMethod->getParameters());
                 $this->subjectArguments[$pos] = json_decode($this->subjectArguments[$pos]);
             }
         }
