@@ -15,6 +15,11 @@ if (php_sapi_name() == 'cli') {
     $argumentOne = $argv[1];
     if (class_exists($argumentOne)){
         $subject = new $argumentOne();
+        //remove the argument before passing control over to the running class.
+        unset($argv[1]);
+        //reset the arrays so the missing argument doesnt break things.
+        $argv = array_values($argv);
+        $argc -= 1;
     }
 
     (new CLI($subject ?? null))->run();
