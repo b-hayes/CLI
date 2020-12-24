@@ -343,6 +343,13 @@ class CLITest extends TestCase
         );
     }
 
+    public function testHelp()
+    {
+        $this->assertSuccessfulExecution('', '--help');
+        $this->assertSuccessfulExecution('', '--help helpCheck', 'This method is used to test the help function.');
+        $this->assertSuccessfulExecution('', '--help noHelpCheck', 'No documentation');
+    }
+
     public function testBin()
     {
         //the bin file is able to run a class by name if specified

@@ -79,4 +79,18 @@ class TestSubject
         echo "\n";//because we are about to exit before cli can add the new line on the end of the output
         exit($exitCode);
     }
+
+    /**
+     * This method is used to test the help function.
+     * It has a doc block that should be displayed to the user.
+     */
+    public function helpCheck()
+    {
+        echo __METHOD__, " was executed!";
+    }
+
+    public function noHelpCheck()// this one has no doc block to display
+    {
+        echo __METHOD__, " was executed!";
+    }
 }

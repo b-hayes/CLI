@@ -416,14 +416,19 @@ class CLI
      */
     private function help()
     {
+        //todo: would be nice if we could somehow paginate the response. Can pass to `| less` in command line but
+        // how can we do that from php? perhaps run self as the command again with help?
         if (!$this->reflectionMethod) {
+            $doc = $this->reflection->getDocComment()
+                ?: "No documentation found for {$this->reflection->getShortName()}";
+            echo $doc, "\n";
             $this->usage();
             return;
         }
 
-        if ($this->reflectionMethod->getDocComment()) {
-            echo $this->reflectionMethod->getDocComment(), "\n";
-        }
+        $doc = $this->reflectionMethod->getDocComment()
+            ?: "No documentation found for {$this->reflectionMethod->getShortName()}";
+        echo $doc, "\n";
 
         $reflectionParameters = $this->reflectionMethod->getParameters();
         if (empty($reflectionParameters)) {
