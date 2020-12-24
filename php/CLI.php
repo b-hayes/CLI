@@ -386,20 +386,17 @@ class CLI
 
     private function usage()
     {
-        $usage =
-            $this->subjectClass->usage
-            ?? $this->reflection->getDocComment()
-            ?? "usage: " . $this->initiator . "[function] [-?][operands...]";
+        $usage = "usage: " . $this->initiator . " [function] [-?][operands...]";
         echo $usage, "\n";
         $this->listAvailableFunctions();
-        echo "Use --help for more information or [function] --help for more specific help.\n";
+        echo "Use --help for more information.\n";
     }
 
     private function listAvailableFunctions()
     {
         $reflectionMethods = $this->reflection->getMethods();
         if (empty($reflectionMethods)) {
-            echo "{$this->reflection->getShortName()} as no functions for you to execute.";
+            echo "{$this->reflection->getShortName()} as no functions for you to execute.\n";
             return;
         }
         echo "Functions available:\n";

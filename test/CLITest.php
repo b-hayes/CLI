@@ -90,11 +90,13 @@ class CLITest extends TestCase
         $output = ob_get_clean();
 
         //method should have been executed.
-        self::assertStringContainsString(
-            "$method was executed",
-            $output,
-            "Expected '$method' to be executed and let us know that it was."
-        );
+        if (!empty($method)) {
+            self::assertStringContainsString(
+                "$method was executed",
+                $output,
+                "Expected '$method' to be executed and let us know that it was."
+            );
+        }
 
         foreach ($expectedResponseMessages as $responseMessage) {
             self::assertStringContainsString(
@@ -329,6 +331,25 @@ class CLITest extends TestCase
         self::assertStringNotContainsString('stack trace', $output);
     }
 
+    public function testUsage()
+    {
+        $this->assertSuccessfulExecution(
+            '',
+            '',
+            //it should mention the following
+            'usage:',
+            'Functions available:',
+            '--help'
+        );
+    }
+
+    public function testBin()
+    {
+        //the bin file is able to run a class by name if specified
+        $this->command = 'php bin/cli ' . TestSubject::class;
+        $this->assertSuccessfulExecution('binCheck', '0');
+        $this->assertFailureToExecute('binCheck', '1');
+    }
     // \/ SANITY CHECKS and NOTES \/
 
     public function testNeverUseReflectionToExecute()
@@ -347,13 +368,5 @@ class CLITest extends TestCase
         self::assertTrue(true);
         //todo: alert me if I make any breaking changes once I tag a major version.
         // (check out your old blueprints method that used to do this)
-    }
-
-    public function testBin()
-    {
-        //the bin file is able to run a class by name if specified
-        $this->command = 'php bin/cli ' . TestSubject::class;
-        $this->assertSuccessfulExecution('binCheck', '0');
-        $this->assertFailureToExecute('binCheck', '1');
     }
 }

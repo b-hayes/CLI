@@ -37,7 +37,8 @@
     },
     "scripts": {
         "style": "phpcs --standard=.phpcs.xml",
-        "test": "phpunit -c test/phpunit.xml test --coverage-html test/report"
+        "test": "phpunit -c test/phpunit.xml test",
+        "test-report": "echo Code coverage will not work for this project since tests are run via shell executions."
     },
     "bin": [
         "bin/cli"
