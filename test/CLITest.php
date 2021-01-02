@@ -353,7 +353,7 @@ class CLITest extends TestCase
     public function testBin()
     {
         //the bin file is able to run a class by name if specified
-        $this->command = 'php bin/cli ' . TestSubject::class;
+        $this->command = 'php bin/cli ' . addslashes(TestSubject::class);
         $this->assertSuccessfulExecution('binCheck', '0');
         $this->assertFailureToExecute('binCheck', '1');
     }
