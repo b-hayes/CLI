@@ -353,10 +353,21 @@ class CLITest extends TestCase
     public function testBin()
     {
         //the bin file is able to run a class by name if specified
-        $this->command = 'php bin/cli ' . addslashes(TestSubject::class);
+
+        //weather or not the user would scape slashes is base don the terminal shell they use.
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            //using Windows to test so we dont need the added slashes
+            $className = TestSubject::class;
+        } else {
+            //we need to escape the slashes for unix shells
+            $className = addslashes(TestSubject::class);
+        }
+
+        $this->command = 'php bin/cli ' . $className;
         $this->assertSuccessfulExecution('binCheck', '0');
         $this->assertFailureToExecute('binCheck', '1');
     }
+
     // \/ SANITY CHECKS and NOTES \/
 
     public function testNeverUseReflectionToExecute()
