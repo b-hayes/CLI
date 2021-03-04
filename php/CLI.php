@@ -350,7 +350,7 @@ class CLI
      * Prompts the user for keyboard input.
      *
      * @param string $message   a prompt messages to display
-     * @param string $default   if set will show up in prompt
+     * @param string $default   if set will show up in prompt as the default response if only enter is pressed
      * @param bool   $lowercase if true returns input as lowercase
      *
      * @return string
@@ -441,15 +441,18 @@ class CLI
             return;
         }
 
+        $shortName = $this->reflectionMethod->getShortName();
         $doc = $this->reflectionMethod->getDocComment()
-            ?: "No documentation found for {$this->reflectionMethod->getShortName()}";
+            ?: "No documentation found for {$shortName}";
+        //strip out tab indents
+        $doc = str_replace("\n    ","\n",$doc);
         echo $doc, "\n";
 
         $reflectionParameters = $this->reflectionMethod->getParameters();
         if (empty($reflectionParameters)) {
-            echo "'{$this->reflectionMethod->getName()}' does not require any parameters.\n";
+            echo "'{$shortName}' does not require any parameters.\n";
         } else {
-            echo "'{$this->reflectionMethod->getName()}' has the following parameters:\n";
+            echo "'{$shortName}' has the following parameters:\n";
             foreach ($reflectionParameters as $reflectionParameter) {
                 echo $reflectionParameter, "\n";
             }
