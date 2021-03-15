@@ -257,7 +257,7 @@ class CLI
 
         //prevent too few arguments instead of catching Argument error.
         if (count($this->subjectArguments) < $this->reflectionMethod->getNumberOfRequiredParameters()) {
-            echo "❌ Too few arguments. ";
+            echo "❌ Too few arguments. \n";
             $this->help();
             exit(1);
         }
@@ -275,9 +275,9 @@ class CLI
             if ($reflectionType instanceof \ReflectionNamedType){
                 $reflectionType = $reflectionType->getName();
             }
-            elseif (get_class($reflectionType) === '\ReflectionUnionType'){
-                throw new \Exception("Union parameter types (and PHPv8 in general) is not supported.");
-            }
+//            elseif (get_class($reflectionType) === '\ReflectionUnionType'){
+//                throw new \Exception("Union parameter types (and PHPv8 in general) is not supported.");
+//            }
             else {
                 //older PHP versions can cast to a string.
                 $reflectionType = (string)$reflectionType;

@@ -1,17 +1,28 @@
 # CLI
-Turns a PHP class into a command line tool.
-Public methods become commands executable by the user.
-Parameters become arguments for the commands.
-Scalar types and required params are enforced for you.
-Doc blocks are displayed when --help option is used.
+Turn your PHP class into an interactive command line tool.
+Create commandline tools in seconds simply by defining a class with some methods.
 
 ## Usage.
 ```php
-(new \BHayes\CLI\CLI( $yourClass ));
+(new \BHayes\CLI\CLI( $yourClass ))->run();
 ```
 
-### Example For wsl/linux/mac:
-Save this file as an executable (chmod +x filename) in your bin path.
+### Examples: (wsl/linux/mac).
+Save these examples as a `testme` file and make it executable `chmod +x ./testme` and run with `./testme`
+```php
+#!/usr/bin/env php
+<?php
+
+require_once 'vendor/autoload.php';
+
+(new BHayes\CLI\CLI(new class(){
+    function hello(){
+        return 'hello ' . `git config user.name` . 'Your amazing!';
+    }
+}))->run();
+```
+
+
 ```php
 #!/usr/bin/env php
 <?php
@@ -21,16 +32,31 @@ declare(strict_types=1);//optional
 require_once 'vendor/autoload.php'; //if installed via composer
 
 /**
- * This is the doccumentation that will apper when you type help.
+ * This is the documentation that will appear when you type --help.
  */
-class example {
+class Example {
+
     /**
-    * This documentation appears if you use --help with tryMe
+    * This one is easy to run.
+    * try runMe with --help to see this text. 
     */
-    public function tryMe(bool $bool, string $string, float $float, int $int){
-        var_dump(func_get_args());
+    public function runMe(string $anything = null) {
+        //either return output or just output directly its up to you.
+        echo "I work with no arguments.";
+        if ($anything !== null) {
+            echo " But thanks for providing me with:";
+            var_dump($anything);
+        }
+    }
+    
+    /**
+    * This command will only run when all the requirements are met.
+    */
+    public function tryMe(bool $bool, string $string, float $float, int $int) {
+        echo "You did it! You gave me bool a string, a float and an int.";
     }
 };
 
-(new BHayes\CLI\CLI(new Example()))->run();
+$cli = new BHayes\CLI\CLI(new Example());
+$cli->run();
 ```
