@@ -196,6 +196,10 @@ class CLI
         if (in_array('debug', $this->options)) {
             $this->debug = true;
         }
+        if (in_array('i', $this->options)) {
+            var_dump($this->options);
+            die("interactive mode");
+        }
 
         //the very next argument should be the class method to call
         $this->subjectMethod = array_shift($argv);
