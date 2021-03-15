@@ -44,7 +44,7 @@ class Example {
         //either return output or just output directly its up to you.
         echo "I work with no arguments.";
         if ($anything !== null) {
-            echo " But thanks for providing me with:";
+            echo " But thanks for providing me with: ";
             var_dump($anything);
         }
     }
