@@ -96,6 +96,8 @@ class CLI
 
         //get a reflection of said class
         try {
+            //todo: would it be worth using reflection object instead so that dynamically created functions can be used as well?
+            // or is this a rabbit whole for an edge use case.....
             $this->reflection = new ReflectionClass($this->subjectClass);
         } catch (ReflectionException $reflectionException) {
             $this->exitWithError(
@@ -266,7 +268,20 @@ class CLI
                 //we have no more arguments to convert.
                 break;
             }
+
             $reflectionType = $reflectionParameter->getType();
+            //Note: supporting php versions with deprecated string casts.
+            // See https://www.php.net/manual/en/reflectiontype.tostring.php
+            if ($reflectionType instanceof \ReflectionNamedType){
+                $reflectionType = $reflectionType->getName();
+            }
+            elseif (get_class($reflectionType) === '\ReflectionUnionType'){
+                throw new \Exception("Union parameter types (and PHPv8 in general) is not supported.");
+            }
+            else {
+                //older PHP versions can cast to a string.
+                $reflectionType = (string)$reflectionType;
+            }
             if (empty($reflectionType) || $reflectionType === 'string' || $reflectionType === 'mixed') {
                 continue;//no conversion needed.
             }
@@ -339,7 +354,7 @@ class CLI
      * Prompts the user for keyboard input.
      *
      * @param string $message   a prompt messages to display
-     * @param string $default   if set will show up in prompt
+     * @param string $default   if set will show up in prompt as the default response if only enter is pressed
      * @param bool   $lowercase if true returns input as lowercase
      *
      * @return string
@@ -430,15 +445,18 @@ class CLI
             return;
         }
 
+        $shortName = $this->reflectionMethod->getShortName();
         $doc = $this->reflectionMethod->getDocComment()
-            ?: "No documentation found for {$this->reflectionMethod->getShortName()}";
+            ?: "No documentation found for {$shortName}";
+        //strip out tab indents
+        $doc = str_replace("\n    ","\n",$doc);
         echo $doc, "\n";
 
         $reflectionParameters = $this->reflectionMethod->getParameters();
         if (empty($reflectionParameters)) {
-            echo "'{$this->reflectionMethod->getName()}' does not require any parameters.\n";
+            echo "'{$shortName}' does not require any parameters.\n";
         } else {
-            echo "'{$this->reflectionMethod->getName()}' has the following parameters:\n";
+            echo "'{$shortName}' has the following parameters:\n";
             foreach ($reflectionParameters as $reflectionParameter) {
                 echo $reflectionParameter, "\n";
             }
