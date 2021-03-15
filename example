@@ -5,7 +5,9 @@ declare(strict_types=1);//optional
 
 require_once 'vendor/autoload.php'; //if installed via composer
 
-//dynamically defined class with functions works but recommend making a real one.
+/**
+ * This is the doccumentation that will apper when you type help.
+ */
 class example {
     /**
     * This documentation appears if you use --help with tryMe

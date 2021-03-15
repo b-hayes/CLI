@@ -20,15 +20,17 @@ declare(strict_types=1);//optional
 
 require_once 'vendor/autoload.php'; //if installed via composer
 
-//dynamically defined class with functions works but recommend making a real one.
-$class = new class() {
+/**
+ * This is the doccumentation that will apper when you type help.
+ */
+class example {
     /**
-    * This documentation appears if you use --help with tryMe 
+    * This documentation appears if you use --help with tryMe
     */
     public function tryMe(bool $bool, string $string, float $float, int $int){
         var_dump(func_get_args());
     }
 };
 
-new BHayes\CLI\CLI($class)->run();
+(new BHayes\CLI\CLI(new Example()))->run();
 ```
