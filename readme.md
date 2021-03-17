@@ -1,14 +1,13 @@
 # CLI
 Turn your PHP class into an interactive command line tool.
-Create commandline tools in seconds simply by defining a class with some methods.
 
 ## Usage.
 ```php
 (new \BHayes\CLI\CLI( $yourClass ))->run();
 ```
+Simply define your class methods and cli can allow the user to run them.
 
-## Behavours.
-Simply define you class methods with any arguments you want and cli can allow the user to run them.
+## Behaviours.
 - Public methods of `$yourClass` become executable commands.
 - Required arguments for public methods will be enforced.
 - Scalar data types for arguments will be enforced.
@@ -17,6 +16,8 @@ Simply define you class methods with any arguments you want and cli can allow th
 - Help `--help` option will display your doc blocks if you have them.
 - Anonymous classes work, but dynamically added functions do not.
 - Anything returned by a method is printed and no output is suppressed beforehand.
+### Yet to be decided.
+- should --options become properties of $yourClass?
 
 ## Examples.
 For wsl/linux/mac.
