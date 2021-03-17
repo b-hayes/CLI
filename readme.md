@@ -7,8 +7,23 @@ Create commandline tools in seconds simply by defining a class with some methods
 (new \BHayes\CLI\CLI( $yourClass ))->run();
 ```
 
-### Examples: (wsl/linux/mac).
+## Behavours.
+Simply define you class methods with any arguments you want and cli can allow the user to run them.
+- Public methods of `$yourClass` become executable commands.
+- Required arguments for public methods will be enforced.
+- Scalar data types for arguments will be enforced.
+- Prevents use from passing too many arguments unless method is explicitly variadic.
+- Automatic usage telling the user how to use your application methods when the mess up.
+- Help `--help` option will display your doc blocks if you have them.
+- Anonymous classes work, but dynamically added functions do not.
+- Anything returned by a method is printed and no output is suppressed beforehand.
+
+## Examples.
+For wsl/linux/mac.
+
 Save these examples as a `testme` file and make it executable `chmod +x ./testme` and run with `./testme`
+
+Example 1.
 ```php
 #!/usr/bin/env php
 <?php
@@ -17,12 +32,11 @@ require_once 'vendor/autoload.php';
 
 (new BHayes\CLI\CLI(new class(){
     function hello(){
-        return 'hello ' . `git config user.name` . 'Your amazing!';
+        return 'hello ' . `git config user.name` . ' your amazing!';
     }
 }))->run();
 ```
-
-
+Example 2.
 ```php
 #!/usr/bin/env php
 <?php
@@ -53,7 +67,20 @@ class Example {
     * This command will only run when all the requirements are met.
     */
     public function tryMe(bool $bool, string $string, float $float, int $int) {
-        echo "You did it! You gave me bool a string, a float and an int.";
+        return "You did it! You gave me bool a string, a float and an int.";
+    }
+    
+    /**
+     * This method will accept any number of string arguments while the
+     * the others will fail if you pass them too many arguments.
+     *
+     * @param string ...$bunchOfStrings
+    */
+    public function variadic (string ...$bunchOfStrings){
+        echo "You said ";
+        if (empty($bunchOfStrings)) echo "nothing.";
+        print_r($bunchOfStrings);
+        echo "\n";
     }
 };
 
