@@ -348,7 +348,7 @@ class CLI
     }
 
     /**
-     * Replicates the readline function form the readline php extension (so the php ext is no longer required)
+     * Replicates the readline function without the need for the php extension.
      *
      * @param null $prompt
      *
