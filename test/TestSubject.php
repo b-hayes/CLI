@@ -78,8 +78,6 @@ class TestSubject
         echo __METHOD__, " was executed!";
         var_dump(func_get_args());
     }
-    //TODO: test a method with the MIXED types when moving to php8
-    //TODO: test a method with the UNION types when moving to php8
 
     public function binCheck(int $exitCode)
     {

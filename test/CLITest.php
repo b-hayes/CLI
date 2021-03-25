@@ -410,4 +410,8 @@ class CLITest extends TestCase
         //todo: alert me if I make any breaking changes once I tag a major version.
         // (check out your old blueprints method that used to do this)
     }
+
+    //TODO: PHPv8 support:
+    //  test a method with the MIXED types when moving to php8
+    //  test a method with the UNION types when moving to php8
 }
