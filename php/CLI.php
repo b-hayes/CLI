@@ -381,9 +381,6 @@ class CLI
         if (strlen($readline) === 0) {
             $readline = $default;
         }
-        if (strtolower($readline) === 'exit') {
-            exit();
-        }
         if ($lowercase) {
             $readline = strtolower($readline);
         }
