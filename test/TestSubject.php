@@ -19,21 +19,25 @@ class TestSubject
     public function simple()
     {
         echo __METHOD__ , " was executed!";
+        var_dump(func_get_args());
     }
 
     public function requiresTwo($required, $requiredAlso)
     {
         echo __METHOD__ , " was executed with params $required $requiredAlso";
+        var_dump(func_get_args());
     }
 
     public function requiredAndOptional($required, $optional = null)
     {
         echo __METHOD__ , " was executed with $required, $optional";
+        var_dump(func_get_args());
     }
 
     public function allOptional(string $optionalString = '', int $optionalInt = 5, object $optionalObject = null)
     {
         echo __METHOD__, " was executed!";
+        var_dump(func_get_args());
     }
 
     private function aPrivateMethod()
@@ -49,16 +53,19 @@ class TestSubject
     public function requiresInt(int $mustBeInt)
     {
         echo __METHOD__, " was executed!";
+        var_dump(func_get_args());
     }
 
     public function requiresBool(bool $mustBeBool)
     {
         echo __METHOD__, " was executed!";
+        var_dump(func_get_args());
     }
 
     public function requiresFloat(float $mustBeFloat)
     {
         echo __METHOD__, " was executed!";
+        var_dump(func_get_args());
     }
 
     public function throwsAnError()
@@ -69,6 +76,7 @@ class TestSubject
     public function typedVariadicFunction(int ...$amounts)
     {
         echo __METHOD__, " was executed!";
+        var_dump(func_get_args());
     }
     //TODO: test a method with the MIXED types when moving to php8
     //TODO: test a method with the UNION types when moving to php8
@@ -76,13 +84,15 @@ class TestSubject
     public function binCheck(int $exitCode)
     {
         echo __METHOD__ . " was executed!";
+        var_dump(func_get_args());
         echo "\n";//because we are about to exit before cli can add the new line on the end of the output
         exit($exitCode);
     }
 
     /**
-     * This method is used to test the help function.
+     * This method is used to test the --help function.
      * It has a doc block that should be displayed to the user.
+     *
      */
     public function helpCheck()
     {

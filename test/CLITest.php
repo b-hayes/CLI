@@ -98,6 +98,19 @@ class CLITest extends TestCase
             );
         }
 
+        //method should repeat all the values it was given so we know it received the correct data
+        foreach (explode(' ', $arguments) as $arg) {
+            if (substr($arg,0,1) === '-') {
+                //this is a --option / -o so it wont be used as an argument.
+                continue;
+            }
+            self::assertStringContainsString(
+                $arg,
+                $output,
+                "Expected argument '$arg' to be repeated back to me but it wasn't."
+            );
+        }
+
         foreach ($expectedResponseMessages as $responseMessage) {
             self::assertStringContainsString(
                 $responseMessage,
@@ -356,7 +369,7 @@ class CLITest extends TestCase
     public function testHelp()
     {
         $this->assertSuccessfulExecution('', '--help');
-        $this->assertSuccessfulExecution('', '--help helpCheck', 'This method is used to test the help function.');
+        $this->assertSuccessfulExecution('', '--help helpCheck', 'This method is used to test the --help function.');
         $this->assertSuccessfulExecution('', '--help noHelpCheck', 'No documentation');
     }
 
