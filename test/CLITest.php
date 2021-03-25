@@ -268,6 +268,16 @@ class CLITest extends TestCase
         $this->assertFailureToExecute('requiresTwo', 'one two three', 'Too many arguments');
     }
 
+    public function testVariadic()
+    {
+        $this->assertSuccessfulExecution('typedVariadicFunction', '');
+        $this->assertSuccessfulExecution('typedVariadicFunction', '1');
+        $this->assertSuccessfulExecution('typedVariadicFunction', '1 2');
+        $this->assertSuccessfulExecution('typedVariadicFunction', '1 2 3');
+        $this->assertFailureToExecute('typedVariadicFunction','1 2 three');
+        $this->assertFailureToExecute('typedVariadicFunction','1 two 3');
+    }
+
     public function testOptionalArguments()
     {
         self::assertSuccessfulExecution('requiredAndOptional', 'required optional');

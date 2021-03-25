@@ -243,7 +243,10 @@ class CLI
         }
 
         //intentionally prevent all functions from being run with any number of arguments by default
-        if (count($this->subjectArguments) > $this->reflectionMethod->getNumberOfParameters()) {
+        if (
+            count($this->subjectArguments) > $this->reflectionMethod->getNumberOfParameters() &&
+            $this->reflectionMethod->isVariadic() === false
+        ) {
             echo "Too many arguments! '", $this->subjectMethod,
             "' can only accept ", $this->reflectionMethod->getNumberOfParameters(),
             ' and you gave me ', count($this->subjectArguments), "\n";
@@ -275,18 +278,28 @@ class CLI
             if ($reflectionType instanceof \ReflectionNamedType){
                 $reflectionType = $reflectionType->getName();
             }
-//            elseif (get_class($reflectionType) === '\ReflectionUnionType'){
-//                throw new \Exception("Union parameter types (and PHPv8 in general) is not supported.");
-//            }
+            elseif (is_object($reflectionType) && get_class($reflectionType) === '\ReflectionUnionType'){
+                throw new \Exception("Union parameter types (and PHPv8 in general) is not yet supported.");
+            }
             else {
                 //older PHP versions can cast to a string.
                 $reflectionType = (string)$reflectionType;
             }
+
+            //convert the input if needed...
             if (empty($reflectionType) || $reflectionType === 'string' || $reflectionType === 'mixed') {
                 continue;//no conversion needed.
             }
             if ($reflectionType !== 'string') {
-                $this->subjectArguments[$pos] = json_decode($this->subjectArguments[$pos]);
+                if ($this->reflectionMethod->isVariadic()) {
+                    //all remaining params will also be the same type.
+                    while ($pos < count($this->subjectArguments)) {
+                        $this->subjectArguments[$pos] = json_decode($this->subjectArguments[$pos]);
+                        $pos++;
+                    }
+                } else {
+                    $this->subjectArguments[$pos] = json_decode($this->subjectArguments[$pos]);
+                }
             }
         }
 
