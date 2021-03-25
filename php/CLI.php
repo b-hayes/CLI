@@ -70,11 +70,6 @@ class CLI
      */
     private $debug = false;
 
-    /**
-     * @var string
-     */
-    public $inputStream = "php://stdin";
-
 
     /**
      * CLI constructor.
@@ -350,34 +345,36 @@ class CLI
     /**
      * Replicates the readline function without the need for the php extension.
      *
-     * @param null $prompt
+     * @param null   $prompt        a prompt messages to display
+     * @param string $inputStream   'php://stdin' | 'data://text/plain,<your text>' | 'file://<your text file>'
      *
      * @return string
      */
-    private function readline($prompt = null): string
+    public static function readline($prompt = null, $inputStream = 'php://stdin'): string
     {
         if ($prompt) {
             echo $prompt;
         }
-        $handle = $handle ?? fopen($this->inputStream, "r");
+        $handle = fopen($inputStream, "r");
         return rtrim(fgets($handle, 1024));
     }
 
     /**
      * Prompts the user for keyboard input.
      *
-     * @param string $message   a prompt messages to display
-     * @param string $default   if set will show up in prompt as the default response if only enter is pressed
-     * @param bool   $lowercase if true returns input as lowercase
+     * @param string $message       a prompt messages to display
+     * @param string $default       if set will show up in prompt as the default response if only enter is pressed
+     * @param bool   $lowercase     if true returns input as lowercase
+     * @param string $inputStream   'php://stdin' | 'data://text/plain,<your text>' | a text file etc.
      *
      * @return string
      */
-    public function prompt(string $message = 'enter response>', string $default = '', bool $lowercase = true): string
+    public static function prompt(string $message = 'enter response>', string $default = '', bool $lowercase = true, $inputStream = 'php://stdin'): string
     {
         if ($default) {
             $message .= " [$default]";
         }
-        $readline = self::readline($message);
+        $readline = self::readline($message, $inputStream);
         if (strlen($readline) === 0) {
             $readline = $default;
         }

@@ -26,20 +26,6 @@ class CLITest extends TestCase
     }
 
     /**
-     * Used only for testing the prompt function.
-     *
-     * @param $stringOrFile
-     */
-    private function setInput($stringOrFile): void
-    {
-        if (is_file($stringOrFile)) {
-            $this->cli->inputStream = $stringOrFile;
-            return;
-        }
-        $this->cli->inputStream = 'data://text/plain,' . $stringOrFile;
-    }
-
-    /**
      * This is a helper to ensure my tests cover essential assertions.
      *
      * @param string $method
@@ -127,14 +113,28 @@ class CLITest extends TestCase
     }
 
     /**
+     * Used only for testing the prompt function.
+     *
+     * @param $stringOrFile
+     *
+     * @return string
+     */
+    private function setupInput($stringOrFile): string
+    {
+        if (is_file($stringOrFile)) {
+            return $stringOrFile;
+        }
+        return 'data://text/plain,' . $stringOrFile;
+    }
+
+    /**
      * This is the method that the prompt/readline function uses internally.
      * (this was a temporary test setup before I made the input stream swappable)
      */
     public function testReadlineMethod()
     {
-        $fp = fopen('data://text/plain,' . 'a value', "r");
-        $rtrim = rtrim(fgets($fp, 1024));
-        self::assertEquals('a value', $rtrim);
+        $result = CLI::readline( null, 'data://text/plain,' . 'a value');
+        self::assertEquals('a value', $result);
     }
 
     /**
@@ -148,7 +148,7 @@ class CLITest extends TestCase
         $prompt = 'enter your name';
 
         //prompt must echo the prompt message and return the input received
-        $this->setInput('bill');
+        $this->setupInput('bill');
         ob_start();
         $input = $this->cli->prompt($prompt);
         $output = ob_get_clean();
@@ -156,7 +156,7 @@ class CLITest extends TestCase
         self::assertEquals('bill', $input);
 
         //trailing white space and new line chars are removed from return value.
-        $this->setInput("bill higgins    \n \n \r\n");
+        $this->setupInput("bill higgins    \n \n \r\n");
         ob_start();
         $input = $this->cli->prompt($prompt);
         $output = ob_get_clean();
@@ -164,7 +164,7 @@ class CLITest extends TestCase
         self::assertEquals('bill higgins', $input);
 
         //an empty string will be returned from pressing only enter
-        $this->setInput("\n");
+        $this->setupInput("\n");
         ob_start();
         $input = $this->cli->prompt($prompt);
         $output = ob_get_clean();
@@ -173,7 +173,7 @@ class CLITest extends TestCase
         self::assertEquals('', $input);
 
         //default value must be displayed in the prompt with square brackets and be returned when user preses enter
-        $this->setInput("\n");
+        $this->setupInput("\n");
         ob_start();
         $defaultValue = 'a default value';
         $input = $this->cli->prompt($prompt, $defaultValue);
@@ -182,14 +182,14 @@ class CLITest extends TestCase
         self::assertEquals($defaultValue, $input);
 
         //all return values will be lowercase by default
-        $this->setInput("UPPER CASE");
+        $this->setupInput("UPPER CASE");
         ob_start();
         $input = $this->cli->prompt($prompt, $defaultValue);
         $output = ob_get_clean();
         self::assertEquals('upper case', $input);
 
         //default value is used the case IS STILL converted to lower by default
-        $this->setInput("\n");
+        $this->setupInput("\n");
         ob_start();
         $defaultValue = 'A DEFAULT VALUE IN UPPER CASE';
         $input = $this->cli->prompt($prompt, $defaultValue);
@@ -198,7 +198,7 @@ class CLITest extends TestCase
         self::assertEquals('a default value in upper case', $input);
 
         //case is always preserved when convert to lowercase is disabled.
-        $this->setInput("\n");
+        $this->setupInput("\n");
         ob_start();
         $defaultValue = 'A Default Mixed Case Value';
         $input = $this->cli->prompt($prompt, $defaultValue, false);
@@ -207,7 +207,7 @@ class CLITest extends TestCase
         self::assertEquals($defaultValue, $input);
 
         //case can be preserved without being forced to sue a default value
-        $this->setInput("A Mixed Case Value\n");
+        $this->setupInput("A Mixed Case Value\n");
         ob_start();
         $input = $this->cli->prompt($prompt, '', false);
         $output = ob_get_clean();
