@@ -341,17 +341,18 @@ class CLI
     }
 
     /**
-     * Replicates the readline function without the need for the php extension.
-     *
-     * @param null   $prompt            a prompt messages to display
-     * @param string $inputStream   'php://stdin' | 'data://text/plain,<your text>' | 'file://<your text file>'
+     * Reads a single line from standard input.
+     * Similar to standard readline function without the need for the php extension.
      * Note:
-     *  If you pass in a string then a resource is created and discarded after reading the first line.
-     *  You can pass in a resource handle if you want to read the next line of an existing resource handle.
+     *  If you pass in a string then a resource handle is created and discarded after reading the first line.
+     *  Pass in your own resource handle if you want to consecutively read the next line of a single source.
+     *
+     * @param string $prompt      a prompt messages to display
+     * @param string $inputStream 'php://stdin' | 'data://text/plain,<your text>' | 'file://<path>' | <resource handle>
      *
      * @return string
      */
-    public static function readline($prompt = null, $inputStream = 'php://stdin'): string
+    public static function readline(string $prompt = '', $inputStream = 'php://stdin'): string
     {
         if ($prompt) {
             echo $prompt;
@@ -394,6 +395,36 @@ class CLI
             $readline = strtolower($readline);
         }
         return $readline;
+    }
+
+    /**
+     * Prompts the user for confirmation and returns true or false.
+     *  Matches true with Y, YES and OK
+     *  Matches false with N, NO
+     *  Matches are not case sensitive.
+     *  If input matches nothing the user is prompted again.
+     *
+     * @param string $message message to display to the user
+     * @param string $default default is 'Y' unless you change it. This wont change the true/false matching.
+     * @param string $inputStream
+     *
+     * @return bool
+     */
+    public static function confirm(string $message, string $default = 'Y', $inputStream = 'php://stdin'): bool
+    {
+        while (true) {
+            $prompt = self::prompt($message, $default, true, $inputStream);
+            switch ($prompt) {
+                case 'y':
+                case 'yes':
+                    return true;
+                    break;
+                case 'n':
+                case 'no':
+                    return false;
+                break;
+            }
+        }
     }
 
     /**

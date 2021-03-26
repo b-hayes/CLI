@@ -140,7 +140,7 @@ class CLITest extends TestCase
     /**
      * Assert the expected behaviour of the prompt command.
      */
-    public function testPromptWith2Lines()
+    public function testPrompt()
     {
         $handle = fopen('data://text/plain,' . "Bill\nTed\n\n  Kate Williams      \n", 'r');
         ob_start();
@@ -158,6 +158,66 @@ class CLITest extends TestCase
         self::assertEquals('ted', $two);//converted to lowercase
         self::assertEquals('cats', $three);//default value is returned in lowercase
         self::assertEquals('Kate Williams', $four);//extra white space is trimmed
+    }
+
+    public function testConfirm()
+    {
+        //make sure all the yes responses work
+        $positiveInputs = [
+            'y','Y','yes','YES','yEs', 'YeS','yeS','Yes'
+        ];
+        foreach ($positiveInputs as $positiveInput) {
+            //confirmation should keep asking until a yes no ok response is given.
+            $handle = fopen('data://text/plain,' . "hey\nyou\n$positiveInput\n", 'r');
+            ob_start();
+            $confirm = CLI::confirm('Continue?', 'Neither', $handle);
+            $obGetClean = ob_get_clean();
+            self::assertTrue(
+                substr_count($obGetClean, 'Continue?') === 3 &&
+                substr_count($obGetClean, 'Neither') === 3,
+                'The prompt message and default option should appear ever time invalid input is given.'
+            );
+            self::assertTrue($confirm);
+        }
+
+        //make sure all the no responses work
+        $defaultInputs = [
+            'n','N','no','NO','No', 'nO'
+        ];
+        foreach ($defaultInputs as $defaultInput) {
+            //confirmation should keep asking until a yes no ok response is given.
+            $handle = fopen('data://text/plain,' . "NOPE\nNup!\n$defaultInput\n", 'r');
+            ob_start();
+            $confirm = CLI::confirm('Continue?', 'Neither', $handle);
+            $obGetClean = ob_get_clean();
+            self::assertTrue(
+                substr_count($obGetClean, 'Continue?') === 3 &&
+                substr_count($obGetClean, 'Neither') === 3,
+                'The prompt message and default option should appear ever time invalid input is given.'
+            );
+            self::assertFalse($confirm);
+        }
+
+        //make sure the default option works
+        $defaultInputs = [
+            'N' => false,
+            'No' => false,
+            'Y' => true,
+            'Yes' => true
+        ];
+        foreach ($defaultInputs as $defaultInput => $expectedValue) {
+            //confirmation should keep asking until a yes no ok response is given.
+            $handle = fopen('data://text/plain,' . "noway\nSure\n\n", 'r');
+            ob_start();
+            $confirm = CLI::confirm('Continue?', $defaultInput, $handle);
+            $obGetClean = ob_get_clean();
+            self::assertTrue(
+                substr_count($obGetClean, 'Continue?') === 3 &&
+                substr_count($obGetClean, $defaultInput) === 3,
+                'The prompt message and default option should appear ever time invalid input is given.'
+            );
+            self::assertSame($expectedValue, $confirm);
+        }
     }
 
     /**
