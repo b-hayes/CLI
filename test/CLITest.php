@@ -133,7 +133,7 @@ class CLITest extends TestCase
      */
     public function testReadlineMethod()
     {
-        $result = CLI::readline(null, 'data://text/plain,' . 'a value');
+        $result = CLI::readline('', 'data://text/plain,' . 'a value');
         self::assertEquals('a value', $result);
     }
 
@@ -355,6 +355,42 @@ class CLITest extends TestCase
         $fileName = $reflectionClass->getFileName();
         self::assertStringNotContainsString($fileName, $output);
         self::assertStringNotContainsString('stack trace', $output);
+    }
+
+    public function testUserResponses()
+    {
+        //added a new feature, user response exceptions that can be thrown anywhere to print a user response message.
+        $this->assertFailureToExecute(
+            'throwsUserResponse',
+            '',
+            'says hi!',
+            'ℹ' //the default icon for UserResponse
+            //todo: check if the message is printed in the correct colour when this feature is added.
+        );
+
+        $this->assertFailureToExecute(
+            'throwsUserWarning',
+            '',
+            'says hi!',
+            '⚠' //the default icon for UserResponse
+            //todo: check if the message is printed in the correct colour when this feature is added.
+        );
+
+        $this->assertFailureToExecute(
+            'throwsUserError',
+            '',
+            'says hi!',
+            '❌' //the default icon for UserResponse
+            //todo: check if the message is printed in the correct colour when this feature is added.
+        );
+
+        $this->assertSuccessfulExecution(
+            'throwsUserSuccess',
+            '',
+            'Finished!',
+            '✔' //the default icon for UserResponse
+            //todo: check if the message is printed in the correct colour when this feature is added.
+        );
     }
 
     public function testUsage()

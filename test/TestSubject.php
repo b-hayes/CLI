@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace BHayes\CLI\Test;
 
+use BHayes\CLI\UserErrorResponse;
+use BHayes\CLI\UserResponse;
+use BHayes\CLI\UserSuccessResponse;
+use BHayes\CLI\UserWarningResponse;
+
 /**
  * Class TestSubject
  *
@@ -100,5 +105,38 @@ class TestSubject
     public function noHelpCheck()// this one has no doc block to display
     {
         echo __METHOD__, " was executed!";
+    }
+
+    /**
+     * @throws UserResponse
+     */
+    public function throwsUserResponse()
+    {
+        throw new UserResponse(__METHOD__ . ' says hi!');
+    }
+
+    /**
+     * @throws UserResponse
+     */
+    public function throwsUserWarning()
+    {
+        throw new UserWarningResponse(__METHOD__ . ' says hi!');
+    }
+
+    /**
+     * @throws UserResponse
+     */
+    public function throwsUserError()
+    {
+        throw new UserErrorResponse(__METHOD__ . ' says hi!');
+    }
+
+    /**
+     * @throws UserResponse
+     */
+    public function throwsUserSuccess()
+    {
+        echo __METHOD__, " was executed!";
+        throw new UserSuccessResponse();
     }
 }

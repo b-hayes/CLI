@@ -69,21 +69,31 @@ class CLI
      */
     private $debug = false;
 
+    /**
+     * @var string
+     */
+    private $clientMessageExceptions;
+
 
     /**
      * CLI constructor.
      *
-     * Creates a reflection of the class for introspection.
-     * Detects if the default error reporting and changes it to only show errors once in terminal output.
+     * Creates a reflection of the class for introspective execution of its methods by the terminal user.
+     * Detects and prevents error reporting config from showing errors more than once in terminal output.
+     * Note: All errors/exceptions will be suppressed by default regardless unless they are of the type
+     *  specified in the clientMessageExceptions.
      *
-     * TODO: loads a configuration file from ClassName.json file if it exists,
-     *  the json file can contain default values for method arguments.
+     * If debug mode is enabled no exceptions/errors are suppressed.
+     *
+     * TODO: load a configuration file from ClassName.json file if it exists,
+     *  the json file can contain user preferred default values for method arguments.
      *
      * @param object|null $class if unspecified, $this is used.
+     * @param string      $clientMessageExceptions specify a custom exception type if you with to use your own.
      *
-     * @throws Throwable
+     * @throws Throwable only if debug mode is enabled.
      */
-    public function __construct(object $class = null)
+    public function __construct(object $class = null, $clientMessageExceptions = ClientMessageException::class)
     {
         //set the class to interface with
         $this->subjectClass = $class ?? $this;
@@ -115,6 +125,11 @@ class CLI
         ) {
             ini_set('log_errors', 0);
         }
+
+        /*
+         * If an exception is thrown of this type it's message will be printed for the user.
+         */
+        $this->clientMessageExceptions = $clientMessageExceptions;
     }
 
     /**
@@ -311,8 +326,11 @@ class CLI
             print_r($result);
             echo "\n";
             exit(0);
+        } catch (UserResponse $response) {
+            //todo: check what happens in debug mode when there is a previous throwable attached.
+            $this->exitWithError($response->message(), $response);
         } catch (Throwable $throwable) {
-            //Is it an error caused user input?
+            //Is it a type error caused by bad user input?
             if (
                 $throwable instanceof \TypeError &&
                 strpos($throwable->getMessage(), $this->subjectMethod) !== false &&
@@ -320,7 +338,8 @@ class CLI
                 $throwable->getTrace()[1]['file'] === __FILE__ &&
                 $throwable->getTrace()[1]['function'] === __FUNCTION__
             ) {
-                //We caused the type error based on the users input so lets tell them its their fault.
+                //We caused the type error by trying to use the users input as a method argument,
+                // so lets tell the suer its their fault.
                 $message = str_replace(
                     ' passed to ' . get_class($this->subjectClass) . "::{$this->subjectMethod}()",
                     '',
@@ -447,6 +466,11 @@ class CLI
 
         if ($this->debug) {
             throw $throwable;
+        }
+
+        //user response is allowed to exit with any code
+        if ($throwable instanceof UserResponse) {
+            exit($throwable->getCode());
         }
 
         //allow exit code from exception but never exit with 0.
