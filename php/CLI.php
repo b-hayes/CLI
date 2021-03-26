@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace BHayes\CLI;
 
-use ArgumentCountError;
 use Exception;
 use phpDocumentor\Reflection\Types\This;
 use ReflectionClass;
@@ -34,7 +33,7 @@ class CLI
     private $subjectClass;
 
     /**
-     * @var ReflectionClass
+     * @var ReflectionClass this is a reflection of the subjectClass.
      */
     private $reflection;
 
@@ -56,12 +55,12 @@ class CLI
     private $options = [];
 
     /**
-     * @var array
+     * @var array the remaining input arguments after the function is determined.
      */
     private $subjectArguments = [];
 
     /**
-     * @var ReflectionMethod
+     * @var ReflectionMethod reflection of the method that will be executed with subjectArguments
      */
     private $reflectionMethod;
 
@@ -91,8 +90,9 @@ class CLI
 
         //get a reflection of said class
         try {
-            //todo: would it be worth using reflection object instead so that dynamically created functions can be used as well?
-            // or is this a rabbit whole for an edge use case.....
+            //todo: would it be worth using reflection object instead
+            // so that dynamically created functions can be used as well?
+            // or is this a rabbit hole for an edge use case.....
             $this->reflection = new ReflectionClass($this->subjectClass);
         } catch (ReflectionException $reflectionException) {
             $this->exitWithError(
@@ -270,13 +270,11 @@ class CLI
             $reflectionType = $reflectionParameter->getType();
             //Note: supporting php versions with deprecated string casts.
             // See https://www.php.net/manual/en/reflectiontype.tostring.php
-            if ($reflectionType instanceof \ReflectionNamedType){
+            if ($reflectionType instanceof \ReflectionNamedType) {
                 $reflectionType = $reflectionType->getName();
-            }
-            elseif (is_object($reflectionType) && get_class($reflectionType) === '\ReflectionUnionType'){
+            } elseif (is_object($reflectionType) && get_class($reflectionType) === '\ReflectionUnionType') {
                 throw new \Exception("Union parameter types (and PHPv8 in general) is not yet supported.");
-            }
-            else {
+            } else {
                 //older PHP versions can cast to a string.
                 $reflectionType = (string)$reflectionType;
             }
@@ -345,8 +343,11 @@ class CLI
     /**
      * Replicates the readline function without the need for the php extension.
      *
-     * @param null   $prompt        a prompt messages to display
+     * @param null   $prompt            a prompt messages to display
      * @param string $inputStream   'php://stdin' | 'data://text/plain,<your text>' | 'file://<your text file>'
+     * Note:
+     *  If you pass in a string then a resource is created and discarded after reading the first line.
+     *  You can pass in a resource handle if you want to read the next line of an existing resource handle.
      *
      * @return string
      */
@@ -355,24 +356,35 @@ class CLI
         if ($prompt) {
             echo $prompt;
         }
+
+        if (is_resource($inputStream)) {
+            return trim(fgets($inputStream, 1024));
+        }
+
         $handle = fopen($inputStream, "r");
-        return rtrim(fgets($handle, 1024));
+        $input = trim(fgets($handle, 1024));
+        fclose($handle);
+        return $input;
     }
 
     /**
      * Prompts the user for keyboard input.
      *
      * @param string $message       a prompt messages to display
-     * @param string $default       if set will show up in prompt as the default response if only enter is pressed
+     * @param string $default       if set will display in brackets and be returned if the user presses enter only.
      * @param bool   $lowercase     if true returns input as lowercase
-     * @param string $inputStream   'php://stdin' | 'data://text/plain,<your text>' | a text file etc.
+     * @param string $inputStream   see readline doc block for more info.
      *
      * @return string
      */
-    public static function prompt(string $message = 'enter response>', string $default = '', bool $lowercase = true, $inputStream = 'php://stdin'): string
-    {
+    public static function prompt(
+        string $message = 'enter response>',
+        string $default = '',
+        bool $lowercase = true,
+        $inputStream = 'php://stdin'
+    ): string {
         if ($default) {
-            $message .= " [$default]";
+            $message .= "[$default]";
         }
         $readline = self::readline($message, $inputStream);
         if (strlen($readline) === 0) {
@@ -456,7 +468,7 @@ class CLI
         $doc = $this->reflectionMethod->getDocComment()
             ?: "No documentation found for {$shortName}";
         //strip out tab indents
-        $doc = str_replace("\n    ","\n",$doc);
+        $doc = str_replace("\n    ", "\n", $doc);
         echo $doc, "\n";
 
         $reflectionParameters = $this->reflectionMethod->getParameters();

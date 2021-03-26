@@ -86,7 +86,7 @@ class CLITest extends TestCase
 
         //method should repeat all the values it was given so we know it received the correct data
         foreach (explode(' ', $arguments) as $arg) {
-            if (substr($arg,0,1) === '-') {
+            if (substr($arg, 0, 1) === '-') {
                 //this is a --option / -o so it wont be used as an argument.
                 continue;
             }
@@ -133,89 +133,32 @@ class CLITest extends TestCase
      */
     public function testReadlineMethod()
     {
-        $result = CLI::readline( null, 'data://text/plain,' . 'a value');
+        $result = CLI::readline(null, 'data://text/plain,' . 'a value');
         self::assertEquals('a value', $result);
     }
 
     /**
-     * Test the different behaviours of the prompt command with a replacement input stream.
-     * Note: there is an expectOutput() function in phpunit but it only works once so I didnt use it.
+     * Assert the expected behaviour of the prompt command.
      */
-    public function testPrompt()
+    public function testPromptWith2Lines()
     {
-        $this->cli = new CLI();//moved here instead od setup since this is the only funciton needing it.
-        // (dramatically increase speed of the rest of the unit tests)
-        $prompt = 'enter your name';
-
-        //prompt must echo the prompt message and return the input received
-        $this->setupInput('bill');
+        $handle = fopen('data://text/plain,' . "Bill\nTed\n\n  Kate Williams      \n", 'r');
         ob_start();
-        $input = $this->cli->prompt($prompt);
-        $output = ob_get_clean();
-        self::assertEquals($prompt, $output);
-        self::assertEquals('bill', $input);
-
-        //trailing white space and new line chars are removed from return value.
-        $this->setupInput("bill higgins    \n \n \r\n");
-        ob_start();
-        $input = $this->cli->prompt($prompt);
-        $output = ob_get_clean();
-        self::assertEquals($prompt, $output);
-        self::assertEquals('bill higgins', $input);
-
-        //an empty string will be returned from pressing only enter
-        $this->setupInput("\n");
-        ob_start();
-        $input = $this->cli->prompt($prompt);
-        $output = ob_get_clean();
-
-        self::assertEquals($prompt, $output);
-        self::assertEquals('', $input);
-
-        //default value must be displayed in the prompt with square brackets and be returned when user preses enter
-        $this->setupInput("\n");
-        ob_start();
-        $defaultValue = 'a default value';
-        $input = $this->cli->prompt($prompt, $defaultValue);
-        $output = ob_get_clean();
-        self::assertEquals("$prompt [$defaultValue]", $output);
-        self::assertEquals($defaultValue, $input);
-
-        //all return values will be lowercase by default
-        $this->setupInput("UPPER CASE");
-        ob_start();
-        $input = $this->cli->prompt($prompt, $defaultValue);
-        $output = ob_get_clean();
-        self::assertEquals('upper case', $input);
-
-        //default value is used the case IS STILL converted to lower by default
-        $this->setupInput("\n");
-        ob_start();
-        $defaultValue = 'A DEFAULT VALUE IN UPPER CASE';
-        $input = $this->cli->prompt($prompt, $defaultValue);
-        $output = ob_get_clean();
-        self::assertEquals("$prompt [$defaultValue]", $output);
-        self::assertEquals('a default value in upper case', $input);
-
-        //case is always preserved when convert to lowercase is disabled.
-        $this->setupInput("\n");
-        ob_start();
-        $defaultValue = 'A Default Mixed Case Value';
-        $input = $this->cli->prompt($prompt, $defaultValue, false);
-        $output = ob_get_clean();
-        self::assertEquals("$prompt [$defaultValue]", $output);
-        self::assertEquals($defaultValue, $input);
-
-        //case can be preserved without being forced to sue a default value
-        $this->setupInput("A Mixed Case Value\n");
-        ob_start();
-        $input = $this->cli->prompt($prompt, '', false);
-        $output = ob_get_clean();
-        self::assertEquals("$prompt", $output);
-        self::assertEquals("A Mixed Case Value", $input);
+        $one = CLI::prompt('enter your name', 'CATS', false, $handle);
+        $two = CLI::prompt('enter your name', 'CATS', true, $handle);
+        $three = CLI::prompt('enter your name', 'CATS', true, $handle);
+        $four = CLI::prompt('enter your name', 'CATS', false, $handle);
+        $obGetClean = ob_get_clean();
+        self::assertTrue(
+            substr_count($obGetClean, 'enter your name') === 4 &&
+            substr_count($obGetClean, 'CATS') === 4,
+            'The prompt message should appear with the default response shown every time.'
+        );
+        self::assertEquals('Bill', $one);//case sensitive
+        self::assertEquals('ted', $two);//converted to lowercase
+        self::assertEquals('cats', $three);//default value is returned in lowercase
+        self::assertEquals('Kate Williams', $four);//extra white space is trimmed
     }
-
-    //NOTE: From here on we test all the functionality of cli on a test subject class with functions for us to run.
 
     /**
      * Assert Behaviour: execute function by name.
@@ -287,8 +230,8 @@ class CLITest extends TestCase
         $this->assertSuccessfulExecution('typedVariadicFunction', '1');
         $this->assertSuccessfulExecution('typedVariadicFunction', '1 2');
         $this->assertSuccessfulExecution('typedVariadicFunction', '1 2 3');
-        $this->assertFailureToExecute('typedVariadicFunction','1 2 three');
-        $this->assertFailureToExecute('typedVariadicFunction','1 two 3');
+        $this->assertFailureToExecute('typedVariadicFunction', '1 2 three');
+        $this->assertFailureToExecute('typedVariadicFunction', '1 two 3');
     }
 
     public function testOptionalArguments()
