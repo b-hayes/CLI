@@ -6,6 +6,10 @@ Any public method on your class can be run via terminal user!
 Typehint your method arguments and CLI will force the user to provide compatible inputs!
 Automatic Usage messages derived from your code!
 Automatic --help option using your doc blocks for self documenting code!
+Easy interactive prompts and confirmation loops with defaults.
+
+## Coming soon
+Easy to use coloured output.
 
 ## Installation
 composer install b-hayes/cli
@@ -62,11 +66,12 @@ You can display messages to the user however you feel like it.
 - reformatting of how dock blocks and method param lists are displayed for help and usage. 
 
 ## Examples (wsl/linux/mac).
-Dynamic classes can be used for quickly writing a cli application in a self-contained file.
 
 Save these examples as a `testme` file and make it executable `chmod +x ./testme` and run with `./testme`
 
 ### Example 1.
+Dynamic classes can be used for quickly writing a cli application with no name.
+
 ```php
 #!/usr/bin/env php
 <?php
@@ -80,7 +85,8 @@ require_once 'vendor/autoload.php';
 }))->run();
 ```
 ### Example 2.
-PLay with this to see how the type hinting dock blocks required and optional params etc are used.
+Play with this to see a showcase of how type hinting dock blocks required and optional params
+user prompts and different outputs etc are used.
 
 ```php
 #!/usr/bin/env php

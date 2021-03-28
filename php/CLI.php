@@ -105,7 +105,7 @@ class CLI
             // or is this a rabbit hole for an edge use case.....
             $this->reflection = new ReflectionClass($this->subjectClass);
         } catch (ReflectionException $reflectionException) {
-            $this->exitWithError(
+            $this->exitWith(
                 "Command Line Interface failed to initialize.",
                 $reflectionException
             );
@@ -137,11 +137,11 @@ class CLI
      *  - The first argument is the name of the class method that will be run.
      *  - All remaining arguments will be passed on as parameters to the above method.
      *
-     * IF the first argument does not match a public method name || no arguments are specified then:
+     * IF the first argument does not match a public method name
      *  - a list of the public methods on the class is printed.
      *
      * If the minimum required parameters are not met OR there are too many arguments then:
-     *  - todo the arguments for the method are listed.
+     *  - the arguments for the method are listed.
      *
      * Options / Flags are recognizes as per the posix standard:
      *  https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
@@ -262,7 +262,7 @@ class CLI
             ' and you gave me ', count($this->subjectArguments), "\n";
             if ($this->debug) {
                 echo '❌ Php normally allows excess parameters but CLI is preventing this behaviour. ',
-                ' You should consider using variadic parameters instead of relying on func_get_args.',
+                ' You should consider using variadic functions if you need this.',
                 "\n";
             }
             exit(1);
@@ -328,7 +328,7 @@ class CLI
             exit(0);
         } catch (UserResponse $response) {
             //todo: check what happens in debug mode when there is a previous throwable attached.
-            $this->exitWithError($response->message(), $response);
+            $this->exitWith($response->message(), $response);
         } catch (Throwable $throwable) {
             //Is it a type error caused by bad user input?
             if (
@@ -351,7 +351,7 @@ class CLI
             }
 
             //its a real error
-            $this->exitWithError(
+            $this->exitWith(
                 "Failed to execute '{$this->subjectMethod}', the program crashed." .
                 " Please contact the developers if this keeps happening.",
                 $throwable
@@ -460,7 +460,7 @@ class CLI
      *
      * @throws Throwable
      */
-    private function exitWithError(string $printMessage, Throwable $throwable)
+    private function exitWith(string $printMessage, Throwable $throwable)
     {
         echo $printMessage, "\n";//todo: add some colour with a special print function?
 
