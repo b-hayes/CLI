@@ -469,6 +469,11 @@ class CLITest extends TestCase
         );
     }
 
+    public function testGlobalsUnmodified()
+    {
+        $this->assertSuccessfulExecution('dumpGlobals', 'globalArgv', 'globalArgv');
+    }
+
     public function testForBreakingChanges()
     {
         self::assertTrue(true);

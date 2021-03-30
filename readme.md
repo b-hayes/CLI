@@ -100,7 +100,7 @@ CLI has reserved some options.
 
 Save these examples as a `testme` file and make it executable `chmod +x ./testme` and run with `./testme`
 
-### Example 1. Showcase of features.
+### Example 1. Showcase of basic features.
 Play with this to see a showcase of how type hinting dock blocks required and optional params
 user prompts and different outputs etc are used.
 
@@ -199,6 +199,13 @@ $cli = new BHayes\CLI\CLI(new Example());
 $cli->run();
 ```
 
-## Warnings: Known issues and side effects.
-One think I should mention is that CLI consumes the global $argv variable emptying its values,
-so they will no longer be accessible by other scripts.
+## Advanced options.
+During development, you may wish to always run in debug mode without typing --debug all the time.
+```php
+$cli->debug = true;
+```
+For many reasons, you may prefer to throw your own custom exceptions
+for messages the user should see in the terminal instead of relying on 
+the CLI UserResponse exceptions. 
+
+Simpy 

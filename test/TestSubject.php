@@ -153,4 +153,12 @@ class TestSubject
             var_dump($value);
         }
     }
+
+    public function dumpGlobals(...$args)
+    {
+        echo __METHOD__, " was executed!";
+        //the global arv should remain unmodified.
+        global $argv;
+        var_dump($argv);
+    }
 }

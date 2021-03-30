@@ -84,6 +84,11 @@ class CLI
      */
     private $help = false;
 
+    /**
+     * @var array
+     */
+    private $arguments = [];
+
 
     /**
      * CLI constructor.
@@ -102,6 +107,10 @@ class CLI
      */
     public function __construct(object $class = null, $clientMessageExceptions = UserResponse::class)
     {
+        //copy argv
+        global $argv;
+        $this->arguments = $argv;
+
         //set the class to interface with
         $this->subjectClass = $class ?? $this;
 
@@ -161,19 +170,19 @@ class CLI
     public function run()
     {
         //[ PROCESSING ARGUMENTS ]
-        global $argv;
+        $args = $this->arguments;
 
         //remove argument 0 is the first word the user typed and only used for usage statement.
-        $this->initiator = array_shift($argv);
+        $this->initiator = array_shift($args);
 
         //if no arguments just skip all the processing and display usage
-        if (empty($argv)) {
+        if (empty($args)) {
             $this->usage();
             exit(0);
         }
 
         //if there is only one argument and it is a help option then just show help now and exit (faster)
-        if (count($argv) === 1 && $argv[0] === '--help') {
+        if (count($args) === 1 && $args[0] === '--help') {
             $this->help();
             exit(0);
         }
@@ -187,7 +196,7 @@ class CLI
         $subjectProperties = get_class_vars(get_class($this->subjectClass));
         $reservedOptions = ['debug','help', 'i'];
 
-        foreach ($argv as $key => $arg) {
+        foreach ($args as $key => $arg) {
             //LONG OPTIONS --example
             if (substr($arg, 0, 2) == "--") {
                 $longOption = substr($arg, 2);
@@ -204,7 +213,7 @@ class CLI
                 }
 
                 //remove the argument so its not used for a method.
-                unset($argv[$key]);
+                unset($args[$key]);
                 continue;
             }
 
@@ -227,7 +236,7 @@ class CLI
                         throw new UserWarningResponse("-$opt is not a valid option.");
                     }
                 }
-                unset($argv[$key]);
+                unset($args[$key]);
                 continue;
             }
             //todo: support options with arguments eg. mysql -u username eg2. -files ...fileNames,
@@ -240,7 +249,7 @@ class CLI
         }
 
         //the very next argument should be the class method to call
-        $this->subjectMethod = array_shift($argv);
+        $this->subjectMethod = array_shift($args);
         if (!$this->subjectMethod) {
             //todo: might be good in future to allow for _invoke() when no method is specified
             // just in case there are those who just want the script to run without any arguments?
@@ -250,7 +259,7 @@ class CLI
         }
 
         //everything after that is a parameter for the function
-        $this->subjectArguments = $argv;
+        $this->subjectArguments = $args;
 
         //From here on other functions rely on the reflection method to exist.
         try {
