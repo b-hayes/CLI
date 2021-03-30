@@ -79,6 +79,11 @@ class CLI
      */
     private $reservedOptions = [];
 
+    /**
+     * @var bool
+     */
+    private $help = false;
+
 
     /**
      * CLI constructor.
@@ -187,9 +192,9 @@ class CLI
             if (substr($arg, 0, 2) == "--") {
                 $longOption = substr($arg, 2);
 
-                //CLI Reserved options
-                if ($longOption === 'debug') {
-                    $this->debug = true;
+                //CLI Reserved options first
+                if (in_array($longOption, $reservedOptions)) {
+                    $this->{$longOption} = true;
                 }
 
                 if (array_key_exists($longOption, $subjectProperties)) {
@@ -268,7 +273,7 @@ class CLI
         }
 
         //help? should be executed before checking anything else.
-        if (in_array('help', $this->options)) {
+        if ($this->help) {
             $this->help();
             exit(0);
         }
