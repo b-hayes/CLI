@@ -74,6 +74,11 @@ class CLI
      */
     private $clientMessageExceptions;
 
+    /**
+     * @var array
+     */
+    private $reservedOptions = [];
+
 
     /**
      * CLI constructor.
@@ -85,24 +90,18 @@ class CLI
      *
      * If debug mode is enabled no exceptions/errors are suppressed.
      *
-     * TODO: load a configuration file from ClassName.json file if it exists,
-     *  the json file can contain user preferred default values for method arguments.
-     *
      * @param object|null $class if unspecified, $this is used.
      * @param string      $clientMessageExceptions specify a custom exception type if you with to use your own.
      *
      * @throws Throwable only if debug mode is enabled.
      */
-    public function __construct(object $class = null, $clientMessageExceptions = ClientMessageException::class)
+    public function __construct(object $class = null, $clientMessageExceptions = UserResponse::class)
     {
         //set the class to interface with
         $this->subjectClass = $class ?? $this;
 
         //get a reflection of said class
         try {
-            //todo: would it be worth using reflection object instead
-            // so that dynamically created functions can be used as well?
-            // or is this a rabbit hole for an edge use case.....
             $this->reflection = new ReflectionClass($this->subjectClass);
         } catch (ReflectionException $reflectionException) {
             $this->exitWith(
@@ -123,7 +122,7 @@ class CLI
             ini_get('display_errors') &&
             ini_get('error_log') === ""
         ) {
-            ini_set('log_errors', 0);
+            ini_set('log_errors', '0');
         }
 
         /*
@@ -150,9 +149,7 @@ class CLI
      * RESERVED OPTIONS
      *  There are a number of reserved options that this CLI class uses such as the,
      *   --help option that will display additional information about any given method.
-     *   --debug option for those developing a cli application using this as the executor
-     *      todo displays additional information from internal errors
-     *       and sometimes provides advice for CLI usage when it refuses to execute a command etc.
+     *   --debug option for devs to see all errors and stack traces.
      *
      * @throws Throwable
      */
@@ -179,38 +176,62 @@ class CLI
         /*
          * Process options/flags according to posix conventions:
          *  https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
+         * Need to process these first and remove them from the remaining arguments.
          */
+        $subjectProperties = [];
+        $subjectProperties = get_class_vars(get_class($this->subjectClass));
+        $reservedOptions = ['debug','help', 'i'];
+
         foreach ($argv as $key => $arg) {
-            //check for --long-options first
+            //LONG OPTIONS --example
             if (substr($arg, 0, 2) == "--") {
-                $this->options[] = substr($arg, 2);
+                $longOption = substr($arg, 2);
+
+                //CLI Reserved options
+                if ($longOption === 'debug') {
+                    $this->debug = true;
+                }
+
+                if (array_key_exists($longOption, $subjectProperties)) {
+                    $this->subjectClass->{$longOption} = true;
+                } elseif (!in_array($longOption, $reservedOptions)) {
+                    throw new UserWarningResponse("--$longOption is not a valid option.");
+                }
+
+                //remove the argument so its not used for a method.
                 unset($argv[$key]);
                 continue;
             }
 
-            //then for short options -a
+            //SHORT OPTIONS -abc
             if (substr($arg, 0, 1) == "-") {
                 $arg = substr($arg, 1); //remove dash
                 //multiple options can be grouped together eg -abc
-                $this->options = array_merge($this->options, str_split($arg));
+                foreach (str_split($arg) as $opt) {
+                    //CLI Reserved options
+                    if ($opt === 'i') {
+                        $this->exitWith(
+                            "-i option is not supported.",
+                            new \Exception('-i is reserved for an interactive mode I was hoping to build later.')
+                        );
+                    }
+
+                    if (array_key_exists($opt, $subjectProperties)) {
+                        $this->subjectClass->{$opt} = true;
+                    } else {
+                        throw new UserWarningResponse("-$opt is not a valid option.");
+                    }
+                }
                 unset($argv[$key]);
                 continue;
             }
-            //todo: support options with arguments eg. mysql -u username eg2. -files ...fileNames.
+            //todo: support options with arguments eg. mysql -u username eg2. -files ...fileNames,
+            // instead of just assigning 'true' value.
             /*
              * Note: thinking about the best way to achieve this would be to use typed properties from
              *  Php7.4 but i might do without this, releaser a php7.2 version first.
+             *  Could then also enforce scalar types for the value options.
              */
-        }
-
-        //CLI RESERVED OPTIONS
-        //debug messages from CLI class
-        if (in_array('debug', $this->options)) {
-            $this->debug = true;
-        }
-        if (in_array('i', $this->options)) {
-            var_dump($this->options);
-            die("interactive mode");
         }
 
         //the very next argument should be the class method to call
@@ -429,7 +450,7 @@ class CLI
      *
      * @return bool
      */
-    public static function confirm(string $message, string $default = 'Y', $inputStream = 'php://stdin'): bool
+    public static function confirm(string $message = 'Continue?', string $default = 'Y', $inputStream = 'php://stdin'): bool
     {
         while (true) {
             $prompt = self::prompt($message, $default, true, $inputStream);

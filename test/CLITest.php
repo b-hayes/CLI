@@ -30,7 +30,7 @@ class CLITest extends TestCase
      *
      * @param string $method
      * @param string $arguments
-     * @param mixed  ...$expectedErrorMessages
+     * @param mixed ...$expectedErrorMessages
      *
      * @return false|string
      */
@@ -164,7 +164,14 @@ class CLITest extends TestCase
     {
         //make sure all the yes responses work
         $positiveInputs = [
-            'y','Y','yes','YES','yEs', 'YeS','yeS','Yes'
+            'y',
+            'Y',
+            'yes',
+            'YES',
+            'yEs',
+            'YeS',
+            'yeS',
+            'Yes'
         ];
         foreach ($positiveInputs as $positiveInput) {
             //confirmation should keep asking until a yes no ok response is given.
@@ -175,14 +182,19 @@ class CLITest extends TestCase
             self::assertTrue(
                 substr_count($obGetClean, 'Continue?') === 3 &&
                 substr_count($obGetClean, 'Neither') === 3,
-                'The prompt message and default option should appear ever time invalid input is given.'
+                'The prompt message and default response should appear ever time invalid input is given.'
             );
             self::assertTrue($confirm);
         }
 
         //make sure all the no responses work
         $defaultInputs = [
-            'n','N','no','NO','No', 'nO'
+            'n',
+            'N',
+            'no',
+            'NO',
+            'No',
+            'nO'
         ];
         foreach ($defaultInputs as $defaultInput) {
             //confirmation should keep asking until a yes no ok response is given.
@@ -193,12 +205,12 @@ class CLITest extends TestCase
             self::assertTrue(
                 substr_count($obGetClean, 'Continue?') === 3 &&
                 substr_count($obGetClean, 'Neither') === 3,
-                'The prompt message and default option should appear ever time invalid input is given.'
+                'The prompt message and default response should appear ever time invalid input is given.'
             );
             self::assertFalse($confirm);
         }
 
-        //make sure the default option works
+        //make sure the default response works
         $defaultInputs = [
             'N' => false,
             'No' => false,
@@ -214,7 +226,7 @@ class CLITest extends TestCase
             self::assertTrue(
                 substr_count($obGetClean, 'Continue?') === 3 &&
                 substr_count($obGetClean, $defaultInput) === 3,
-                'The prompt message and default option should appear ever time invalid input is given.'
+                'The prompt message and default response should appear ever time invalid input is given.'
             );
             self::assertSame($expectedValue, $confirm);
         }
@@ -407,7 +419,7 @@ class CLITest extends TestCase
 
     public function testHelp()
     {
-        $this->assertSuccessfulExecution('', '--help');
+        $this->assertSuccessfulExecution('', '--help', ...get_class_methods(TestSubject::class));
         $this->assertSuccessfulExecution('', '--help helpCheck', 'This method is used to test the --help function.');
         $this->assertSuccessfulExecution('', '--help noHelpCheck', 'No documentation');
     }
@@ -443,11 +455,25 @@ class CLITest extends TestCase
         );
     }
 
+    public function testOptions()
+    {
+        $this->assertSuccessfulExecution(
+            'checkOptions',
+            '-ac --banana',
+            'a: bool(true)',
+            'b: NULL',
+            'c: bool(true)',
+            'apple: NULL',
+            'banana: bool(true)',
+            'carrot: NULL'
+        );
+    }
+
     public function testForBreakingChanges()
     {
         self::assertTrue(true);
         //todo: alert me if I make any breaking changes once I tag a major version.
-        // (check out your old blueprints method that used to do this)
+        // (check out your old blueprints project that used to do this)
     }
 
     //TODO: PHPv8 support:

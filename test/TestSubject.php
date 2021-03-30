@@ -18,8 +18,13 @@ use BHayes\CLI\UserWarningResponse;
  */
 class TestSubject
 {
-    public $optionOne;
-    public $optionTwo;
+    public $a;
+    public $b;
+    public $c;
+
+    public $apple;
+    public $banana;
+    public $carrot;
 
     public function simple()
     {
@@ -138,5 +143,14 @@ class TestSubject
     {
         echo __METHOD__, " was executed!";
         throw new UserSuccessResponse();
+    }
+
+    public function checkOptions()
+    {
+        echo __METHOD__, " was executed!\n";
+        foreach ($this as $property => $value) {
+            echo $property,": ";
+            var_dump($value);
+        }
     }
 }
