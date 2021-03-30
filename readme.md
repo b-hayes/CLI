@@ -200,12 +200,44 @@ $cli->run();
 ```
 
 ## Advanced options.
-During development, you may wish to always run in debug mode without typing --debug all the time.
+###Forced debug mode.
+During development, you may wish to always run in debug mode without typing --debug all the time,
+or perhaps you want to run CLI in debugging mode without your classS receiving the debug option as well.
 ```php
-$cli->debug = true;
+$cli->enableDebugMode();
 ```
-For many reasons, you may prefer to throw your own custom exceptions
-for messages the user should see in the terminal instead of relying on 
-the CLI UserResponse exceptions. 
 
-Simpy 
+### Custom exceptions for user responses.
+For many reasons, you may prefer avoid your class being dependent on CLI UserResponse exceptions,
+but want to throw exceptions with messages the user should read.
+
+You can give CLI a list of custom response exception types before it runs.
+```php
+$cli->setCustomResponseExceptions( MySpecialUserException::class, MyOtherException::class );
+```
+These and any Exceptions that inherit them will be treated the same UserResponse exceptions,
+however the exit code will not be used if it is 0.
+
+This is because exceptions the default code of \Exception is 0 and nobody thinks about
+them potentially getting used as exit codes when building a php application.
+
+So I have forced non 0 exit codes for all except CLI's UserResponse exceptions,
+since with those you must explicitly throw a success code.
+
+### Force exit with 0.
+You may want CLI to always exit with success code 0,
+so it doesn't block something else or trigger some bash error trap,
+or some other complicated edge case.
+
+In this case I'd simply advise you enable debug mode so all exceptions are thrown,
+and handle this yourself.
+
+```php
+$cli->enableDebugMode();
+try{
+    $cli->run();
+    } catch(Throwable $e) {
+    //do your logging or special handling etc.
+    exit(0);//and then exit with 0 manually.
+    }
+```

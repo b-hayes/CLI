@@ -101,11 +101,10 @@ class CLI
      * If debug mode is enabled no exceptions/errors are suppressed.
      *
      * @param object|null $class if unspecified, $this is used.
-     * @param string      $clientMessageExceptions specify a custom exception type if you with to use your own.
      *
      * @throws Throwable only if debug mode is enabled.
      */
-    public function __construct(object $class = null, $clientMessageExceptions = UserResponse::class)
+    public function __construct(object $class = null)
     {
         //copy argv
         global $argv;
@@ -544,8 +543,6 @@ class CLI
      */
     private function help()
     {
-        //todo: would be nice if we could somehow paginate the response. Can pass to `| less` in command line but
-        // how can we do that from php? perhaps run self as the command again with help?
         if (!$this->reflectionMethod) {
             $doc = $this->reflection->getDocComment()
                 ?: "No documentation found for {$this->reflection->getShortName()}";
@@ -570,5 +567,10 @@ class CLI
                 echo $reflectionParameter, "\n";
             }
         }
+    }
+
+    public function enableDebugMode()
+    {
+        $this->debug = true;
     }
 }
