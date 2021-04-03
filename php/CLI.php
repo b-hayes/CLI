@@ -174,10 +174,8 @@ class CLI
      *
      * @throws Throwable
      */
-    public function run($debug = false)
+    public function run($debug = null)
     {
-        $this->debug = $debug;
-
         //[ PROCESSING ARGUMENTS ]
         $args = $this->arguments;
 
@@ -202,7 +200,12 @@ class CLI
          * Need to process these first and remove them from the remaining arguments.
          */
         $subjectProperties = get_class_vars(get_class($this->subjectClass));
-        $reservedOptions = ['debug','help', 'i'];
+        $cliReservedOptions = ['help', 'i'];
+        if ($debug === null) {
+            $cliReservedOptions[] = 'debug';
+        } else {
+            $this->debug = $debug;
+        }
 
         foreach ($args as $key => $arg) {
             //LONG OPTIONS --example
@@ -210,13 +213,13 @@ class CLI
                 $longOption = substr($arg, 2);
 
                 //CLI Reserved options first
-                if (in_array($longOption, $reservedOptions)) {
+                if (in_array($longOption, $cliReservedOptions)) {
                     $this->{$longOption} = true;
                 }
 
                 if (array_key_exists($longOption, $subjectProperties)) {
                     $this->subjectClass->{$longOption} = true;
-                } elseif (!in_array($longOption, $reservedOptions)) {
+                } elseif (!in_array($longOption, $cliReservedOptions)) {
                     throw new UserWarningResponse("--$longOption is not a valid option.");
                 }
 

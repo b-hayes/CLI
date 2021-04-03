@@ -201,10 +201,24 @@ $cli->run();
 
 ## Advanced options.
 ###Forced debug mode.
-During development, you may wish to always run in debug mode without typing --debug all the time,
-or perhaps you want to run CLI in debugging mode without your class receiving the debug option as well.
+During development, you may wish to always run in debug mode without typing --debug or 
+prevent your class receiving the debug option as well.
 ```php
-$cli->enableDebugMode();
+$cli->run(true);
+```
+If you DO want both CLI and your class to receive the debug option by default simply 
+add to the global argv before it runs.
+```php
+global $argv; //this is a built in var where php puts command line inputs
+$argv[] = '--debug'; //manually add the --debug input as if the user typed it
+$cli->run();
+```
+
+You can also prevent the debug option form working on cli by specifying false in the run method.
+This means --debug option has no effect but can still be used 
+```php
+$argv[] = '--debug'; //this will get passed to your application but have no effect on CLI
+$cli->run(false);//because debug has been explicitly disabled at run time.
 ```
 
 ### Custom exceptions for user responses.
@@ -225,17 +239,12 @@ So I have forced non 0 exit codes for all except CLI's UserResponse exceptions,
 since with those you must explicitly throw a success code.
 
 ### Force exit with 0.
-You may want CLI to always exit with success code 0,
-so it doesn't block something else or trigger some bash error trap,
-or some other complicated edge case.
-
-In this case I'd simply advise you enable debug mode so all exceptions are thrown,
-and handle this yourself.
+For whatever reason, you may want your app to always return 0.
+Simply force debug mode and exit manually in a try catch.
 
 ```php
-$cli->enableDebugMode();
 try{
-    $cli->run();
+    $cli->run(true);
     } catch(Throwable $e) {
     //do your logging or special handling etc.
     exit(0);//and then exit with 0 manually.
