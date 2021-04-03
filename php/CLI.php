@@ -70,9 +70,9 @@ class CLI
     private $debug = false;
 
     /**
-     * @var string
+     * @var string[]
      */
-    private $clientMessageExceptions;
+    private $clientMessageExceptions = [];
 
     /**
      * @var array
@@ -89,6 +89,11 @@ class CLI
      */
     private $arguments = [];
 
+    /**
+     * @var object|null
+     */
+    private $class;
+
 
     /**
      * CLI constructor.
@@ -104,7 +109,7 @@ class CLI
      *
      * @throws Throwable only if debug mode is enabled.
      */
-    public function __construct(object $class = null)
+    public function __construct(object $class = null, $clientMessageExceptions = [])
     {
         //copy argv
         global $argv;
@@ -142,6 +147,7 @@ class CLI
          * If an exception is thrown of this type it's message will be printed for the user.
          */
         $this->clientMessageExceptions = $clientMessageExceptions;
+        $this->class = $class;
     }
 
     /**
@@ -164,10 +170,14 @@ class CLI
      *   --help option that will display additional information about any given method.
      *   --debug option for devs to see all errors and stack traces.
      *
+     * @param bool $debug if true php errors/exceptions are thrown.
+     *
      * @throws Throwable
      */
-    public function run()
+    public function run($debug = false)
     {
+        $this->debug = $debug;
+
         //[ PROCESSING ARGUMENTS ]
         $args = $this->arguments;
 
@@ -191,7 +201,6 @@ class CLI
          *  https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
          * Need to process these first and remove them from the remaining arguments.
          */
-        $subjectProperties = [];
         $subjectProperties = get_class_vars(get_class($this->subjectClass));
         $reservedOptions = ['debug','help', 'i'];
 
@@ -364,7 +373,7 @@ class CLI
             //todo: check what happens in debug mode when there is a previous throwable attached.
             $this->exitWith($response->message(), $response);
         } catch (Throwable $throwable) {
-            //Is it a type error caused by bad user input?
+            //Important: is it a type error caused by bad user input?
             if (
                 $throwable instanceof \TypeError &&
                 strpos($throwable->getMessage(), $this->subjectMethod) !== false &&
@@ -382,6 +391,11 @@ class CLI
                 echo '❌ ' . explode(', ', $message)[0], ". ";
                 $this->help();
                 exit(1);
+            }
+
+            //Is it a custom user response exception
+            if (in_array(get_class($throwable), $this->clientMessageExceptions)) {
+                $this->exitWith($throwable->getMessage(), $throwable);
             }
 
             //its a real error
@@ -567,10 +581,5 @@ class CLI
                 echo $reflectionParameter, "\n";
             }
         }
-    }
-
-    public function enableDebugMode()
-    {
-        $this->debug = true;
     }
 }

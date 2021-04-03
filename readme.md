@@ -60,9 +60,9 @@ Now your class is command line application!
 - If you do not inject your own class then CLI will run itself making its prompt methods available to the terminal.
 
 ### Errors and Exceptions
-There is a set of custom UserResponse exceptions to assist and terminating the app with a message for the use.
-All other errors and exceptions are for devs only and suppressed unless you run
-the app in --debug mode.
+There is a set of custom UserResponse exceptions to assist and terminating the app with an error message for the user.
+All other errors and exceptions are suppressed with a generic message unless you run
+the app with `--debug` mode. 
 
 CLI detects and adjusts the default php error reporting config to prevent errors spitting output to the
 terminal twice.
@@ -81,7 +81,7 @@ standard CLI support short options `-o` and long options `--longOption`.
 
 Options are mapped to public class variables defined in your class.
 EG. If you want to have a --cats option for cats mode simply define the property
-`public cats` and then simply check if its true.
+`public cats` and then simply check if it's true.
 ```php
 if($this->cats) { echo "Cat mode enabled!"; }
 ```
@@ -108,7 +108,7 @@ user prompts and different outputs etc are used.
 #!/usr/bin/env php
 <?php
 
-declare(strict_types=1);//optional
+declare(strict_types=1);//optional but good practice IMO. Google it.
 
 use BHayes\CLI\UserResponse;
 
@@ -202,7 +202,7 @@ $cli->run();
 ## Advanced options.
 ###Forced debug mode.
 During development, you may wish to always run in debug mode without typing --debug all the time,
-or perhaps you want to run CLI in debugging mode without your classS receiving the debug option as well.
+or perhaps you want to run CLI in debugging mode without your class receiving the debug option as well.
 ```php
 $cli->enableDebugMode();
 ```
