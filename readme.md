@@ -201,11 +201,15 @@ $cli->run();
 
 ## Advanced options.
 ###Forced debug mode.
-During development, you may wish to always run in debug mode without typing --debug or 
-prevent your class receiving the debug option as well.
+During development, you may wish to always run in debug mode without typing --debug.
 ```php
 $cli->run(true);
 ```
+Or you may wish to prevent debug mode from working at all
+WARNING: Doing this disables the --debug option as it if never exited.
+So if the user types --debug now the applicaiton wont run because its an invalid option.
+
+
 If you DO want both CLI and your class to receive the debug option by default simply 
 add to the global argv before it runs.
 ```php

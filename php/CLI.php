@@ -65,9 +65,9 @@ class CLI
     private $reflectionMethod;
 
     /**
-     * @var bool
+     * @var bool|null
      */
-    private $debug = false;
+    private $debug = null;
 
     /**
      * @var string[]
@@ -176,202 +176,10 @@ class CLI
      */
     public function run($debug = null)
     {
-        //[ PROCESSING ARGUMENTS ]
-        $args = $this->arguments;
-
-        //remove argument 0 is the first word the user typed and only used for usage statement.
-        $this->initiator = array_shift($args);
-
-        //if no arguments just skip all the processing and display usage
-        if (empty($args)) {
-            $this->usage();
-            exit(0);
-        }
-
-        //if there is only one argument and it is a help option then just show help now and exit (faster)
-        if (count($args) === 1 && $args[0] === '--help') {
-            $this->help();
-            exit(0);
-        }
-
-        /*
-         * Process options/flags according to posix conventions:
-         *  https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
-         * Need to process these first and remove them from the remaining arguments.
-         */
-        $subjectProperties = get_class_vars(get_class($this->subjectClass));
-        $cliReservedOptions = ['help', 'i'];
-        if ($debug === null) {
-            $cliReservedOptions[] = 'debug';
-        } else {
-            $this->debug = $debug;
-        }
-
-        foreach ($args as $key => $arg) {
-            //LONG OPTIONS --example
-            if (substr($arg, 0, 2) == "--") {
-                $longOption = substr($arg, 2);
-
-                //CLI Reserved options first
-                if (in_array($longOption, $cliReservedOptions)) {
-                    $this->{$longOption} = true;
-                }
-
-                if (array_key_exists($longOption, $subjectProperties)) {
-                    $this->subjectClass->{$longOption} = true;
-                } elseif (!in_array($longOption, $cliReservedOptions)) {
-                    throw new UserWarningResponse("--$longOption is not a valid option.");
-                }
-
-                //remove the argument so its not used for a method.
-                unset($args[$key]);
-                continue;
-            }
-
-            //SHORT OPTIONS -abc
-            if (substr($arg, 0, 1) == "-") {
-                $arg = substr($arg, 1); //remove dash
-                //multiple options can be grouped together eg -abc
-                foreach (str_split($arg) as $opt) {
-                    //CLI Reserved options
-                    if ($opt === 'i') {
-                        $this->exitWith(
-                            "-i option is not supported.",
-                            new \Exception('-i is reserved for an interactive mode I was hoping to build later.')
-                        );
-                    }
-
-                    if (array_key_exists($opt, $subjectProperties)) {
-                        $this->subjectClass->{$opt} = true;
-                    } else {
-                        throw new UserWarningResponse("-$opt is not a valid option.");
-                    }
-                }
-                unset($args[$key]);
-                continue;
-            }
-            //todo: support options with arguments eg. mysql -u username eg2. -files ...fileNames,
-            // instead of just assigning 'true' value.
-            /*
-             * Note: thinking about the best way to achieve this would be to use typed properties from
-             *  Php7.4 but i might do without this, releaser a php7.2 version first.
-             *  Could then also enforce scalar types for the value options.
-             */
-        }
-
-        //the very next argument should be the class method to call
-        $this->subjectMethod = array_shift($args);
-        if (!$this->subjectMethod) {
-            //todo: might be good in future to allow for _invoke() when no method is specified
-            // just in case there are those who just want the script to run without any arguments?
-            echo "No function was specified.\n";
-            $this->listAvailableFunctions();
-            exit(1);
-        }
-
-        //everything after that is a parameter for the function
-        $this->subjectArguments = $args;
-
-        //From here on other functions rely on the reflection method to exist.
+        $this->debug = $debug;
         try {
-            $this->reflectionMethod = new ReflectionMethod($this->subjectClass, $this->subjectMethod);
-        } catch (ReflectionException $e) {
-            //if we cant get a reflection then the method does not exist
-            echo "'{$this->subjectMethod}' is not a recognized command!\n";
-            $this->listAvailableFunctions();
-            exit(1);
-        }
-
-        //method has to be public
-        if (!$this->reflectionMethod->isPublic()) {
-            echo "'{$this->subjectMethod}' is not a recognized command!\n";
-            $this->listAvailableFunctions();
-            if ($this->debug) {
-                echo "❌ Only public methods can be executed. Make your methods public.\n";
-            }
-            exit(1);
-        }
-
-        //help? should be executed before checking anything else.
-        if ($this->help) {
-            $this->help();
-            exit(0);
-        }
-
-        //intentionally prevent all functions from being run with any number of arguments by default
-        if (
-            count($this->subjectArguments) > $this->reflectionMethod->getNumberOfParameters() &&
-            $this->reflectionMethod->isVariadic() === false
-        ) {
-            echo "Too many arguments! '", $this->subjectMethod,
-            "' can only accept ", $this->reflectionMethod->getNumberOfParameters(),
-            ' and you gave me ', count($this->subjectArguments), "\n";
-            if ($this->debug) {
-                echo '❌ Php normally allows excess parameters but CLI is preventing this behaviour. ',
-                ' You should consider using variadic functions if you need this.',
-                "\n";
-            }
-            exit(1);
-        }
-
-        //prevent too few arguments instead of catching Argument error.
-        if (count($this->subjectArguments) < $this->reflectionMethod->getNumberOfRequiredParameters()) {
-            echo "❌ Too few arguments. \n";
-            $this->help();
-            exit(1);
-        }
-
-        //arguments must be able to pass strict scalar typing.
-        foreach ($this->reflectionMethod->getParameters() as $pos => $reflectionParameter) {
-            if (!array_key_exists($pos, $this->subjectArguments)) {
-                //we have no more arguments to convert.
-                break;
-            }
-
-            $reflectionType = $reflectionParameter->getType();
-            //Note: supporting php versions with deprecated string casts.
-            // See https://www.php.net/manual/en/reflectiontype.tostring.php
-            if ($reflectionType instanceof \ReflectionNamedType) {
-                $reflectionType = $reflectionType->getName();
-            } elseif (is_object($reflectionType) && get_class($reflectionType) === '\ReflectionUnionType') {
-                throw new \Exception("Union parameter types (and PHPv8 in general) is not yet supported.");
-            } else {
-                //older PHP versions can cast to a string.
-                $reflectionType = (string)$reflectionType;
-            }
-
-            //convert the input if needed...
-            if (empty($reflectionType) || $reflectionType === 'string' || $reflectionType === 'mixed') {
-                continue;//no conversion needed.
-            }
-            if ($reflectionType !== 'string') {
-                if ($this->reflectionMethod->isVariadic()) {
-                    //all remaining params will also be the same type.
-                    while ($pos < count($this->subjectArguments)) {
-                        $this->subjectArguments[$pos] = json_decode($this->subjectArguments[$pos]);
-                        $pos++;
-                    }
-                } else {
-                    $this->subjectArguments[$pos] = json_decode($this->subjectArguments[$pos]);
-                }
-            }
-        }
-
-        $this->execute();
-    }
-
-    /**
-     * Runs the method.
-     *
-     * @throws Throwable
-     */
-    private function execute()
-    {
-        try {
-            $result = $this->subjectClass->{$this->subjectMethod}(...$this->subjectArguments);
-            print_r($result);
-            echo "\n";
-            exit(0);
+            $this->prepare();
+            $this->execute();
         } catch (UserResponse $response) {
             //todo: check what happens in debug mode when there is a previous throwable attached.
             $this->exitWith($response->message(), $response);
@@ -408,6 +216,19 @@ class CLI
                 $throwable
             );
         }
+    }
+
+    /**
+     * Runs the method.
+     *
+     * @throws Throwable
+     */
+    private function execute()
+    {
+        $result = $this->subjectClass->{$this->subjectMethod}(...$this->subjectArguments);
+        print_r($result);
+        echo "\n";
+        exit(0);
     }
 
     /**
@@ -582,6 +403,188 @@ class CLI
             echo "'{$shortName}' has the following parameters:\n";
             foreach ($reflectionParameters as $reflectionParameter) {
                 echo $reflectionParameter, "\n";
+            }
+        }
+    }
+
+    /**
+     * Extracts the options form the command line arguments
+     *
+     * @throws Throwable
+     * @throws UserWarningResponse
+     */
+    private function prepare()
+    {
+        //[ PROCESSING ARGUMENTS ]
+        $args = $this->arguments;
+
+        //remove argument 0 is the first word the user typed and only used for usage statement.
+        $this->initiator = array_shift($args);
+
+        //if no arguments just skip all the processing and display usage
+        if (empty($args)) {
+            $this->usage();
+            exit(0);
+        }
+
+        //if there is only one argument and it is a help option then just show help now and exit (faster)
+        if (count($args) === 1 && $args[0] === '--help') {
+            $this->help();
+            exit(0);
+        }
+
+        /*
+         * Process options/flags according to posix conventions:
+         *  https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
+         * Need to process these first and remove them from the remaining arguments.
+         */
+        $subjectProperties = get_class_vars(get_class($this->subjectClass));
+        $cliReservedOptions = ['help', 'i'];
+        if ($this->debug === null) {
+            //if debug mode has not been set then allow it to be set with --debug option.
+            $cliReservedOptions[] = 'debug';
+        }
+
+        foreach ($args as $key => $arg) {
+            //LONG OPTIONS --example
+            if (substr($arg, 0, 2) == "--") {
+                $longOption = substr($arg, 2);
+
+                //CLI Reserved options first
+                if (in_array($longOption, $cliReservedOptions)) {
+                    $this->{$longOption} = true;
+                }
+
+                if (array_key_exists($longOption, $subjectProperties)) {
+                    $this->subjectClass->{$longOption} = true;
+                } elseif (!in_array($longOption, $cliReservedOptions)) {
+                    throw new UserWarningResponse("--$longOption is not a valid option.");
+                }
+
+                //remove the argument so its not used for a method.
+                unset($args[$key]);
+                continue;
+            }
+
+            //SHORT OPTIONS -abc
+            if (substr($arg, 0, 1) == "-") {
+                $arg = substr($arg, 1); //remove dash
+                //multiple options can be grouped together eg -abc
+                foreach (str_split($arg) as $opt) {
+                    //CLI Reserved options
+                    if ($opt === 'i') {
+                        $this->exitWith(
+                            "-i option is not supported.",
+                            new \Exception('-i is reserved for an interactive mode I was hoping to build later.')
+                        );
+                    }
+
+                    if (array_key_exists($opt, $subjectProperties)) {
+                        $this->subjectClass->{$opt} = true;
+                    } else {
+                        throw new UserWarningResponse("-$opt is not a valid option.");
+                    }
+                }
+                unset($args[$key]);
+                continue;
+            }
+            //todo: support options with arguments eg. mysql -u username eg2. -files ...fileNames,
+            // instead of just assigning 'true' value.
+        }
+
+        //the very next argument should be the class method to call
+        $this->subjectMethod = array_shift($args);
+        if (!$this->subjectMethod) {
+            echo "No function was specified.\n";
+            $this->listAvailableFunctions();
+            exit(1);
+        }
+
+        //everything after that is a parameter for the function
+        $this->subjectArguments = $args;
+
+        //From here on other functions rely on the reflection method to exist.
+        try {
+            $this->reflectionMethod = new ReflectionMethod($this->subjectClass, $this->subjectMethod);
+        } catch (ReflectionException $e) {
+            //if we cant get a reflection then the method does not exist
+            echo "'{$this->subjectMethod}' is not a recognized command!\n";
+            $this->listAvailableFunctions();
+            exit(1);
+        }
+
+        //method has to be public
+        if (!$this->reflectionMethod->isPublic()) {
+            echo "'{$this->subjectMethod}' is not a recognized command!\n";
+            $this->listAvailableFunctions();
+            if ($this->debug) {
+                echo "❌ Only public methods can be executed. Make your methods public.\n";
+            }
+            exit(1);
+        }
+
+        //help? should be executed before checking anything else.
+        if ($this->help) {
+            $this->help();
+            exit(0);
+        }
+
+        //intentionally prevent all functions from being run with any number of arguments by default
+        if (
+            count($this->subjectArguments) > $this->reflectionMethod->getNumberOfParameters() &&
+            $this->reflectionMethod->isVariadic() === false
+        ) {
+            echo "Too many arguments! '", $this->subjectMethod,
+            "' can only accept ", $this->reflectionMethod->getNumberOfParameters(),
+            ' and you gave me ', count($this->subjectArguments), "\n";
+            if ($this->debug) {
+                echo '❌ Php normally allows excess parameters but CLI is preventing this behaviour. ',
+                ' You should consider using variadic functions if you need this.',
+                "\n";
+            }
+            exit(1);
+        }
+
+        //prevent too few arguments instead of catching Argument error.
+        if (count($this->subjectArguments) < $this->reflectionMethod->getNumberOfRequiredParameters()) {
+            echo "❌ Too few arguments. \n";
+            $this->help();
+            exit(1);
+        }
+
+        //arguments must be able to pass strict scalar typing.
+        foreach ($this->reflectionMethod->getParameters() as $pos => $reflectionParameter) {
+            if (!array_key_exists($pos, $this->subjectArguments)) {
+                //we have no more arguments to convert.
+                break;
+            }
+
+            $reflectionType = $reflectionParameter->getType();
+            //Note: supporting php versions with deprecated string casts.
+            // See https://www.php.net/manual/en/reflectiontype.tostring.php
+            if ($reflectionType instanceof \ReflectionNamedType) {
+                $reflectionType = $reflectionType->getName();
+            } elseif (is_object($reflectionType) && get_class($reflectionType) === '\ReflectionUnionType') {
+                throw new \Exception("Union parameter types (and PHPv8 in general) is not yet supported.");
+            } else {
+                //older PHP versions can cast to a string.
+                $reflectionType = (string)$reflectionType;
+            }
+
+            //convert the input if needed...
+            if (empty($reflectionType) || $reflectionType === 'string' || $reflectionType === 'mixed') {
+                continue;//no conversion needed.
+            }
+            if ($reflectionType !== 'string') {
+                if ($this->reflectionMethod->isVariadic()) {
+                    //all remaining params will also be the same type.
+                    while ($pos < count($this->subjectArguments)) {
+                        $this->subjectArguments[$pos] = json_decode($this->subjectArguments[$pos]);
+                        $pos++;
+                    }
+                } else {
+                    $this->subjectArguments[$pos] = json_decode($this->subjectArguments[$pos]);
+                }
             }
         }
     }
