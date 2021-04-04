@@ -26,6 +26,8 @@ class TestSubject
     public $banana;
     public $carrot;
 
+    public $debug;
+
     public function simple()
     {
         echo __METHOD__ , " was executed!";

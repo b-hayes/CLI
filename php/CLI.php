@@ -184,27 +184,7 @@ class CLI
             //todo: check what happens in debug mode when there is a previous throwable attached.
             $this->exitWith($response->message(), $response);
         } catch (Throwable $throwable) {
-            //Important: is it a type error caused by bad user input?
-            if (
-                $throwable instanceof \TypeError &&
-                strpos($throwable->getMessage(), $this->subjectMethod) !== false &&
-                isset($throwable->getTrace()[1]) &&
-                $throwable->getTrace()[1]['file'] === __FILE__ &&
-                $throwable->getTrace()[1]['function'] === __FUNCTION__
-            ) {
-                //We caused the type error by trying to use the users input as a method argument,
-                // so lets tell the suer its their fault.
-                $message = str_replace(
-                    ' passed to ' . get_class($this->subjectClass) . "::{$this->subjectMethod}()",
-                    '',
-                    $throwable->getMessage()
-                );
-                echo '❌ ' . explode(', ', $message)[0], ". ";
-                $this->help();
-                exit(1);
-            }
-
-            //Is it a custom user response exception
+            //Is it a custom user response exception?
             if (in_array(get_class($throwable), $this->clientMessageExceptions)) {
                 $this->exitWith($throwable->getMessage(), $throwable);
             }
@@ -225,10 +205,34 @@ class CLI
      */
     private function execute()
     {
-        $result = $this->subjectClass->{$this->subjectMethod}(...$this->subjectArguments);
-        print_r($result);
-        echo "\n";
-        exit(0);
+        try {
+            $result = $this->subjectClass->{$this->subjectMethod}(...$this->subjectArguments);
+            print_r($result);
+            echo "\n";
+            exit(0);
+        } catch (\TypeError $typeError) {
+            //Important: is it a type error caused by bad user input?
+            if (
+                strpos($typeError->getMessage(), $this->subjectMethod) !== false &&
+                isset($typeError->getTrace()[1]) &&
+                $typeError->getTrace()[1]['file'] === __FILE__ &&
+                $typeError->getTrace()[1]['function'] === 'execute'
+            ) {
+                //We caused the type error by trying to use the users input as a method argument,
+                // so lets tell the user its their fault.
+                $message = str_replace(
+                    ' passed to ' . get_class($this->subjectClass) . "::{$this->subjectMethod}()",
+                    '',
+                    $typeError->getMessage()
+                );
+                echo '❌ ' . explode(', ', $message)[0], ". ";
+                $this->help();
+                exit(1);
+            }
+
+            //its a problem with the application pass it up.
+            throw $typeError;
+        }
     }
 
     /**
