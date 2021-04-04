@@ -20,11 +20,11 @@ class UserResponse extends \Exception
     public function message(bool $withColour = true, bool $withIcon = true): string
     {
         $message = $this->getMessage();
-        if ($this->icon) {
+        if ($withIcon) {
             $message = $this->icon . ' ' . $message;
         }
-        if ($this->colour) {
-            //todo: get colour code from string + message + reset colour code.
+        if ($withColour) {
+            //todo: use colour
         }
         return $message;
     }
@@ -42,12 +42,12 @@ class UserResponse extends \Exception
     public function __construct(
         string $userMessage,
         string $colour = 'Blue',
-        string $icon = 'ℹ ',
+        string $icon = '',
         int $code = 1,
         Throwable $previous = null
     ) {
         $this->colour = $colour;
-        parent::__construct($userMessage, $code, $previous);
         $this->icon = $icon;
+        parent::__construct($userMessage, $code, $previous);
     }
 }

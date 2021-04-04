@@ -11,7 +11,6 @@ use ReflectionException;
 use ReflectionMethod;
 use Throwable;
 
-//TODO: commit a php5.6, 7.0, and 7.2 version? before adding more features and only support 7.4+?
 
 /**
  * Class CLI
