@@ -475,6 +475,39 @@ class CLITest extends TestCase
         $this->assertSuccessfulExecution('dumpGlobals', 'globalArgv', 'globalArgv');
     }
 
+    public function testForcedDebugMode()
+    {
+        $this->command = 'php test/run_forcedDebugMode.php';
+        //with the debug mode forced on, debug should no longer be a valid option and throw an error
+        $this->assertFailureToExecute(
+            '', //no method, we are testing option only.
+            '--debug',
+            '--debug is not a valid option',
+            'Stack trace:', //the full error and stack trace should be shown since debug mode is on.
+            'BHayes\CLI\CLI->prepare()' //and should contain the source of the error.
+        );
+    }
+
+    public function testDisabledDebugMode()
+    {
+        $this->command = 'php test/run_disabledDebugMode.php';
+        //with the debug mode forced on, debug should no longer be a valid option and throw an error
+        $output = $this->assertFailureToExecute(
+            '', //no method, we are testing option only.
+            '--debug',
+            '--debug is not a valid option'
+        );
+        //since debug mode is off there should be no stack trace or internal information.
+        self::assertStringNotContainsString(
+            'Stack trace:',
+            $output
+        );
+        self::assertStringNotContainsString(
+            'BHayes\CLI\CLI->prepare()',
+            $output
+        );
+    }
+
     public function testForBreakingChanges()
     {
         self::assertTrue(true);
