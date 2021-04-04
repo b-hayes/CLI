@@ -475,6 +475,12 @@ class CLITest extends TestCase
         $this->assertSuccessfulExecution('dumpGlobals', 'globalArgv', 'globalArgv');
     }
 
+    public function testAnonymousSubjectClass()
+    {
+        $this->command = 'php test/run_forcedDebugMode.php';
+        $this->assertSuccessfulExecution('helloWorld', '');
+    }
+
     public function testForcedDebugMode()
     {
         $this->command = 'php test/run_forcedDebugMode.php';
