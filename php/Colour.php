@@ -8,23 +8,26 @@ use phpDocumentor\Reflection\Types\This;
 
 class Colour
 {
-    public const BLACK = '0;30';
-    public const DARK_GREY = '1;30';
-    public const BLUE = '0;34';
-    public const LIGHT_BLUE = '1;34';
-    public const GREEN = '0;32';
-    public const LIGHT_GREEN = '1;32';
-    public const CYAN = '0;36';
-    public const LIGHT_CYAN = '1;36';
-    public const RED = '0;31';
-    public const LIGHT_RED = '1;31';
-    public const PURPLE = '0;35';
-    public const LIGHT_PURPLE = '1;35';
-    public const BROWN = '0;33';
-    public const YELLOW = '1;33';
-    public const LIGHT_GREY = '0;37';
-    public const WHITE = '1;37';
+    public const DEFAULT = '39';
+    public const BLACK = '30';
+    public const RED = '31';
+    public const GREEN = '32';
+    public const YELLOW = '33';
+    public const BLUE = '34';
+    public const MAGENTA = '35';
+    public const CYAN = '36';
+    public const LIGHT_GREY = '37';
 
+    public const DARK_GREY = '90';
+    public const LIGHT_RED = '91';
+    public const LIGHT_GREEN = '92';
+    public const LIGHT_YELLOW = '93';
+    public const LIGHT_BLUE = '94';
+    public const LIGHT_MAGENTA = '95';
+    public const LIGHT_CYAN = '96';
+    public const WHITE = '97';
+
+    public const BG_DEFAULT = '49';
     public const BG_BLACK = '40';
     public const BG_RED = '41';
     public const BG_GREEN = '42';
@@ -34,51 +37,34 @@ class Colour
     public const BG_CYAN = '46';
     public const BG_LIGHT_GREY = '47';
 
-    public const BOLD = "1";
-    public const DIM = "2";
-    public const UNDERLINED = "4";
-    public const BLINK = "5";
-    public const INVERSE = "7";
-    public const HIDDEN = "8";
+    public const BG_DARK_GREY = '100';
+    public const BG_LIGHT_RED = '101';
+    public const BG_LIGHT_GREEN = '102';
+    public const BG_LIGHT_YELLOW = '103';
+    public const BG_LIGHT_BLUE = '104';
+    public const BG_LIGHT_MAGENTA = '105';
+    public const BG_LIGHT_CYAN = '106';
+    public const BG_WHITE = '107';
+
+
+    public const AT_BOLD = "1";
+    public const AT_DIM = "2";
+    public const AT_UNDERLINED = "4";
+    public const AT_BLINK = "5";
+    public const AT_INVERSE = "7";
+    public const AT_HIDDEN = "8";
+
     public const RESET = "0";
 
-    public const FG = [
-        'BLACK' => '0;30',
-        'DARK_GREY' => '1;30',
-        'BLUE' => '0;34',
-        'LIGHT_BLUE' => '1;34',
-        'GREEN' => '0;32',
-        'LIGHT_GREEN' => '1;32',
-        'CYAN' => '0;36',
-        'LIGHT_CYAN' => '1;36',
-        'RED' => '0;31',
-        'LIGHT_RED' => '1;31',
-        'PURPLE' => '0;35',
-        'LIGHT_PURPLE' => '1;35',
-        'BROWN' => '0;33',
-        'YELLOW' => '1;33',
-        'LIGHT_GREY' => '0;37',
-        'WHITE' => '1;37',
-    ];
 
-    public const BG = [
-        'BLACK' => '40',
-        'RED' => '41',
-        'GREEN' => '42',
-        'YELLOW' => '43',
-        'BLUE' => '44',
-        'MAGENTA' => '45',
-        'CYAN' => '46',
-        'LIGHT_GREY' => '47',
-    ];
-
-
-    private static function getColourCodeFromName(string $colourName): string
+    public static function getColourCodeFromName(string $colourName): string
     {
-        return self::FG[strtoupper($colourName)] ?? '';
+        static $constants;
+        $constants = $constants ?? (new \ReflectionClass())->getConstants();
+        var_export($constants);
     }
 
-    private static function getColouredString(string $string, string $colour = null, $bgColour = null): string
+    public static function getColouredString(string $string, string $colour = null, $bgColour = null): string
     {
         if ($colour && $bgColour) {
             return "\033[{$colour};{$bgColour}m{$string}\033[0m";
