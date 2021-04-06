@@ -169,7 +169,7 @@ class CLI
 
             //its a real error
             $this->exitWith(
-                "Failed to execute '{$this->subjectMethod}', the program crashed." .
+                "Failed to execute '$this->subjectMethod', the program crashed." .
                 " Please contact the developers if this keeps happening.",
                 $throwable
             );
@@ -199,7 +199,7 @@ class CLI
                 //We caused the type error by trying to use the users input as a method argument,
                 // so lets tell the user its their fault while stripping sensitive info out.
                 $message = str_replace(
-                    ' passed to ' . get_class($this->subjectClass) . "::{$this->subjectMethod}()",
+                    ' passed to ' . get_class($this->subjectClass) . "::$this->subjectMethod()",
                     '',
                     $typeError->getMessage()
                 );
@@ -282,19 +282,20 @@ class CLI
      *
      * @return bool
      */
-    public static function confirm(string $message = 'Continue?', string $default = 'Y', $inputStream = 'php://stdin'): bool
-    {
+    public static function confirm(
+        string $message = 'Continue?',
+        string $default = 'Y',
+        $inputStream = 'php://stdin'
+    ): bool {
         while (true) {
             $prompt = self::prompt($message, $default, true, $inputStream);
             switch ($prompt) {
                 case 'y':
                 case 'yes':
                     return true;
-                    break;
                 case 'n':
                 case 'no':
                     return false;
-                break;
             }
         }
     }
@@ -374,13 +375,13 @@ class CLI
 
         $shortMethodName = $this->reflectionMethod->getShortName();
         $doc = $this->reflectionMethod->getDocComment()
-            ?: "No documentation found for {$shortMethodName}";
+            ?: "No documentation found for $shortMethodName";
         $this->printFormattedDocs($doc);
         $reflectionParameters = $this->reflectionMethod->getParameters();
         if (empty($reflectionParameters)) {
-            echo "'{$shortMethodName}' does not require any parameters.\n";
+            echo "'$shortMethodName' does not require any parameters.\n";
         } else {
-            echo "'{$shortMethodName}' has the following parameters:\n";
+            echo "'$shortMethodName' has the following parameters:\n";
             foreach ($reflectionParameters as $reflectionParameter) {
                 echo $reflectionParameter, "\n";
             }
@@ -482,12 +483,12 @@ class CLI
             $this->reflectionMethod = new ReflectionMethod($this->subjectClass, $this->subjectMethod);
         } catch (ReflectionException $e) {
             //the method must not be defined in the class.
-            $this->exitWith("'{$this->subjectMethod}' is not a recognized command.");
+            $this->exitWith("'$this->subjectMethod' is not a recognized command.");
         }
 
         //method has to be public
         if (!$this->reflectionMethod->isPublic()) {
-            $this->exitWith("'{$this->subjectMethod}' is not a recognized command.");
+            $this->exitWith("'$this->subjectMethod' is not a recognized command.");
         }
 
         //help? should be executed before checking anything else.

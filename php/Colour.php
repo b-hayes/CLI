@@ -6,8 +6,6 @@ declare(strict_types=1);
 
 namespace BHayes\CLI;
 
-use phpDocumentor\Reflection\Types\This;
-
 class Colour
 {
     public const DEFAULT = 39;
