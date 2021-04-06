@@ -30,7 +30,10 @@ class UserResponse extends \Exception
         if ($withIcon && $this->icon) {
             $message = $this->icon . ' ' . $message;
         }
-        return Colour::string($message, $this->colour);
+        if ($this->colour) {
+            $message = Colour::string($message, $this->colour);
+        }
+        return $message;
     }
 
     /**

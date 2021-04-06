@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BHayes\CLI\Test;
 
 use BHayes\CLI\CLI;
+use BHayes\CLI\Colour;
 use PHPUnit\Framework\TestCase;
 
 class CLITest extends TestCase
@@ -372,36 +373,39 @@ class CLITest extends TestCase
     public function testUserResponses()
     {
         //added a new feature, user response exceptions that can be thrown anywhere to print a user response message.
-        $this->assertFailureToExecute(
+        $default = $this->assertFailureToExecute(
             'throwsUserResponse',
             '',
-            'says hi!',
-            '' //the default icon for UserResponse
-            //todo: check if the message is printed in the correct colour when this feature is added.
+            'says hi!'
+        );
+        self::assertStringNotContainsString(
+            "\033[",
+            $default,
+            'The user response message should have no colour by default'
         );
 
         $this->assertFailureToExecute(
             'throwsUserWarning',
             '',
             'says hi!',
-            '⚠' //the default icon for Warning
-            //todo: check if the message is printed in the correct colour when this feature is added.
+            '⚠', //the default icon for Warning
+            "\033[" . Colour::YELLOW . "m" //warnings are yellow by default
         );
 
         $this->assertFailureToExecute(
             'throwsUserError',
             '',
             'says hi!',
-            '❌' //the default icon for Error
-            //todo: check if the message is printed in the correct colour when this feature is added.
+            '❌', //the default icon for Error
+            "\033[" . Colour::RED . "m" //errors are red by default
         );
 
         $this->assertSuccessfulExecution(
             'throwsUserSuccess',
             '',
             'Finished!',
-            '✔' //the default icon for Success
-            //todo: check if the message is printed in the correct colour when this feature is added.
+            '✔', //the default icon for Success
+            "\033[" . Colour::GREEN . "m" //success messages are green by default
         );
     }
 
