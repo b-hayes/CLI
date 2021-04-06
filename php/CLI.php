@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace BHayes\CLI;
 
-use Exception;
-use phpDocumentor\Reflection\Types\This;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
 use Throwable;
-
 
 /**
  * Class CLI
@@ -49,11 +46,6 @@ class CLI
     private $subjectMethod;
 
     /**
-     * @var array
-     */
-    private $options = [];
-
-    /**
      * @var array the remaining input arguments after the function is determined.
      */
     private $subjectArguments = [];
@@ -74,11 +66,6 @@ class CLI
     private $clientMessageExceptions = [];
 
     /**
-     * @var array
-     */
-    private $reservedOptions = [];
-
-    /**
      * @var bool
      */
     private $help = false;
@@ -86,12 +73,7 @@ class CLI
     /**
      * @var array
      */
-    private $arguments = [];
-
-    /**
-     * @var object|null
-     */
-    private $class;
+    private $arguments;
 
 
     /**
@@ -146,7 +128,6 @@ class CLI
          * If an exception is thrown of this type it's message will be printed for the user.
          */
         $this->clientMessageExceptions = $clientMessageExceptions;
-        $this->class = $class;
     }
 
     /**
@@ -154,15 +135,14 @@ class CLI
      *  - The first argument is the name of the class method that will be run.
      *  - All remaining arguments will be passed on as parameters to the above method.
      *
-     * IF the first argument does not match a public method name
+     * If the first argument does not match a public method name
      *  - a list of the public methods on the class is printed.
      *
      * If the minimum required parameters are not met OR there are too many arguments then:
      *  - the arguments for the method are listed.
      *
-     * Options / Flags are recognizes as per the posix standard:
-     *  https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
-     *  todo Options are stored in for the class to decide if it shall use them or not.
+     * Options are matched to public properties defined int he subject class.
+     *  Options are processed according to: https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
      *
      * RESERVED OPTIONS
      *  There are a number of reserved options that this CLI class uses such as the,
