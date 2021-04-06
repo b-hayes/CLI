@@ -197,18 +197,17 @@ class CLI
                 $typeError->getTrace()[1]['function'] === 'execute'
             ) {
                 //We caused the type error by trying to use the users input as a method argument,
-                // so lets tell the user its their fault.
+                // so lets tell the user its their fault while stripping sensitive info out.
                 $message = str_replace(
                     ' passed to ' . get_class($this->subjectClass) . "::{$this->subjectMethod}()",
                     '',
                     $typeError->getMessage()
                 );
                 echo '❌ ' . explode(', ', $message)[0], ". ";
-                $this->help();
+                $this->printHelp();
                 exit(1);
             }
 
-            //its a problem with the application pass it up.
             throw $typeError;
         }
     }
@@ -303,20 +302,22 @@ class CLI
     /**
      * Displays error message depending on input and debug settings.
      *
-     * - always outputs $printMessage.
-     * - always ensures output ends with a new line.
-     * - If an error/exception is provided:
-     *      - if debug mode is on, then the internal error message is displayed.
-     *      - if logs are enabled in php ini the internal error is logged.
+     * - prints $printMessage in red with an X emoji.
+     * - if debug mode and there is an exception, the exception is thrown for error reporting.
+     * - if throwable the code is used as an exit code, but not 0, if 0 exit code is 1.
+     * - only UserResponse can use 0 as an exit code.
      *
      * @param string|null    $printMessage If null the exception message is used.
      * @param Throwable|null $throwable
      *
      * @throws Throwable
      */
-    private function exitWith(string $printMessage, Throwable $throwable)
+    private function exitWith(string $printMessage, ?Throwable $throwable = null)
     {
-        echo $printMessage, "\n";
+        self::printLine($printMessage);
+        if (!$throwable) {
+            exit(1);
+        }
 
         if ($this->debug) {
             throw $throwable;
@@ -331,22 +332,22 @@ class CLI
         exit($throwable->getCode() ?: 1);
     }
 
-    private function usage()
+    private function printUsage()
     {
         $usage = "usage: " . $this->initiator . " [function] [-?][operands...]";
         echo $usage, "\n";
-        $this->listAvailableFunctions();
+        $this->printAvailableCommands();
         echo "Use --help for more information.\n";
     }
 
-    private function listAvailableFunctions()
+    private function printAvailableCommands()
     {
         $reflectionMethods = $this->reflection->getMethods();
         if (empty($reflectionMethods)) {
-            echo "{$this->reflection->getShortName()} as no functions for you to execute.\n";
+            echo "{$this->reflection->getShortName()} has no commands for you to execute.\n";
             return;
         }
-        echo "Functions available:\n";
+        echo "Commands available:\n";
         foreach ($reflectionMethods as $class_method) {
             if ($class_method->getName() == '__construct') {
                 continue;//construct is not listed
@@ -361,28 +362,25 @@ class CLI
     /**
      * Prints doc blocks or derives details from the class definition to guide the user.
      */
-    private function help()
+    private function printHelp()
     {
         if (!$this->reflectionMethod) {
             $doc = $this->reflection->getDocComment()
                 ?: "No documentation found for {$this->reflection->getShortName()}";
-            echo $doc, "\n";
-            $this->usage();
+            $this->printFormattedDocs($doc);
+            $this->printUsage();
             return;
         }
 
-        $shortName = $this->reflectionMethod->getShortName();
+        $shortMethodName = $this->reflectionMethod->getShortName();
         $doc = $this->reflectionMethod->getDocComment()
-            ?: "No documentation found for {$shortName}";
-        //strip out tab indents
-        $doc = str_replace("\n    ", "\n", $doc);
-        echo $doc, "\n";
-
+            ?: "No documentation found for {$shortMethodName}";
+        $this->printFormattedDocs($doc);
         $reflectionParameters = $this->reflectionMethod->getParameters();
         if (empty($reflectionParameters)) {
-            echo "'{$shortName}' does not require any parameters.\n";
+            echo "'{$shortMethodName}' does not require any parameters.\n";
         } else {
-            echo "'{$shortName}' has the following parameters:\n";
+            echo "'{$shortMethodName}' has the following parameters:\n";
             foreach ($reflectionParameters as $reflectionParameter) {
                 echo $reflectionParameter, "\n";
             }
@@ -405,13 +403,13 @@ class CLI
 
         //if no arguments just skip all the processing and display usage
         if (empty($args)) {
-            $this->usage();
+            $this->printUsage();
             exit(0);
         }
 
         //if there is only one argument and it is a help option then just show help now and exit (faster)
         if (count($args) === 1 && $args[0] === '--help') {
-            $this->help();
+            $this->printHelp();
             exit(0);
         }
 
@@ -440,7 +438,7 @@ class CLI
                 if (array_key_exists($longOption, $subjectProperties)) {
                     $this->subjectClass->{$longOption} = true;
                 } elseif (!in_array($longOption, $cliReservedOptions)) {
-                    throw new UserWarningResponse("--$longOption is not a valid option.");
+                    $this->exitWith("--$longOption is not a valid option.");
                 }
 
                 //remove the argument so its not used for a method.
@@ -455,16 +453,13 @@ class CLI
                 foreach (str_split($arg) as $opt) {
                     //CLI Reserved options
                     if ($opt === 'i') {
-                        $this->exitWith(
-                            "-i option is not supported, yet.",
-                            new \Exception('-i is reserved for an interactive mode I was hoping to build later.')
-                        );
+                        $this->exitWith("-$opt is not a supported option, yet.");
                     }
 
                     if (array_key_exists($opt, $subjectProperties)) {
                         $this->subjectClass->{$opt} = true;
                     } else {
-                        throw new UserWarningResponse("-$opt is not a valid option.");
+                        $this->exitWith("-$opt is not a valid option.");
                     }
                 }
                 unset($args[$key]);
@@ -474,7 +469,8 @@ class CLI
         //the very next argument should be the class method to call
         $this->subjectMethod = array_shift($args);
         if (!$this->subjectMethod) {
-            $this->listAvailableFunctions();
+            echo "No function was specified.\n";
+            $this->printAvailableCommands();
             exit(1);
         }
 
@@ -485,46 +481,45 @@ class CLI
         try {
             $this->reflectionMethod = new ReflectionMethod($this->subjectClass, $this->subjectMethod);
         } catch (ReflectionException $e) {
-            //if we cant get a reflection then the method does not exist
-            throw new UserWarningResponse("'{$this->subjectMethod}' is not a recognized command!");
+            //the method must not be defined in the class.
+            $this->exitWith("'{$this->subjectMethod}' is not a recognized command.");
         }
 
         //method has to be public
         if (!$this->reflectionMethod->isPublic()) {
-            echo "'{$this->subjectMethod}' is not a recognized command!\n";
-            $this->listAvailableFunctions();
-            if ($this->debug) {
-                echo "❌ Only public methods can be executed. Make your methods public.\n";
-            }
-            exit(1);
+            $this->exitWith("'{$this->subjectMethod}' is not a recognized command.");
         }
 
         //help? should be executed before checking anything else.
         if ($this->help) {
-            $this->help();
+            $this->printHelp();
             exit(0);
         }
 
-        //intentionally prevent all functions from being run with any number of arguments by default
+        //intentionally prevent methods from being run with any number of arguments by default
         if (
             count($this->subjectArguments) > $this->reflectionMethod->getNumberOfParameters() &&
             $this->reflectionMethod->isVariadic() === false
         ) {
-            echo "Too many arguments! '", $this->subjectMethod,
-            "' can only accept ", $this->reflectionMethod->getNumberOfParameters(),
-            ' and you gave me ', count($this->subjectArguments), "\n";
+            $message = "Too many arguments! '" . $this->subjectMethod .
+                "' can only accept " . $this->reflectionMethod->getNumberOfParameters() .
+                ' and you gave me ' . count($this->subjectArguments);
+
             if ($this->debug) {
-                echo '❌ Php normally allows excess parameters but CLI is preventing this behaviour. ',
-                ' You should consider using variadic functions if you need this.',
-                "\n";
+                $message .= Colour::string("\nDebug note: ", Colour::AT_BOLD) .
+                'Php normally allows excess parameters but BHayes\CLI intentionally prevents this behaviour. ' .
+                ' You should consider using variadic functions if you need this.';
             }
-            exit(1);
+
+            $this->exitWith(
+                $message
+            );
         }
 
         //prevent too few arguments instead of catching Argument error.
         if (count($this->subjectArguments) < $this->reflectionMethod->getNumberOfRequiredParameters()) {
             echo "❌ Too few arguments. \n";
-            $this->help();
+            $this->printHelp();
             exit(1);
         }
 
@@ -563,5 +558,31 @@ class CLI
                 }
             }
         }
+    }
+
+    private function printFormattedDocs(string $doc)
+    {
+        $docLines = explode("\n", $doc);
+        foreach ($docLines as $docLine) {
+            if (strpos($docLine, '* @') !== false) {
+                continue;
+            }
+            $docLine = str_replace('* Class ', '* ', $docLine);
+            echo trim($docLine), "\n";
+        }
+    }
+
+    /**
+     * Prints text with with "\n" appended, with colour codes if supplied.
+     *
+     * @param string $text
+     * @param int ...$colours
+     */
+    public static function printLine($text = '', int ...$colours)
+    {
+        if ($colours) {
+            $text = Colour::string($text, ...$colours);
+        }
+        echo $text, "\n";
     }
 }

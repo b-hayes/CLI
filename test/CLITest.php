@@ -259,20 +259,14 @@ class CLITest extends TestCase
         $this->assertFailureToExecute(
             'aPrivateMethod',
             'arguments should not matter',
-            'is not a recognized command',
-            //Failure message should include a list of available functions.
-            "Functions available:\n",
-            ...get_class_methods(TestSubject::class)//all the public methods defined on the class.
+            'is not a recognized command'
         );
 
         //same response if you try to execute a protected method
         $this->assertFailureToExecute(
             'aProtectedMethod',
             'arguments should not matter',
-            'is not a recognized command',
-            //Failure message should include a list of available functions.
-            "Functions available:\n",
-            ...get_class_methods(TestSubject::class)//all the public methods defined on the class.
+            'is not a recognized command'
         );
     }
 
@@ -413,7 +407,7 @@ class CLITest extends TestCase
             '',
             //it should mention the following
             'usage:',
-            'Functions available:',
+            'Commands available:',
             '--help'
         );
     }
@@ -487,9 +481,7 @@ class CLITest extends TestCase
         $this->assertFailureToExecute(
             '', //no method, we are testing option only.
             '--debug',
-            '--debug is not a valid option',
-            'Stack trace:', //the full error and stack trace should be shown since debug mode is on.
-            'BHayes\CLI\CLI->prepare()' //and should contain the source of the error.
+            '--debug is not a valid option'
         );
     }
 
