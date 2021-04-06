@@ -1,5 +1,5 @@
 # CLI
-Turn your PHP class into an interactive command line tool.
+Quickly build interactive Command line applications in PHP with 0 effort.
 
 ## Installation
 `composer install b-hayes/cli`
@@ -11,19 +11,20 @@ Simply define a PHP class and inject it into the CLI wrapper 😎.
 ```
 All your public class methods are now available as terminal commands.
 
+Now you can just build your class methods instead of managing the interface. 👍
+
 ### Getting started.
-For those who are new to the concept of using PHP scripts as CLI applications:
-Make a file with a shebang line (#!) at the top that tells your shell to run this in php.
-(for Windows users who don't use Gitbash or WSL you will need to make a batch file instead.)
+For those unfamiliar with command line scripts...
+Make a file with a shebang line (#!) at the top that tells your shell to run this with php.
 
 ```php
 #!/usr/bin/env php
-<?php
-
-require_once 'vendor/autoload.php';
-
+<?php //        👆 important 👇 
+require_once __DIR__ . '/../vendor/autoload.php';
+//just using anonymous class as a quick example, can be any class.
 $yourClass = new Class() {
-    function hello() {
+    function hello(int $number = 0) {
+        if ($number) return "You gave me the number $number";
         return 'Hi ' . \BHayes\CLI\CLI::prompt('Enter your name', `git config user.name`);
     }
 };
@@ -31,42 +32,65 @@ $yourClass = new Class() {
 (new \BHayes\CLI\CLI( $yourClass ))->run();
 ```
 
-Now make the file executable:
-```chmod +x <filename>```
+Next make the file executable:
+```chmod +x myAwesomeNewCliApp```
 
-Now you can run it:
+Now you can run it as a terminal application!
 ```
-./<filename>
+./myAwesomeNewCliApp
 ```
+CLI will guide the terminal user how to run the available methods of your class.
 
-Now your class is command line application!
+#### Windows
+For those in windows who want to use powershell/cmd you will have to also make a batch file int he same locaiton:
+```cmd
+php %~dp0/myAwesomeNewCliApp -- %*
+```
+#### Start a collection.
+I recommend keeping these files in a `/bin` folder in a personal project where
+all your awesome CLI applications will live
+and use git to synchronize them across your computers. 😉
 
 ## Behaviours.
-- Public methods of `$yourClass` become executable commands.
-- Required arguments for public methods will be enforced.
-- Scalar data types for arguments will be enforced.
+Here is what happens when CLI runs your class object.
+
+- Public methods of your Class become executable commands.
+- Automatic usage messages guiding the user how to execute your class methods.
+- Anything returned by a method is printed and no output is suppressed.
+- Required methods parameters will be enforced.
+- Scalar data types for method parameters will be enforced (try it).
 - Prevents user from passing too many arguments unless method is explicitly variadic. (Php allows it but I dont.)
-- Automatic usage telling the user how to use your application methods when they mess up.
 - Help `--help` option will display your doc blocks if you have them.
-- Anonymous classes work, but dynamically added functions do not. (intentional)
-- Anything returned by a method is printed and no output is suppressed beforehand.
-- If you do not inject your own class then CLI will run itself making its prompt methods available to the terminal.
+- Public vars/properties of your class become options/flags.
+- Anonymous classes work
+- Dynamically added functions do not work. (intentional)
+- If you do not inject your own class then CLI will run itself making its own methods available to the terminal.
 
 ### Errors and Exceptions
-There is a set of custom UserResponse exceptions to assist and terminating the app with an error message for the user.
-All other errors and exceptions are suppressed with a generic message unless you run
-the app with `--debug` mode. 
+All errors are caught and suppressed with a generic error message
+unless debug mode is used (see debug mode).
+However, there is a set of UserResponse exceptions for when you just
+want to terminate the app quickly with a message for the user to read.
 
-CLI detects and adjusts the default php error reporting config to prevent errors spitting output to the
-terminal twice.
+CLI also detects and adjusts the default php error reporting config to prevent errors spitting output to the
+terminal twice in debug mode.
 
 ### Responses to the user.
-You can display messages to the user however you feel like it.
- - by printing yourself and exiting manually with an exit code if you wish.
+You can display messages to the user however you want:
+ - by echoing strings yourself and exiting manually.
  - by returning a string, array or anything else to print.
- - by throwing a UserResponse or extended exception type with the message, with desired colour, icon and exit code.
-The UserResponse exceptions have some extended versions for error/success/warning responses
-   so that you don't have to keep specifying the colours and icons and exit codes.
+ - by throwing a UserResponse exceptions.
+
+I recommend using the provided UserResponse exception family for errors,
+so dont have to print the mesage with a new line and then exit with a non
+zero code manually.
+```php
+throw new \BHayes\CLI\UserResponse('This has exit code 1 and no coloured output');
+throw new \BHayes\CLI\UserErrorResponse('Exit code 1 and text is printed in RED');
+throw new \BHayes\CLI\UserWarningResponse('Exit code 1 and text is printed in YELLOW');
+//all responses have an exit code of 1 by default except this one 👇
+throw new \BHayes\CLI\UserSuccessResponse('Exit code 0 and text is printed in GREEN');
+```
 
 ### Options/Flags
 Based on the [POSIX](https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html)
@@ -89,11 +113,10 @@ CLI has reserved some options.
  - -i does nothing but can not be used by your app.
    I have reserved it for "interactive mode" that I am thinking about building.
 
-## Examples (wsl/linux/mac).
+## Examples.
 
-Save these examples as a `testme` file and make it executable `chmod +x ./testme` and run with `./testme`
+Save this example as a `testme` file and make it executable `chmod +x ./testme` and run with `./testme`
 
-### Example 1. Showcase of basic features.
 Play with this to see a showcase of how type hinting dock blocks required and optional params
 user prompts and different outputs etc are used.
 
