@@ -249,10 +249,7 @@ class CLITest extends TestCase
         $output = $this->assertFailureToExecute(
             'doesntExist',
             'arguments should not matter',
-            'is not a recognized command',
-            //Failure message should include a list of available functions.
-            "Functions available:\n",
-            ...get_class_methods(TestSubject::class)//all the public methods defined on the class.
+            'is not a recognized command'
         );
         //only public methods should not be listed.
         self::assertStringNotContainsString($output, 'aPrivateMethod');

@@ -160,7 +160,6 @@ class CLI
             $this->prepare();
             $this->execute();
         } catch (UserResponse $response) {
-            //todo: check what happens in debug mode when there is a previous throwable attached.
             $this->exitWith($response->message(), $response);
         } catch (Throwable $throwable) {
             //Is it a custom user response exception?
@@ -317,7 +316,7 @@ class CLI
      */
     private function exitWith(string $printMessage, Throwable $throwable)
     {
-        echo $printMessage, "\n";//todo: add some colour with a special print function?
+        echo $printMessage, "\n";
 
         if ($this->debug) {
             throw $throwable;
@@ -457,7 +456,7 @@ class CLI
                     //CLI Reserved options
                     if ($opt === 'i') {
                         $this->exitWith(
-                            "-i option is not supported.",
+                            "-i option is not supported, yet.",
                             new \Exception('-i is reserved for an interactive mode I was hoping to build later.')
                         );
                     }
@@ -469,16 +468,12 @@ class CLI
                     }
                 }
                 unset($args[$key]);
-                continue;
             }
-            //todo: support options with arguments eg. mysql -u username eg2. -files ...fileNames,
-            // instead of just assigning 'true' value.
         }
 
         //the very next argument should be the class method to call
         $this->subjectMethod = array_shift($args);
         if (!$this->subjectMethod) {
-            echo "No function was specified.\n";
             $this->listAvailableFunctions();
             exit(1);
         }
@@ -491,9 +486,7 @@ class CLI
             $this->reflectionMethod = new ReflectionMethod($this->subjectClass, $this->subjectMethod);
         } catch (ReflectionException $e) {
             //if we cant get a reflection then the method does not exist
-            echo "'{$this->subjectMethod}' is not a recognized command!\n";
-            $this->listAvailableFunctions();
-            exit(1);
+            throw new UserWarningResponse("'{$this->subjectMethod}' is not a recognized command!");
         }
 
         //method has to be public
