@@ -1,27 +1,20 @@
 # CLI
 Turn your PHP class into an interactive command line tool.
 
-## Features
-Any public method on your class can now run via terminal!
-Typehint your method arguments and CLI will force the user to provide compatible inputs!
-Automatic Usage messages derived from your code!
-Automatic --help option using your doc blocks for self documenting code!
-Easy interactive prompts and confirmation loops with default responses.
-
-### Coming soon
-Easy to use coloured output.
-Config support for users to set/save custom defaults for your app.
-
 ## Installation
 `composer install b-hayes/cli`
 
 ## Usage.
-Simply define a class and inject it into CLI.
+Simply define a PHP class and inject it into the CLI wrapper 😎.
+```php
+(new \BHayes\CLI\CLI( $yourClass ))->run();
+```
+All your public class methods are now available as terminal commands.
 
-CLI will allow your public methods to be run by the terminal user and provide help for method arguments
-and even enforce scalar typehints!
-
-Make a file with a shebang line (#!) at the top like so:
+### Getting started.
+For those who are new to the concept of using PHP scripts as CLI applications:
+Make a file with a shebang line (#!) at the top that tells your shell to run this in php.
+(for Windows users who don't use Gitbash or WSL you will need to make a batch file instead.)
 
 ```php
 #!/usr/bin/env php
@@ -38,7 +31,7 @@ $yourClass = new Class() {
 (new \BHayes\CLI\CLI( $yourClass ))->run();
 ```
 
-Make the file executable:
+Now make the file executable:
 ```chmod +x <filename>```
 
 Now you can run it:

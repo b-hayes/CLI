@@ -1,0 +1,1 @@
+php %~dp0/run_TestSubject.php -- %*
