@@ -42,12 +42,12 @@ class UserResponse extends \Exception
      * @param string         $userMessage Printed by any B-Hayes\CLI based application.
      * @param int            $code        The exit code to use when the application terminates.
      * @param int            $colour      The colour to print the message in. (default will change colour based on code)
-     * @param string         $icon        Displayed before the message if UTF-8 output is enabled.
+     * @param string         $icon        A terminal friendly Emoji for the front of the message.
      * @param Throwable|null $previous    Any related error to print in debug mode.
      */
     public function __construct(
         string $userMessage,
-        int $colour = 0,
+        int $colour = Colour::RESET,
         string $icon = '',
         int $code = 1,
         Throwable $previous = null
