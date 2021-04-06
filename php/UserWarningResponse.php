@@ -10,7 +10,7 @@ class UserWarningResponse extends UserResponse
 {
     public function __construct(
         string $userMessage,
-        string $colour = 'Orange',
+        int $colour = Colour::YELLOW,
         string $icon = '⚠ ',
         int $code = 1,
         Throwable $previous = null

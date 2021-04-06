@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUnused */
 
 declare(strict_types=1);
 
@@ -57,16 +57,24 @@ class Colour
     public const RESET = 0;
 
 
-    public static function codeFromName(string $colourName): int
+    public static function code(string $colourName): int
     {
         static $constants;
         $constants = $constants ?? (new \ReflectionClass(__CLASS__))->getConstants();
+        $code = $constants[str_replace(' ', '_', strtoupper($colourName))] ?? null;
+        if ($code === null) {
+            throw new \InvalidArgumentException("$colourName is not a recognised colour.");
+        }
 
-        return $constants[strtoupper($colourName)] ?? 0;
+        return $code;
     }
 
-    public function string(string $text, int ...$colours): string
+    public static function string(string $text, int ...$colours): string
     {
+        if (empty($colours)) {
+            return $text;
+        }
+
         return "\033[" . implode(';', $colours) . "m$text\033[0m";
     }
 }

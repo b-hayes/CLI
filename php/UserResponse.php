@@ -9,24 +9,28 @@ use Throwable;
 class UserResponse extends \Exception
 {
     /**
-     * @var string
+     * @var int Colour code
      */
     protected $colour;
+
     /**
-     * @var string
+     * @var string an emoji that can be disabled.
      */
     private $icon;
 
-    public function message(bool $withColour = true, bool $withIcon = true): string
+    /**
+     * Creates a coloured version of the exception message.
+     *
+     * @param bool $withIcon
+     * @return string
+     */
+    public function message(bool $withIcon = true): string
     {
         $message = $this->getMessage();
-        if ($withIcon) {
+        if ($withIcon && $this->icon) {
             $message = $this->icon . ' ' . $message;
         }
-        if ($withColour) {
-            //todo: use colour
-        }
-        return $message;
+        return Colour::string($message, $this->colour);
     }
 
     /**
@@ -34,15 +38,14 @@ class UserResponse extends \Exception
      *
      * @param string         $userMessage Printed by any B-Hayes\CLI based application.
      * @param int            $code        The exit code to use when the application terminates.
-     * //todo: add support for the following params somehow:
-     * @param string         $colour      The colour to print the message in. (default will change colour based on code)
+     * @param int            $colour      The colour to print the message in. (default will change colour based on code)
      * @param string         $icon        Displayed before the message if UTF-8 output is enabled.
      * @param Throwable|null $previous    Any related error to print in debug mode.
      */
     public function __construct(
         string $userMessage,
-        string $colour = 'Blue',
-        string $icon = 'ℹ',
+        int $colour = 0,
+        string $icon = '',
         int $code = 1,
         Throwable $previous = null
     ) {

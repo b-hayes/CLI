@@ -10,7 +10,7 @@ class UserErrorResponse extends UserResponse
 {
     public function __construct(
         string $userMessage,
-        string $colour = 'Red',
+        int $colour = Colour::RED,
         string $icon = '❌ ',
         int $code = 1,
         Throwable $previous = null

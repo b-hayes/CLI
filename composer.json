@@ -2,12 +2,6 @@
     "name": "b-hayes/cli",
     "description": "Runs a given class methods via cli",
     "license": "proprietary",
-    "repositories": [
-        {
-            "type": "composer",
-            "url": "http://packages.php7.localhost"
-        }
-    ],
     "authors": [
         {
             "name": "b-hayes",

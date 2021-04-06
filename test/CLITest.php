@@ -376,7 +376,7 @@ class CLITest extends TestCase
             'throwsUserResponse',
             '',
             'says hi!',
-            'ℹ' //the default icon for UserResponse
+            '' //the default icon for UserResponse
             //todo: check if the message is printed in the correct colour when this feature is added.
         );
 
@@ -441,8 +441,6 @@ class CLITest extends TestCase
         $this->assertSuccessfulExecution('binCheck', '0');
         $this->assertFailureToExecute('binCheck', '1');
     }
-
-    // \/ SANITY CHECKS and NOTES \/
 
     public function testNeverUseReflectionToExecute()
     {
