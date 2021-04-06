@@ -384,7 +384,7 @@ class CLITest extends TestCase
             'throwsUserWarning',
             '',
             'says hi!',
-            '⚠' //the default icon for UserResponse
+            '⚠' //the default icon for Warning
             //todo: check if the message is printed in the correct colour when this feature is added.
         );
 
@@ -392,7 +392,7 @@ class CLITest extends TestCase
             'throwsUserError',
             '',
             'says hi!',
-            '❌' //the default icon for UserResponse
+            '❌' //the default icon for Error
             //todo: check if the message is printed in the correct colour when this feature is added.
         );
 
@@ -400,7 +400,7 @@ class CLITest extends TestCase
             'throwsUserSuccess',
             '',
             'Finished!',
-            '✔' //the default icon for UserResponse
+            '✔' //the default icon for Success
             //todo: check if the message is printed in the correct colour when this feature is added.
         );
     }

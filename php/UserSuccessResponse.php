@@ -10,7 +10,7 @@ class UserSuccessResponse extends UserResponse
 {
     public function __construct(
         string $userMessage = 'Finished!',
-        string $colour = 'Green',
+        int $colour = Colour::GREEN,
         string $icon = '✔ ',
         int $code = 0,
         Throwable $previous = null
