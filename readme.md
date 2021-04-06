@@ -1,5 +1,5 @@
 # CLI
-Quickly build interactive Command line applications in PHP with 0 effort.
+Quickly build interactive Command-line applications in PHP with 0 effort.
 
 ## Installation
 `composer install b-hayes/cli`
@@ -14,8 +14,8 @@ All your public class methods are now available as terminal commands.
 Now you can just build your class methods instead of managing the interface. 👍
 
 ### Getting started.
-For those unfamiliar with command line scripts...
-Make a file with a shebang line (#!) at the top that tells your shell to run this with php.
+For those unfamiliar with command-line scripts...
+Make a file with a shebang line (#!) at the top that tells your shell to run this with PHP.
 
 ```php
 #!/usr/bin/env php
@@ -32,17 +32,17 @@ $yourClass = new Class() {
 (new \BHayes\CLI\CLI( $yourClass ))->run();
 ```
 
-Next make the file executable:
+Next, make the file executable:
 ```chmod +x myAwesomeNewCliApp```
 
 Now you can run it as a terminal application!
 ```
 ./myAwesomeNewCliApp
 ```
-CLI will guide the terminal user how to run the available methods of your class.
+CLI will guide the terminal user on how to run the available methods of your class.
 
 #### Windows
-For those in windows who want to use powershell/cmd you will have to also make a batch file int he same locaiton:
+For those in windows who want to use powershell/cmd you will have to also make a batch file in the same location:
 ```cmd
 php %~dp0/myAwesomeNewCliApp -- %*
 ```
@@ -55,16 +55,16 @@ and use git to synchronize them across your computers. 😉
 Here is what happens when CLI runs your class object.
 
 - Public methods of your Class become executable commands.
-- Automatic usage messages guiding the user how to execute your class methods.
+- Automatic usage messages guiding the user on how to execute your class methods.
 - Anything returned by a method is printed and no output is suppressed.
 - Required methods parameters will be enforced.
 - Scalar data types for method parameters will be enforced (try it).
-- Prevents user from passing too many arguments unless method is explicitly variadic. (Php allows it but I dont.)
+- Prevents the user from passing too many arguments unless the method is explicitly variadic. (Php allows it but I don't.)
 - Help `--help` option will display your doc blocks if you have them.
 - Public vars/properties of your class become options/flags.
 - Anonymous classes work
 - Dynamically added functions do not work. (intentional)
-- If you do not inject your own class then CLI will run itself making its own methods available to the terminal.
+- If you do not inject your class then CLI will run itself exposing its methods.
 
 ### Errors and Exceptions
 All errors are caught and suppressed with a generic error message
@@ -72,17 +72,17 @@ unless debug mode is used (see debug mode).
 However, there is a set of UserResponse exceptions for when you just
 want to terminate the app quickly with a message for the user to read.
 
-CLI also detects and adjusts the default php error reporting config to prevent errors spitting output to the
+CLI also detects and adjusts the default PHP error reporting config to prevent errors spitting output to the
 terminal twice in debug mode.
 
 ### Responses to the user.
 You can display messages to the user however you want:
- - by echoing strings yourself and exiting manually.
- - by returning a string, array or anything else to print.
- - by throwing a UserResponse exceptions.
+- by echoing strings yourself and exiting manually.
+- by returning a string, array or anything else to print.
+- by throwing UserResponse exceptions.
 
 I recommend using the provided UserResponse exception family for errors,
-so dont have to print the mesage with a new line and then exit with a non
+so you don't have to print the message with a new line and then exit with a non
 zero code manually.
 ```php
 throw new \BHayes\CLI\UserResponse('This has exit code 1 and no coloured output');
@@ -107,11 +107,11 @@ if($this->cats) { echo "Cat mode enabled!"; }
 
 #### Reserved Options.
 CLI has reserved some options.
- - --help. Just prints related doc blocks and exits without running your class.
- - --debug. Debug mode, if enabled no exceptions/errors are suppressed.
-   Your app can still use the debug option for its own purposes too.
- - -i does nothing but can not be used by your app.
-   I have reserved it for "interactive mode" that I am thinking about building.
+- --help. Just prints related doc blocks and exits without running your class.
+- --debug. Debug mode, if enabled no exceptions/errors are suppressed.
+  Your app can still use the debug option for its own purposes too.
+- -i does nothing but can not be used by your app.
+  I have reserved it for the "interactive mode" that I am thinking about building in the future.
 
 ## Examples.
 
@@ -123,23 +123,28 @@ user prompts and different outputs etc are used.
 ```php
 #!/usr/bin/env php
 <?php
-
 declare(strict_types=1);//optional but good practice IMO. Google it.
 
+use BHayes\CLI\CLI;
+use BHayes\CLI\Colour;
+use BHayes\CLI\UserErrorResponse;
 use BHayes\CLI\UserResponse;
+use BHayes\CLI\UserSuccessResponse;
 
 require_once 'vendor/autoload.php'; //if installed via composer
 
 /**
  * This is the documentation that will appear when you type --help.
  */
-class Example {
+class Example
+{
 
     /**
-    * This one is easy to run.
-    * try runMe with --help to see this text. 
-    */
-    public function runMe(string $optional = null) {
+     * This one is easy to run.
+     * try runMe with --help to see this text.
+     */
+    public function runMe(string $optional = null)
+    {
         //either return output or just output directly its up to you.
         echo "I work with no arguments.";
         if ($optional !== null) {
@@ -147,120 +152,130 @@ class Example {
             var_dump($optional);
         }
     }
-    
+
     /**
-    * This command will only run when all the requirements are met.
-    */
-    public function tryMe(bool $bool, string $string, float $float, int $int) {
+     * This command will only run when all the requirements are met.
+     */
+    public function tryMe(bool $bool, string $string, float $float, int $int)
+    {
         return "You did it! You gave me bool a string, a float and an int.";
     }
-    
+
     /**
      * This method will accept any number of string arguments while the
      * the others will fail if you pass them too many arguments.
      *
      * @param string ...$bunchOfStrings
-    */
-    public function variadic (string ...$bunchOfStrings){
+     */
+    public function variadic(string ...$bunchOfStrings)
+    {
         echo "You said ";
-        if (empty($bunchOfStrings)) {echo "nothing.";}
+        if (empty($bunchOfStrings)) {
+            echo "nothing.";
+        }
         print_r($bunchOfStrings);
         echo "\n";
     }
-    
+
     /**
-    * Demos prompts.
-    * 
-    * @throws UserResponse
-    */
-    public function survey():string {
-        if (! \BHayes\CLI\CLI::confirm('Shall we begin?')) {return "Cancelled";}
-        $colour = \BHayes\CLI\CLI::prompt('Whats your favorite colour?');
-        throw new UserResponse("I love $colour too!",$colour, '☺');
-    }
-    
-    
-    /**
-    * Tests the UserResponse throwable. 
-    *
-    * @param bool|null $success
-    * @throws UserResponse
-    */
-    public function throwsUserResponse(bool $success = null){
-        if($success === true) {
-            throw new \BHayes\CLI\UserSuccessResponse();//all params optional
+     * Demos prompts.
+     *
+     * @throws UserResponse
+     */
+    public function survey():string
+    {
+        if (! CLI::confirm('Shall we begin?')) {
+            return "Cancelled";
         }
-        if($success === false) {
-            throw new \BHayes\CLI\UserErrorResponse('Some error message user needs to see!');
+        $colour = CLI::prompt('Whats your favorite colour?');
+        $colourCode = Colour::code($colour);
+        throw new UserResponse("I love $colour too!", $colourCode, '☺');
+    }
+
+
+    /**
+     * Tests the UserResponse throwable.
+     *
+     * @param bool|null $success
+     * @throws UserResponse
+     */
+    public function throwsUserResponse(bool $success = null)
+    {
+        if ($success === true) {
+            throw new UserSuccessResponse();//all params optional
+        }
+        if ($success === false) {
+            throw new UserErrorResponse('Some error message user needs to see!');
         }
         throw new UserResponse('Try this again with true or false.');
     }
-    
-     /**
-     * foo is now an option because it has been declared public. 
-     * @var bool 
+
+    /**
+     * foo is now an option because it has been declared public.
+     * @var bool
      */
     public $foo = false;
-    
+
     /**
-    * Run me with and without `--foo` and see the result.
-    */
-    public  function bar()
+     * Run me with and without `--foo` and see the result.
+     */
+    public function bar()
     {
         var_dump($this->foo);
     }
 };
 
-$cli = new BHayes\CLI\CLI(new Example());
+$cli = new CLI(new Example());
 $cli->run();
 ```
 
-## Advanced options.
-###Forced debug mode.
+## Advanced usage.
+
+### Forced debug mode.
 During development, you may wish to always run in debug mode without typing --debug.
 ```php
 $cli->run(true);
 ```
 Or you may wish to prevent debug mode from working at all
-WARNING: Doing this disables the --debug option as it if never exited.
-So if the user types --debug now the applicaiton wont run because its an invalid option.
+WARNING: Doing this removes the --debug option. If the user types --debug now the application won't run because it's now an invalid option.
 
 
-If you DO want both CLI and your class to receive the debug option by default simply 
-add to the global argv before it runs.
+If you DO want both CLI and your class to receive the debug option by default simply
+add it to the global argv before it runs.
 ```php
 global $argv; //this is a built in var where php puts command line inputs
 $argv[] = '--debug'; //manually add the --debug input as if the user typed it
 $cli->run();
 ```
 
-You can also prevent the debug option form working on cli by specifying false in the run method.
-This means --debug option has no effect but can still be used 
+You can also prevent the debug option from working on CLI by specifying false in the run method.
+This means --debug option has no effect but can still be used
 ```php
 $argv[] = '--debug'; //this will get passed to your application but have no effect on CLI
 $cli->run(false);//because debug has been explicitly disabled at run time.
 ```
 
 ### Custom exceptions for user responses.
-For many reasons, you may prefer avoid your class being dependent on CLI UserResponse exceptions,
-but want to throw exceptions with messages the user should read.
+For many reasons, you may prefer to avoid your class being dependent on CLI UserResponse exceptions,
+and want to throw user response exceptions of your own.
 
 You can give CLI a list of custom response exception types before it runs.
 ```php
-$cli->setCustomResponseExceptions( MySpecialUserException::class, MyOtherException::class );
+new \BHayes\CLI\CLI($yourClass, [MySpecialUserException::class, MyOtherException::class]);
 ```
 These and any Exceptions that inherit them will be treated the same UserResponse exceptions,
-however the exit code will not be used if it is 0.
+however, the exit code will not be used if it is 0.
 
-This is because exceptions the default code of \Exception is 0 and nobody thinks about
-them potentially getting used as exit codes when building a php application.
+This is because the default code of \Exception is 0 and nobody thinks about
+them potentially getting used as exit codes when building a PHP application.
 
-So I have forced non 0 exit codes for all except CLI's UserResponse exceptions,
-since with those you must explicitly throw a success code.
+So I have forced non 0 exit codes, so you can continue to not think about it lol.
+
+For success, you can just do nothing, or return a string.
 
 ### Force exit with 0.
 For whatever reason, you may want your app to always return 0.
-Simply force debug mode and exit manually in a try catch.
+Simply force debug mode and exit manually in a try-catch.
 
 ```php
 try{
