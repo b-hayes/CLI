@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/_environment.php';
 
+if (php_sapi_name() === 'cli') {
+    (new \BHayes\CLI\CLI(new \BHayes\CLI\Colour()))->run(true);
+}
+
+
+
 function red(string $text)
 {
     return "\033[" . \BHayes\CLI\Colour::RED . "m$text\033[0m";

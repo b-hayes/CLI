@@ -42,7 +42,7 @@ class UserResponse extends \Exception
     public function __construct(
         string $userMessage,
         string $colour = 'Blue',
-        string $icon = '',
+        string $icon = 'ℹ',
         int $code = 1,
         Throwable $previous = null
     ) {
