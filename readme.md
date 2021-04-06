@@ -12,8 +12,19 @@ Simply define a PHP class and inject it into the CLI wrapper 😎.
 All your public class methods are now available as terminal commands.
 
 Now you can just build your class methods instead of managing the interface. 👍
+## Behaviours.
+Here is what happens when CLI runs your class object.
 
-### Getting started.
+- Public methods of your Class become executable commands.
+- Automatic usage messages guiding the user on how to execute your class methods.
+- Anything returned by a method is printed and no output is suppressed.
+- Required methods parameters will be enforced.
+- Scalar data types for method parameters will be enforced (try it).
+- Prevents the user from passing too many arguments unless the method is variadic. (Php allows it, but I don't.)
+- Help `--help` option will display your doc blocks if you have them.
+- Public vars/properties of your class become options/flags.
+
+## Getting started example.
 For those unfamiliar with command-line scripts...
 Make a file with a shebang line (#!) at the top that tells your shell to run this with PHP.
 
@@ -24,6 +35,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //just using anonymous class as a quick example, can be any class.
 $yourClass = new Class() {
     function hello(int $number = 0) {
+        if ($number > 10) throw new \BHayes\CLI\UserErrorResponse("$number is too big for me!");
         if ($number) return "You gave me the number $number";
         return 'Hi ' . \BHayes\CLI\CLI::prompt('Enter your name', `git config user.name`);
     }
@@ -41,49 +53,32 @@ Now you can run it as a terminal application!
 ```
 CLI will guide the terminal user on how to run the available methods of your class.
 
-#### Windows
+### Windows
 For those in windows who want to use powershell/cmd you will have to also make a batch file in the same location:
 ```cmd
 php %~dp0/myAwesomeNewCliApp -- %*
 ```
-#### Start a collection.
+### Start a collection.
 I recommend keeping these files in a `/bin` folder in a personal project where
 all your awesome CLI applications will live
 and use git to synchronize them across your computers. 😉
 
-## Behaviours.
-Here is what happens when CLI runs your class object.
-
-- Public methods of your Class become executable commands.
-- Automatic usage messages guiding the user on how to execute your class methods.
-- Anything returned by a method is printed and no output is suppressed.
-- Required methods parameters will be enforced.
-- Scalar data types for method parameters will be enforced (try it).
-- Prevents the user from passing too many arguments unless the method is explicitly variadic. (Php allows it but I don't.)
-- Help `--help` option will display your doc blocks if you have them.
-- Public vars/properties of your class become options/flags.
-- Anonymous classes work
-- Dynamically added functions do not work. (intentional)
-- If you do not inject your class then CLI will run itself exposing its methods.
-
-### Errors and Exceptions
+## Errors and Exceptions
 All errors are caught and suppressed with a generic error message
-unless debug mode is used (see debug mode).
-However, there is a set of UserResponse exceptions for when you just
-want to terminate the app quickly with a message for the user to read.
+unless debug mode is used (see debug mode) or UserResponse exceptions are thrown.
 
 CLI also detects and adjusts the default PHP error reporting config to prevent errors spitting output to the
 terminal twice in debug mode.
 
-### Responses to the user.
+## Responses to the user.
 You can display messages to the user however you want:
 - by echoing strings yourself and exiting manually.
-- by returning a string, array or anything else to print.
-- by throwing UserResponse exceptions.
+- by returning a string, array or anything else to print. (exits with code 0 success)
+- by throwing UserResponse exceptions. (recommended for errors)
 
 I recommend using the provided UserResponse exception family for errors,
-so you don't have to print the message with a new line and then exit with a non
-zero code manually.
+so you don't have to print the message with a new line and then exit with
+a nonzero code manually.
 ```php
 throw new \BHayes\CLI\UserResponse('This has exit code 1 and no coloured output');
 throw new \BHayes\CLI\UserErrorResponse('Exit code 1 and text is printed in RED');
@@ -92,7 +87,7 @@ throw new \BHayes\CLI\UserWarningResponse('Exit code 1 and text is printed in YE
 throw new \BHayes\CLI\UserSuccessResponse('Exit code 0 and text is printed in GREEN');
 ```
 
-### Options/Flags
+## Options/Flags
 Based on the [POSIX](https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html)
 standard CLI support short options `-o` and long options `--longOption`.
 
@@ -105,7 +100,7 @@ if($this->cats) { echo "Cat mode enabled!"; }
 
 *Note CLI currently does not support options with arguments (planned for php7.4 and higher).*
 
-#### Reserved Options.
+### Reserved Options.
 CLI has reserved some options.
 - --help. Just prints related doc blocks and exits without running your class.
 - --debug. Debug mode, if enabled no exceptions/errors are suppressed.
@@ -113,7 +108,7 @@ CLI has reserved some options.
 - -i does nothing but can not be used by your app.
   I have reserved it for the "interactive mode" that I am thinking about building in the future.
 
-## Examples.
+## Example.
 
 Save this example as a `testme` file and make it executable `chmod +x ./testme` and run with `./testme`
 
@@ -229,7 +224,7 @@ $cli = new CLI(new Example());
 $cli->run();
 ```
 
-## Advanced usage.
+## Advanced/edge case usage.
 
 ### Forced debug mode.
 During development, you may wish to always run in debug mode without typing --debug.
@@ -285,3 +280,12 @@ try{
     exit(0);//and then exit with 0 manually.
     }
 ```
+
+### CLI can run itself.
+If you don't inject a class CLI runs itself allowing you to use its prompt and
+colour print methods in bash scripts etc.
+I've provided vendor bin export for this purpose.
+```bash
+./vendor/bin/cli
+```
+You could install the package globally for all your other scripts to access shell commands.
