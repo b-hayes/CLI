@@ -163,8 +163,10 @@ class CLI
             $this->exitWith($response->message(), $response);
         } catch (Throwable $throwable) {
             //Is it a custom user response exception?
-            if (in_array(get_class($throwable), $this->clientMessageExceptions)) {
-                $this->exitWith($throwable->getMessage(), $throwable);
+            foreach ($this->clientMessageExceptions as $customException) {
+                if ($throwable instanceof $customException) {
+                    $this->exitWith($throwable->getMessage(), $throwable);
+                }
             }
 
             //its a real error
