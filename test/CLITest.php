@@ -505,6 +505,15 @@ class CLITest extends TestCase
         );
     }
 
+    public function testCustomExceptions()
+    {
+        $this->command = 'php test/run_customExceptions.php';
+        //first make sure the class runs
+        self::assertSuccessfulExecution('helloWorld', '');
+        self::assertFailureToExecute('throwLogicException', '', 'throwLogicException was executed!');
+        self::assertFailureToExecute('throwInvalidArgumentException', '', 'InvalidArgumentException was executed!');
+    }
+
     public function testForBreakingChanges()
     {
         self::assertTrue(true);
