@@ -510,8 +510,21 @@ class CLITest extends TestCase
         $this->command = 'php test/run_customExceptions.php';
         //first make sure the class runs
         self::assertSuccessfulExecution('helloWorld', '');
-        self::assertFailureToExecute('throwLogicException', '', 'throwLogicException was executed!');
-        self::assertFailureToExecute('throwInvalidArgumentException', '', 'InvalidArgumentException was executed!');
+        $output = self::assertFailureToExecute(
+            'throwLogicException',
+            '',
+            'throwLogicException was executed!'
+        );
+        self::assertStringNotContainsString('the program crashed', $output);//no generic suppression message.
+        self::assertStringNotContainsString('Stack trace:', $output);//and no debug mode used.
+
+        $output = self::assertFailureToExecute(
+            'throwInvalidArgumentException',
+            '',
+            'InvalidArgumentException was executed!'
+        );
+        self::assertStringNotContainsString('the program crashed', $output);//no generic suppression message.
+        self::assertStringNotContainsString('Stack trace:', $output);//and no debug mode used.
     }
 
     public function testForBreakingChanges()

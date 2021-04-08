@@ -86,7 +86,8 @@ class CLI
      *
      * If debug mode is enabled no exceptions/errors are suppressed.
      *
-     * @param object|null $class if unspecified, $this is used.
+     * @param object|null   $class if unspecified, $this is used.
+     * @param string[]      $clientMessageExceptions list of custom exceptions to use for user responses.
      *
      * @throws Throwable only if debug mode is enabled.
      */
