@@ -300,15 +300,15 @@ eg.
 ```bash
 ./vendor/bin/cli BHayes\\CLI\\Colour string Hello 93
 ```
-If the first input exactly matches the name of a class that can be auto loaded, 
-and instantiated then it will consume that argument and un the class.
+If the first input exactly matches the name of a class that can be auto loaded and instantiated,
+then it will consume that argument and run the class.
 
-It will fail if the Class name has dependencies in the constructor however,
+It will fail if the Class constructor has dependencies however,
 I have thought about adding the ability for CLI to use a dependency resolver in the future.
 
 ## Feedback is welcome.
 This is my first public composer package be gentle 😅.
 
-If this project gives you a 1up and would like to see some more automated features then,
+If this project gives you a 1up🍄 and would like to see some more automated features then,
 
 please [buy me a coffee. ☕😃 ![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate?business=bradozman%40gmail.com&item_name=%E2%98%95+Turning+Coffee++into+Code.&currency_code=AUD)
