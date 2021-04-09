@@ -1,6 +1,6 @@
 {
     "name": "b-hayes/cli",
-    "description": "Runs a given class methods via cli",
+    "description": "Runs any PHP Class as a command line application",
     "license": "MIT",
     "authors": [
         {
