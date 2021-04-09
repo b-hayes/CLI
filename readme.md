@@ -286,6 +286,28 @@ If you don't inject a class CLI runs itself allowing you to use its prompt and
 colour print methods in bash scripts etc.
 I've provided vendor bin export for this purpose.
 ```bash
-./vendor/bin/cli
+./vendor/bin/cli prompt Name? `git config user.name`
 ```
-You could install the package globally for all your other scripts to access shell commands.
+You could install the package globally for all your other scripts to access shell commands
+to be able to use these if you want.
+
+The 'run' method won't do anything in this context however, 
+you can...
+
+### Run any class by name.
+This is great for adhoc testing on random class objects in your project.
+eg.
+```bash
+./vendor/bin/cli BHayes\\CLI\\Colour string Hello 93
+```
+If the first input exactly matches the name of a class that can be auto loaded, 
+and instantiated then it will consume that argument and un the class.
+
+It will fail if the Class name has dependencies in the constructor however,
+I have thought about adding the ability for CLI to use a dependency resolver in the future.
+
+## Feedback is welcome.
+This is my first public composer package be gentle 😅.
+
+If this project gives you a 1up and would like to see some more automated features,
+please [buy me some coffee](https://www.paypal.com/donate?business=bradozman%40gmail.com&item_name=Turning+Coffee+into+Code.&currency_code=AUD) ☕😃.

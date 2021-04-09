@@ -1,7 +1,7 @@
 {
     "name": "b-hayes/cli",
     "description": "Runs a given class methods via cli",
-    "license": "proprietary",
+    "license": "MIT",
     "authors": [
         {
             "name": "b-hayes",
