@@ -310,4 +310,4 @@ I have thought about adding the ability for CLI to use a dependency resolver in 
 This is my first public composer package be gentle 😅.
 
 If this project gives you a 1up and would like to see some more automated features,
-please [buy me some coffee](https://www.paypal.com/donate?business=bradozman%40gmail.com&item_name=Turning+Coffee+into+Code.&currency_code=AUD) ☕😃.
+please [buy me some coffee(https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate?business=bradozman%40gmail.com&item_name=%E2%98%95+Turning+Coffee++into+Code.&currency_code=AUD) ☕😃.
