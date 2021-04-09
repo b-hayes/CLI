@@ -2,7 +2,7 @@
 Quickly build interactive Command-line applications in PHP with 0 effort.
 
 ## Installation
-`composer install b-hayes/cli`
+`composer require b-hayes/cli`
 
 ## Usage.
 Simply define a PHP class and inject it into the CLI wrapper 😎.
