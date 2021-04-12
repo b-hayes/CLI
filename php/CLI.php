@@ -259,7 +259,7 @@ class CLI
         bool $lowercase = true,
         $inputStream = 'php://stdin'
     ): string {
-        if ($default) {
+        if (strlen($default)) {
             $message .= "[$default]";
         }
         $readline = self::readline($message, $inputStream);
