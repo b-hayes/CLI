@@ -75,7 +75,6 @@ class CLI
      */
     private $arguments;
 
-
     /**
      * CLI constructor.
      *
@@ -319,21 +318,24 @@ class CLI
     private function exitWith(string $printMessage, ?Throwable $throwable = null)
     {
         self::printLine($printMessage);
+
         if (!$throwable) {
             exit(1);
         }
 
-        if ($this->debug) {
+        if ($throwable instanceof UserResponse) {
+            //client response is allowed to exit with any code
+            $exitCode = $throwable->getCode();
+        } else {
+            //use error code but prevent 0 as exit code
+            $exitCode = $throwable->getCode() ?: 1;
+        }
+
+        if ($this->debug && $exitCode !== 0) {
             throw $throwable;
         }
 
-        //user response is allowed to exit with any code
-        if ($throwable instanceof UserResponse) {
-            exit($throwable->getCode());
-        }
-
-        //allow exit code from exception but never exit with 0.
-        exit($throwable->getCode() ?: 1);
+        exit($exitCode);
     }
 
     private function printUsage()
