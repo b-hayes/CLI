@@ -170,9 +170,10 @@ class CLI
             }
 
             //its a real error
+            $printMessage = "❌ Failed to execute '$this->subjectMethod', the program crashed." .
+                " Please contact the developers if this keeps happening.";
             $this->exitWith(
-                "Failed to execute '$this->subjectMethod', the program crashed." .
-                " Please contact the developers if this keeps happening.",
+                $printMessage,
                 $throwable
             );
         }
