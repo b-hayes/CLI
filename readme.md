@@ -23,6 +23,7 @@ Here is what happens when CLI runs your class object.
 - Prevents the user from passing too many arguments unless the method is variadic. (Php allows it, but I don't.)
 - Help `--help` option will display your doc blocks if you have them.
 - Public vars/properties of your class become options/flags.
+- Colours and emojis encouraged (try the provided CLI::printLine() or Colour::string() methods).
 
 ## Getting started example.
 For those unfamiliar with command-line scripts...
@@ -66,6 +67,9 @@ and use git to synchronize them across your computers. 😉
 ## Errors and Exceptions
 All errors are caught and suppressed with a generic error message
 unless debug mode is used (see debug mode) or UserResponse exceptions are thrown.
+
+Any UserResponse Exception with success code of 0 will simply print the success message,
+regardless of debug mode.
 
 CLI also detects and adjusts the default PHP error reporting config to prevent errors spitting output to the
 terminal twice in debug mode.
