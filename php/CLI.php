@@ -592,4 +592,28 @@ class CLI
         }
         echo $text, "\n";
     }
+
+    public static function os(): string
+    {
+        $uname = php_uname();
+        if (stripos($uname, 'linux')) {
+            if (strpos($uname, 'Microsoft')) {
+                return 'WSL';
+            }
+            if (strpos($uname, 'microsoft')) {
+                return 'WSL';//more specifically its probably WSL version two
+            }
+            return 'Linux';
+        }
+
+        if (stripos($uname, 'windows')) {
+            return 'Windows';
+        }
+
+        if (stripos($uname, 'darwin')) {
+            return 'Windows';
+        }
+
+        return "UNKNOWN: $uname";
+    }
 }
