@@ -611,7 +611,7 @@ class CLI
         }
 
         if (stripos($uname, 'darwin')) {
-            return 'Windows';
+            return 'MacOS';
         }
 
         return "UNKNOWN: $uname";
