@@ -527,6 +527,11 @@ class CLITest extends TestCase
         self::assertStringNotContainsString('Stack trace:', $output);//and no debug mode used.
     }
 
+    public function testInvokable()
+    {
+
+    }
+
     public function testForBreakingChanges()
     {
         self::assertTrue(true);
