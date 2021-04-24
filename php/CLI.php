@@ -409,6 +409,9 @@ class CLI
         //remove argument 0 is the first word the user typed and only used for usage statement.
         $this->initiator = array_shift($args);
 
+        //if the class itself is invokable than we inject the invoke as the method being called.
+        array_unshift($args, '__invoke');
+
         //if no arguments just skip all the processing and display usage
         if (empty($args)) {
             $this->printUsage();

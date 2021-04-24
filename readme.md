@@ -12,6 +12,7 @@ Simply define a PHP class and inject it into the CLI wrapper 😎.
 All your public class methods are now available as terminal commands.
 
 Now you can just build your class methods instead of managing the interface. 👍
+
 ## Behaviours.
 Here is what happens when CLI runs your class object.
 
@@ -230,6 +231,11 @@ $cli->run();
 
 ## Advanced/edge case usage.
 
+### I don't want "commands" in my app, only arguments and options.
+If your class is invokable then __invoke() will execute and other methods will be ignored.
+See the test example [test/run_invokableClass.php](test/run_invokableClass.php).
+You can also simply provide an anonymous function/closure see [test/run_function.php](test/run_function.php)
+
 ### Forced debug mode.
 During development, you may wish to always run in debug mode without typing --debug.
 ```php
@@ -237,7 +243,6 @@ $cli->run(true);
 ```
 Or you may wish to prevent debug mode from working at all
 WARNING: Doing this removes the --debug option. If the user types --debug now the application won't run because it's now an invalid option.
-
 
 If you DO want both CLI and your class to receive the debug option by default simply
 add it to the global argv before it runs.
