@@ -41,7 +41,7 @@ class CLITest extends TestCase
         passthru("{$this->command} $method $arguments", $exitCode);
         $output = ob_get_clean();
 
-        self::assertStringContainsString(
+        self::assertStringContainsStringIgnoringCase(
             $method,
             $output,
             "Failure message does not contain the correct method name. Expected '$method'"
@@ -78,7 +78,7 @@ class CLITest extends TestCase
 
         //method should have been executed.
         if (!empty($method)) {
-            self::assertStringContainsString(
+            self::assertStringContainsStringIgnoringCase(
                 "$method was executed",
                 $output,
                 "Expected '$method' to be executed and let us know that it was."
@@ -312,6 +312,12 @@ class CLITest extends TestCase
         $this->assertFailureToExecute('requiresInt', '5.5', 'must be of the type int');
         $this->assertFailureToExecute('requiresInt', '5five', 'must be of the type int');
         $this->assertFailureToExecute('requiresInt', 'five5', 'must be of the type int');
+    }
+
+    public function testCaseInsensitiveCommandCall()
+    {
+        $this->assertSuccessfulExecution('reqUireSint', '5');
+        $this->assertFailureToExecute('RequiresinT', 'five', 'must be of the type int');
     }
 
     public function testBool()

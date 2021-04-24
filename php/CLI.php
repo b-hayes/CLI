@@ -8,6 +8,7 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
 use Throwable;
+use TypeError;
 
 /**
  * Class CLI
@@ -194,7 +195,7 @@ class CLI
         } catch (\TypeError $typeError) {
             //Important: is it a type error caused by bad user input?
             if (
-                strpos($typeError->getMessage(), $this->subjectMethod) !== false &&
+                stripos($typeError->getMessage(), $this->subjectMethod) !== false &&
                 isset($typeError->getTrace()[1]) &&
                 $typeError->getTrace()[1]['file'] === __FILE__ &&
                 $typeError->getTrace()[1]['function'] === 'execute'
