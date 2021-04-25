@@ -19,6 +19,7 @@ Here is what happens when CLI runs your class object.
 - Public methods of your Class become executable commands.
 - Automatic usage messages guiding the user on how to execute your class methods.
 - Anything returned by a method is printed and no output is suppressed.
+- When an object is returned, only public properties are printed. 
 - Required methods parameters will be enforced.
 - Scalar data types for method parameters will be enforced (try it).
 - Prevents the user from passing too many arguments unless the method is variadic. (Php allows it, but I don't.)

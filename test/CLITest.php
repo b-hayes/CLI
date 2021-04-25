@@ -25,7 +25,7 @@ class CLITest extends TestCase
      *
      * @param string $method
      * @param string $arguments
-     * @param mixed ...$expectedErrorMessages
+     * @param mixed  ...$expectedErrorMessages
      *
      * @return false|string
      */
@@ -214,8 +214,8 @@ class CLITest extends TestCase
 
     public function testConstructorCanNotBeRun()
     {
-        self::assertFailureToExecute('__construct','', "'__construct' is not a recognized command.");
-        self::assertFailureToExecute('__cOnstRuct','', "'__cOnstRuct' is not a recognized command.");
+        self::assertFailureToExecute('__construct', '', "'__construct' is not a recognized command.");
+        self::assertFailureToExecute('__cOnstRuct', '', "'__cOnstRuct' is not a recognized command.");
     }
 
     /**
@@ -409,7 +409,7 @@ class CLITest extends TestCase
         foreach (get_class_methods(TestSubject::class) as $classMethod) {
             if (strpos($classMethod, '__') === 0) {
                 //magic methods should not get listed
-                self::assertStringNotContainsStringIgnoringCase($classMethod,$help);
+                self::assertStringNotContainsStringIgnoringCase($classMethod, $help);
             } else {
                 //everything else should get listed
                 self::assertStringContainsString($classMethod, $help);
@@ -530,7 +530,7 @@ class CLITest extends TestCase
     public function testInvokable()
     {
         $this->command = 'php test/run_invokableClass.php';
-        $this->assertSuccessfulExecution('','5');
+        $this->assertSuccessfulExecution('', '5');
 
         $failureToExecute = '' . $this->assertFailureToExecute('', 'five', 'must be of the type int');
         self::assertTrue(strpos($failureToExecute, '__invoke') === false);
@@ -539,18 +539,33 @@ class CLITest extends TestCase
 
         //make sure the other function on the class is not able to be used.
         $failureToExecute2 = $this->assertFailureToExecute('', 'youCantRunThis', 'must be of the type int');
-        self::assertEquals($failureToExecute,$failureToExecute2);
+        self::assertEquals($failureToExecute, $failureToExecute2);
     }
 
     public function testFunction()
     {
         $this->command = 'php test/run_function.php';
-        $this->assertSuccessfulExecution('','5');
+        $this->assertSuccessfulExecution('', '5');
 
         $failureToExecute = '' . $this->assertFailureToExecute('', 'five', 'must be of the type int');
         self::assertTrue(strpos($failureToExecute, '__invoke') === false);
         self::assertTrue(strpos($failureToExecute, 'class@anonymous') === false);
         self::assertTrue(strpos($failureToExecute, '{{closure}}') === false);
+    }
+
+    public function testReturnSelf()
+    {
+        $success = $this->assertSuccessfulExecution(
+            'returnself',
+            '',
+            //public properties should get printed
+            'apple', 'banana', 'carrot',
+            //including dynamically added and nested object properties.
+            'nestedObject','with','value'
+        );
+        //but private properties should not get printed.
+        self::assertStringNotContainsStringIgnoringCase('privateProperty', $success);
+        self::assertStringNotContainsStringIgnoringCase('This should not be seen!', $success);
     }
 
     public function testForBreakingChanges()

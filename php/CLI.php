@@ -199,9 +199,12 @@ class CLI
     private function execute()
     {
         try {
-            $result = $this->subjectClass->{$this->subjectMethod}(...$this->subjectArguments);
-            //TODO: really should stop using print_r unless in debug mode so we can hide any class names and private vars etc from the user.
-            print_r($result);
+            $result = $this->subjectClass->{$this->subjectMethod}(...$this->subjectArguments) ?? '';
+            if (is_string($result)) {
+                echo $result;
+            } else {
+                echo json_encode($result, JSON_PRETTY_PRINT,JSON_UNESCAPED_SLASHES);
+            }
             echo "\n";
             exit(0);
         } catch (\TypeError $typeError) {

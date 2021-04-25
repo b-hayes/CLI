@@ -39,8 +39,7 @@ class TestSubject
 
     public function simple()
     {
-        echo __METHOD__ , " was executed!";
-        var_dump(func_get_args());
+        return __METHOD__ . " was executed!";
     }
 
     public function requiresTwo($required, $requiredAlso)
@@ -180,6 +179,7 @@ class TestSubject
 
     public function returnSelf(): TestSubject
     {
+        $this->nestedObject = (object)['with' => 'value', __METHOD__ . " was executed!\n"];
         return $this;
     }
 
