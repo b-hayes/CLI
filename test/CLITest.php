@@ -212,6 +212,12 @@ class CLITest extends TestCase
         }
     }
 
+    public function testConstructorCanNotBeRun()
+    {
+        self::assertFailureToExecute('__construct','', "'__construct' is not a recognized command.");
+        self::assertFailureToExecute('__cOnstRuct','', "'__cOnstRuct' is not a recognized command.");
+    }
+
     /**
      * Assert Behaviour: execute function by name.
      */

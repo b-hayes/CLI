@@ -81,6 +81,11 @@ class CLI
     private $initiatorName;
 
     /**
+     * @var string[]
+     */
+    private $bannedMethods = ['__construct', '__clone'];
+
+    /**
      * CLI constructor.
      *
      * Creates a reflection of the class for introspective execution of its methods by the terminal user.
@@ -195,6 +200,7 @@ class CLI
     {
         try {
             $result = $this->subjectClass->{$this->subjectMethod}(...$this->subjectArguments);
+            //TODO: really should stop using print_r unless in debug mode so we can hide any class names and private vars etc from the user.
             print_r($result);
             echo "\n";
             exit(0);
@@ -531,6 +537,9 @@ class CLI
             echo "No function was specified.\n";
             $this->printAvailableCommands();
             exit(1);
+        }
+        if (in_array(strtolower($this->subjectMethod), $this->bannedMethods)) {
+            $this->exitWith("'$this->subjectMethod' is not a recognized command.");
         }
 
         //everything after that is a parameter for the function

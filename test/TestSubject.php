@@ -30,6 +30,8 @@ class TestSubject
 
     public $debug;
 
+    private $privateProperty = 'This should not be seen!';
+
     public function __construct()
     {
         return __METHOD__. " was executed!\n";
@@ -174,5 +176,15 @@ class TestSubject
     public function __toString()
     {
         return __METHOD__. " was executed!\n";
+    }
+
+    public function returnSelf(): TestSubject
+    {
+        return $this;
+    }
+
+    public function isString(): bool
+    {
+        return true;//is_string($this);
     }
 }
