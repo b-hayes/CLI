@@ -107,7 +107,9 @@ class CLI
         //get a reflection of said class
         try {
             $this->reflection = new ReflectionClass($this->subjectClass);
-        } catch (ReflectionException $reflectionException) {
+        }
+        /** @noinspection PhpRedundantCatchClauseInspection */
+        catch (ReflectionException $reflectionException) {
             $this->exitWith(
                 "Command Line Interface failed to initialize.",
                 $reflectionException
@@ -436,11 +438,6 @@ class CLI
         if ($name === '__invoke') $name = $this->printableAppName();
 
         return $name;
-    }
-
-    private function splitCamelCase(string $string): array
-    {
-        return preg_split('/(?<=\\w)(?=[A-Z])/', $string);
     }
 
     /**
