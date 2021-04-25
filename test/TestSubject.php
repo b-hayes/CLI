@@ -28,6 +28,11 @@ class TestSubject
 
     public $debug;
 
+    public function __construct()
+    {
+        return __METHOD__. " was executed!\n";
+    }
+
     public function simple()
     {
         echo __METHOD__ , " was executed!";
@@ -162,5 +167,10 @@ class TestSubject
         //the global arv should remain unmodified.
         global $argv;
         var_dump($argv);
+    }
+
+    public function __toString()
+    {
+        return __METHOD__. " was executed!\n";
     }
 }

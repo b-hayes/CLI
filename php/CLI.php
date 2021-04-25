@@ -375,7 +375,8 @@ class CLI
         }
         echo "Commands available:\n";
         foreach ($reflectionMethods as $class_method) {
-            if ($class_method->getName() == '__construct') {
+            //do not list any magic methods such as __construct or __toString
+            if (substr($class_method->getName(), 0, 2) === '__') {
                 continue;//construct is not listed
             }
             if (!$class_method->isPublic()) {
@@ -562,7 +563,7 @@ class CLI
             count($this->subjectArguments) > $this->reflectionMethod->getNumberOfParameters() &&
             $this->reflectionMethod->isVariadic() === false
         ) {
-            $message = "Too many arguments! '" . $this->subjectMethod .
+            $message = "Too many arguments! '" . $this->printableCommandName() .
                 "' can only accept " . $this->reflectionMethod->getNumberOfParameters() .
                 ' and you gave me ' . count($this->subjectArguments);
 
@@ -572,9 +573,7 @@ class CLI
                 ' You should consider using variadic functions if you need this.';
             }
 
-            $this->exitWith(
-                $message
-            );
+            $this->exitWith($message);
         }
 
         //prevent too few arguments instead of catching Argument error.

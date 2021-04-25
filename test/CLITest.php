@@ -399,7 +399,16 @@ class CLITest extends TestCase
 
     public function testHelp()
     {
-        $this->assertSuccessfulExecution('', '--help', ...get_class_methods(TestSubject::class));
+        $help = $this->assertSuccessfulExecution('', '--help');
+        foreach (get_class_methods(TestSubject::class) as $classMethod) {
+            if (strpos($classMethod, '__') === 0) {
+                //magic methods should not get listed
+                self::assertStringNotContainsStringIgnoringCase($classMethod,$help);
+            } else {
+                //everything else should get listed
+                self::assertStringContainsString($classMethod, $help);
+            }
+        }
         $this->assertSuccessfulExecution('', '--help helpCheck', 'This method is used to test the --help function.');
         $this->assertSuccessfulExecution('', '--help noHelpCheck', 'No documentation');
     }
