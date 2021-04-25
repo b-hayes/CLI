@@ -206,7 +206,8 @@ class CLI
                 echo json_encode($result, JSON_PRETTY_PRINT,JSON_UNESCAPED_SLASHES);
             }
             echo "\n";
-            exit(0);
+
+            return $result;
         } catch (\TypeError $typeError) {
             //Important: is it a type error caused by bad user input?
             if (
