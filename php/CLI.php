@@ -8,7 +8,6 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
 use Throwable;
-use TypeError;
 
 /**
  * Class CLI
@@ -77,11 +76,16 @@ class CLI
     private $arguments;
 
     /**
+     * @var string
+     */
+    private $initiatorName;
+
+    /**
      * CLI constructor.
      *
      * Creates a reflection of the class for introspective execution of its methods by the terminal user.
      * Detects and prevents error reporting config from showing errors more than once in terminal output.
-     * Note: All errors/exceptions will be suppressed by default regardless unless they are of the type
+     * Note: All errors/exceptions will be suppressed by default unless they are of the types
      *  specified in the clientMessageExceptions.
      *
      * If debug mode is enabled no exceptions/errors are suppressed.
@@ -381,6 +385,9 @@ class CLI
         }
 
         $shortMethodName = $this->reflectionMethod->getShortName();
+        if ($shortMethodName === '__invoke') {
+            $shortMethodName = $this->initiatorName;
+        }
         $doc = $this->reflectionMethod->getDocComment()
             ?: "No documentation found for $shortMethodName";
         $this->printFormattedDocs($doc);
@@ -408,9 +415,12 @@ class CLI
 
         //remove argument 0 is the first word the user typed and only used for usage statement.
         $this->initiator = array_shift($args);
+        $this->initiatorName = basename($this->initiator);
 
         //if the class itself is invokable than we inject the invoke as the method being called.
-        array_unshift($args, '__invoke');
+        if (is_callable($this->subjectClass)) {
+            array_unshift($args, '__invoke');
+        }
 
         //if no arguments just skip all the processing and display usage
         if (empty($args)) {

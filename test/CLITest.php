@@ -10,12 +10,6 @@ use PHPUnit\Framework\TestCase;
 
 class CLITest extends TestCase
 {
-
-    /**
-     * @var CLI
-     */
-    private $cli;
-
     /**
      * @var string
      */
@@ -111,21 +105,6 @@ class CLITest extends TestCase
         self::assertEquals(0, $exitCode, "A successful command should exit with code 0!");
 
         return $output;
-    }
-
-    /**
-     * Used only for testing the prompt function.
-     *
-     * @param $stringOrFile
-     *
-     * @return string
-     */
-    private function setupInput($stringOrFile): string
-    {
-        if (is_file($stringOrFile)) {
-            return $stringOrFile;
-        }
-        return 'data://text/plain,' . $stringOrFile;
     }
 
     /**
@@ -535,7 +514,10 @@ class CLITest extends TestCase
 
     public function testInvokable()
     {
-
+        $this->command = 'php test/run_invokableClass.php';
+        $this->assertSuccessfulExecution('','5');
+        $this->assertFailureToExecute('','five', 'must be of the type int');
+        $this->assertFailureToExecute('', 'youCantRunThis', 'must be of the type int');
     }
 
     public function testForBreakingChanges()
