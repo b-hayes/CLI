@@ -231,10 +231,16 @@ $cli->run();
 
 ## Advanced/edge case usage.
 
-### I don't want "commands" in my app, only arguments and options.
-If your class is invokable then __invoke() will execute and other methods will be ignored.
-See the test example [test/run_invokableClass.php](test/run_invokableClass.php).
-You can also simply provide an anonymous function/closure see [test/run_function.php](test/run_function.php)
+### My app should just run as a command with arguments.
+Let's say your app is like a shell script and shouldn't have any "commands" or methods, 
+only arguments and options.
+
+Simply pass in an invokable object.
+Either pass in a [class that implements the `__invoke()`method](test/run_invokableClass.php)
+or by passing in an [anonymous function/closure](test/run_function.php).
+
+Note that when this is done CLI will avoid using real method names and class names in help docs,
+and no other methods can bee seen oor accessed, effectively disabling
 
 ### Forced debug mode.
 During development, you may wish to always run in debug mode without typing --debug.
