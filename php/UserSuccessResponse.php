@@ -9,7 +9,7 @@ use Throwable;
 class UserSuccessResponse extends UserResponse
 {
     public function __construct(
-        string $userMessage = 'Finished!',
+        string $userMessage = 'Done.',
         int $colour = Colour::GREEN,
         string $icon = '✔ ',
         int $code = 0,

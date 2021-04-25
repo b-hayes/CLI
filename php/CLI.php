@@ -175,7 +175,7 @@ class CLI
             }
 
             //its a real error
-            $printMessage = "❌ Failed to execute '$this->subjectMethod', the program crashed." .
+            $printMessage = "❌ Failed to execute '{$this->printableCommandName()}', the program crashed." .
                 " Please contact the developers if this keeps happening.";
             $this->exitWith(
                 $printMessage,
@@ -199,15 +199,29 @@ class CLI
         } catch (\TypeError $typeError) {
             //Important: is it a type error caused by bad user input?
             if (
-                stripos($typeError->getMessage(), $this->subjectMethod) !== false &&
+                //todo: this dodgy hack should probably get replaced with a real type check in future.
+                (
+                    stripos($typeError->getMessage(), $this->subjectMethod) !== false &&
                 isset($typeError->getTrace()[1]) &&
                 $typeError->getTrace()[1]['file'] === __FILE__ &&
                 $typeError->getTrace()[1]['function'] === 'execute'
+                )
+                ||
+                (
+                    $this->subjectMethod === '__invoke' && strpos($typeError->getMessage(), '{closure}') &&
+                    isset($typeError->getTrace()[2]) &&
+                    $typeError->getTrace()[2]['file'] === __FILE__ &&
+                    $typeError->getTrace()[2]['function'] === 'execute'
+                )
             ) {
                 //We caused the type error by trying to use the users input as a method argument,
                 // so lets tell the user its their fault while stripping sensitive info out.
                 $message = str_replace(
-                    ' passed to ' . get_class($this->subjectClass) . "::$this->subjectMethod()",
+                    [
+                        ' passed to ' . get_class($this->subjectClass) . "::$this->subjectMethod()",
+                        ' passed to class@anonymous::__invoke()',
+                        'passed to {closure}()',
+                    ],
                     '',
                     $typeError->getMessage()
                 );
@@ -378,28 +392,54 @@ class CLI
     {
         if (!$this->reflectionMethod) {
             $doc = $this->reflection->getDocComment()
-                ?: "No documentation found for {$this->reflection->getShortName()}";
+                ?: "No documentation found for {$this->printableAppName()}";
             $this->printFormattedDocs($doc);
             $this->printUsage();
             return;
         }
 
-        $shortMethodName = $this->reflectionMethod->getShortName();
-        if ($shortMethodName === '__invoke') {
-            $shortMethodName = $this->initiatorName;
-        }
+        $commandName = $this->printableCommandName();
         $doc = $this->reflectionMethod->getDocComment()
-            ?: "No documentation found for $shortMethodName";
+            ?: "No documentation found for $commandName";
         $this->printFormattedDocs($doc);
         $reflectionParameters = $this->reflectionMethod->getParameters();
         if (empty($reflectionParameters)) {
-            echo "'$shortMethodName' does not require any parameters.\n";
+            echo "'$commandName' does not require any parameters.\n";
         } else {
-            echo "'$shortMethodName' has the following parameters:\n";
+            echo "'$commandName' has the following parameters:\n";
             foreach ($reflectionParameters as $reflectionParameter) {
                 echo $reflectionParameter, "\n";
             }
         }
+    }
+
+    private function printableAppName(): string
+    {
+        static $name;
+        if ($name) return $name;
+        $name = $this->reflection->getShortName();
+        //replace technical terms about invocable with the initiator name.
+        if (strpos($name, 'class@anonymous') !== false || $name === 'Closure') {
+            $name = $this->initiatorName;
+        }
+
+        return $name;
+    }
+
+    private function printableCommandName(): string
+    {
+        if (!$this->reflectionMethod) return $this->printableAppName();
+        static $name;
+        if ($name) return $name;
+        $name = $this->reflectionMethod->getShortName();
+        if ($name === '__invoke') $name = $this->printableAppName();
+
+        return $name;
+    }
+
+    private function splitCamelCase(string $string): array
+    {
+        return preg_split('/(?<=\\w)(?=[A-Z])/', $string);
     }
 
     /**

@@ -25,6 +25,9 @@ Here is what happens when CLI runs your class object.
 - Help `--help` option will display your doc blocks if you have them.
 - Public vars/properties of your class become options/flags.
 - Colours and emojis encouraged (try the provided CLI::printLine() or Colour::string() methods).
+  
+If your class implements `__invoke()` or you pass in an anonymous function/closure
+then your app immediately executes without the need for a command choice.
 
 ## Getting started example.
 For those unfamiliar with command-line scripts...
@@ -231,16 +234,20 @@ $cli->run();
 
 ## Advanced/edge case usage.
 
-### My app should just run as a command with arguments.
-Let's say your app is like a shell script and shouldn't have any "commands" or methods, 
-only arguments and options.
+### My app should just run without "command"s.
+Let's say your app is like a shell script and should just execute, but you still
+want CLI to type match arguments and provide options.
 
 Simply pass in an invokable object.
 Either pass in a [class that implements the `__invoke()`method](test/run_invokableClass.php)
 or by passing in an [anonymous function/closure](test/run_function.php).
 
-Note that when this is done CLI will avoid using real method names and class names in help docs,
-and no other methods can bee seen oor accessed, effectively disabling
+The function or `__invoke()` method will immediately execute when the app runs however,
+you can still require arguments of specific types, and the user can see help the same
+as any other method/"command".
+
+Note that CLI will not use __invoke or closure names in help docs to avoid,
+showing technical jargon to the user.
 
 ### Forced debug mode.
 During development, you may wish to always run in debug mode without typing --debug.

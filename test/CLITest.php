@@ -379,7 +379,7 @@ class CLITest extends TestCase
         $this->assertSuccessfulExecution(
             'throwsUserSuccess',
             '',
-            'Finished!',
+            'Done.',
             '✔', //the default icon for Success
             "\033[" . Colour::GREEN . "m" //success messages are green by default
         );
@@ -516,8 +516,26 @@ class CLITest extends TestCase
     {
         $this->command = 'php test/run_invokableClass.php';
         $this->assertSuccessfulExecution('','5');
-        $this->assertFailureToExecute('','five', 'must be of the type int');
-        $this->assertFailureToExecute('', 'youCantRunThis', 'must be of the type int');
+
+        $failureToExecute = '' . $this->assertFailureToExecute('', 'five', 'must be of the type int');
+        self::assertTrue(strpos($failureToExecute, '__invoke') === false);
+        self::assertTrue(strpos($failureToExecute, 'class@anonymous') === false);
+        self::assertTrue(strpos($failureToExecute, '{{closure}}') === false);
+
+        //make sure the other function on the class is not able to be used.
+        $failureToExecute2 = $this->assertFailureToExecute('', 'youCantRunThis', 'must be of the type int');
+        self::assertEquals($failureToExecute,$failureToExecute2);
+    }
+
+    public function testFunction()
+    {
+        $this->command = 'php test/run_function.php';
+        $this->assertSuccessfulExecution('','5');
+
+        $failureToExecute = '' . $this->assertFailureToExecute('', 'five', 'must be of the type int');
+        self::assertTrue(strpos($failureToExecute, '__invoke') === false);
+        self::assertTrue(strpos($failureToExecute, 'class@anonymous') === false);
+        self::assertTrue(strpos($failureToExecute, '{{closure}}') === false);
     }
 
     public function testForBreakingChanges()
