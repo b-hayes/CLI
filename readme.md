@@ -29,6 +29,12 @@ Here is what happens when CLI runs your class object.
 If your class implements [`__invoke()`](https://www.php.net/manual/en/language.oop5.magic.php#object.invoke) or you pass in an anonymous function/closure
 then your app immediately executes without the need for the user to type a method/command name.
 
+## Additional Features.
+- Functions are provided for easily reading inputs, prompts, and confirmations and do not require PHP to have the readline extension installed.
+- Functions for generating/printing coloured strings.
+- Throwable responses for halting execution with coloured success/error/warning messages for the user.
+- Run any class by name in the terminal with the provided bin. 😲
+
 ## Getting started example.
 For those unfamiliar with command-line scripts...
 Make a file with a shebang line (#!) at the top that tells your shell to run this with PHP.
