@@ -113,7 +113,6 @@ class CLI
         try {
             $this->reflection = new ReflectionClass($this->subjectClass);
         }
-        /** @noinspection PhpRedundantCatchClauseInspection */
         catch (ReflectionException $reflectionException) {
             $this->exitWith(
                 "Command Line Interface failed to initialize.",
@@ -544,6 +543,10 @@ class CLI
         }
         if (in_array(strtolower($this->subjectMethod), $this->bannedMethods)) {
             $this->exitWith("'$this->subjectMethod' is not a recognized command.");
+        }
+        //prevent run command being run again causing a stack overflow.
+        if ($this->subjectClass instanceof self && $this->subjectMethod === 'run') {
+            $this->exitWith("yeah nah cant do that here sorry mate.");
         }
 
         //everything after that is a parameter for the function
