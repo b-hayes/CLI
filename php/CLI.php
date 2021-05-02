@@ -110,15 +110,7 @@ class CLI
         $this->subjectClass = $class ?? $this;
 
         //get a reflection of said class
-        try {
-            $this->reflection = new ReflectionClass($this->subjectClass);
-        }
-        catch (ReflectionException $reflectionException) {
-            $this->exitWith(
-                "Command Line Interface failed to initialize.",
-                $reflectionException
-            );
-        }
+        $this->reflection = new ReflectionClass($this->subjectClass);
 
         /*
          * We only want to see errors once in terminal window.
@@ -392,6 +384,9 @@ class CLI
             }
             if (!$class_method->isPublic()) {
                 continue;//only public methods are listed
+            }
+            if ($this->subjectClass instanceof self && $class_method->getName() === 'run') {
+                continue;//dont list this method when you cant use it.
             }
             echo "    - {$class_method->getName()}\n";
         }
