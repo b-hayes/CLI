@@ -12,18 +12,28 @@ Simply define a PHP class and inject it into the CLI wrapper 😎.
 All your public class methods are now available as terminal commands.
 
 Now you can just build your class methods instead of managing the interface. 👍
+
 ## Behaviours.
 Here is what happens when CLI runs your class object.
 
 - Public methods of your Class become executable commands.
 - Automatic usage messages guiding the user on how to execute your class methods.
 - Anything returned by a method is printed and no output is suppressed.
+- When an object is returned, only public properties are printed. 
 - Required methods parameters will be enforced.
 - Scalar data types for method parameters will be enforced (try it).
 - Prevents the user from passing too many arguments unless the method is variadic. (Php allows it, but I don't.)
 - Help `--help` option will display your doc blocks if you have them.
 - Public vars/properties of your class become options/flags.
-- Colours and emojis encouraged (try the provided CLI::printLine() or Colour::string() methods).
+  
+If your class implements [`__invoke()`](https://www.php.net/manual/en/language.oop5.magic.php#object.invoke) or you pass in an anonymous function/closure
+then your app immediately executes without the need for the user to type a method/command name.
+
+## Additional Features.
+- Functions are provided for easily reading inputs, prompts, and confirmations and do not require PHP to have the readline extension installed.
+- Functions for generating/printing coloured strings.
+- Throwable responses for halting execution with coloured success/error/warning messages for the user.
+- Run any class by name in the terminal with the provided bin. 😲
 
 ## Getting started example.
 For those unfamiliar with command-line scripts...
@@ -59,6 +69,7 @@ For those in windows who want to use powershell/cmd you will have to also make a
 ```cmd
 php %~dp0/myAwesomeNewCliApp -- %*
 ```
+
 ### Start a collection.
 I recommend keeping these files in a `/bin` folder in a personal project where
 all your awesome CLI applications will live
@@ -112,7 +123,7 @@ CLI has reserved some options.
 - -i does nothing but can not be used by your app.
   I have reserved it for the "interactive mode" that I am thinking about building in the future.
 
-## Example.
+## Example showcase.
 
 Save this example as a `testme` file and make it executable `chmod +x ./testme` and run with `./testme`
 
@@ -120,115 +131,215 @@ Play with this to see a showcase of how type hinting dock blocks required and op
 user prompts and different outputs etc are used.
 
 ```php
-#!/usr/bin/env php
 <?php
-declare(strict_types=1);//optional but good practice IMO. Google it.
+/** @noinspection PhpUnusedParameterInspection */
+/** @noinspection PhpUnusedPrivateMethodInspection */
 
-use BHayes\CLI\CLI;
-use BHayes\CLI\Colour;
+declare(strict_types=1);
+
+namespace BHayes\CLI\Test;
+
 use BHayes\CLI\UserErrorResponse;
 use BHayes\CLI\UserResponse;
 use BHayes\CLI\UserSuccessResponse;
-
-require_once 'vendor/autoload.php'; //if installed via composer
+use BHayes\CLI\UserWarningResponse;
 
 /**
- * This is the documentation that will appear when you type --help.
+ * Class TestSubject
+ *
+ * This is just to test what methods and params on a class via CLI.
+ *
+ * @package BHayes\CLI\Test
  */
-class Example
+class TestSubject
 {
+    public $a;
+    public $b;
+    public $c;
 
-    /**
-     * This one is easy to run.
-     * try runMe with --help to see this text.
-     */
-    public function runMe(string $optional = null)
+    public $apple;
+    public $banana;
+    public $carrot;
+
+    public $debug;
+
+    private $privateProperty = 'This should not be seen!';
+
+    public function __construct()
     {
-        //either return output or just output directly its up to you.
-        echo "I work with no arguments.";
-        if ($optional !== null) {
-            echo " But thanks for providing me with: ";
-            var_dump($optional);
-        }
+        return __METHOD__. " was executed!\n";
+    }
+
+    public function simple()
+    {
+        echo __METHOD__ , " was executed!";
+        var_dump(func_get_args());
+    }
+
+    public function requiresTwo($required, $requiredAlso)
+    {
+        echo __METHOD__ , " was executed with params $required $requiredAlso";
+        var_dump(func_get_args());
+    }
+
+    public function requiredAndOptional($required, $optional = null)
+    {
+        echo __METHOD__ , " was executed with $required, $optional";
+        var_dump(func_get_args());
+    }
+
+    public function allOptional(string $optionalString = '', int $optionalInt = 5, object $optionalObject = null)
+    {
+        echo __METHOD__, " was executed!";
+        var_dump(func_get_args());
+    }
+
+    private function aPrivateMethod()
+    {
+        echo __METHOD__ . " was executed!";
+    }
+
+    protected function aProtectedMethod()
+    {
+        echo __METHOD__ . " was executed!";
+    }
+
+    public function requiresInt(int $mustBeInt)
+    {
+        echo __METHOD__, " was executed!";
+        var_dump(func_get_args());
+    }
+
+    public function requiresBool(bool $mustBeBool)
+    {
+        echo __METHOD__, " was executed!";
+        var_dump(func_get_args());
+    }
+
+    public function requiresFloat(float $mustBeFloat)
+    {
+        echo __METHOD__, " was executed!";
+        var_dump(func_get_args());
+    }
+
+    public function throwsAnError()
+    {
+        throw new \Error(__METHOD__ . " hates you!");
+    }
+
+    public function typedVariadicFunction(int ...$amounts)
+    {
+        echo __METHOD__, " was executed!";
+        var_dump(func_get_args());
+    }
+
+    public function binCheck(int $exitCode)
+    {
+        echo __METHOD__ . " was executed!";
+        var_dump(func_get_args());
+        echo "\n";//because we are about to exit before cli can add the new line on the end of the output
+        exit($exitCode);
     }
 
     /**
-     * This command will only run when all the requirements are met.
-     */
-    public function tryMe(bool $bool, string $string, float $float, int $int)
-    {
-        return "You did it! You gave me bool a string, a float and an int.";
-    }
-
-    /**
-     * This method will accept any number of string arguments while the
-     * the others will fail if you pass them too many arguments.
+     * This method is used to test the --help function.
+     * It has a doc block that should be displayed to the user.
      *
-     * @param string ...$bunchOfStrings
      */
-    public function variadic(string ...$bunchOfStrings)
+    public function helpCheck()
     {
-        echo "You said ";
-        if (empty($bunchOfStrings)) {
-            echo "nothing.";
-        }
-        print_r($bunchOfStrings);
-        echo "\n";
+        echo __METHOD__, " was executed!";
+    }
+
+    public function noHelpCheck()// this one has no doc block to display
+    {
+        echo __METHOD__, " was executed!";
     }
 
     /**
-     * Demos prompts.
-     *
      * @throws UserResponse
      */
-    public function survey():string
+    public function throwsUserResponse()
     {
-        if (! CLI::confirm('Shall we begin?')) {
-            return "Cancelled";
-        }
-        $colour = CLI::prompt('Whats your favorite colour?');
-        $colourCode = Colour::code($colour);
-        throw new UserResponse("I love $colour too!", $colourCode, '☺');
+        throw new UserResponse(__METHOD__ . ' says hi!');
     }
 
-
     /**
-     * Tests the UserResponse throwable.
-     *
-     * @param bool|null $success
      * @throws UserResponse
      */
-    public function throwsUserResponse(bool $success = null)
+    public function throwsUserWarning()
     {
-        if ($success === true) {
-            throw new UserSuccessResponse();//all params optional
-        }
-        if ($success === false) {
-            throw new UserErrorResponse('Some error message user needs to see!');
-        }
-        throw new UserResponse('Try this again with true or false.');
+        throw new UserWarningResponse(__METHOD__ . ' says hi!');
     }
 
     /**
-     * foo is now an option because it has been declared public.
-     * @var bool
+     * @throws UserResponse
      */
-    public $foo = false;
+    public function throwsUserError()
+    {
+        throw new UserErrorResponse(__METHOD__ . ' says hi!');
+    }
 
     /**
-     * Run me with and without `--foo` and see the result.
+     * @throws UserResponse
      */
-    public function bar()
+    public function throwsUserSuccess()
     {
-        var_dump($this->foo);
+        echo __METHOD__, " was executed!";
+        throw new UserSuccessResponse();
     }
-};
 
-$cli = new CLI(new Example());
-$cli->run();
+    public function checkOptions()
+    {
+        echo __METHOD__, " was executed!\n";
+        foreach ($this as $property => $value) {
+            echo $property,": ";
+            var_dump($value);
+        }
+    }
+
+    public function dumpGlobals(...$args)
+    {
+        echo __METHOD__, " was executed!";
+        //the global arv should remain unmodified.
+        global $argv;
+        var_dump($argv);
+    }
+
+    public function __toString()
+    {
+        return __METHOD__. " was executed!\n";
+    }
+
+    public function returnSelf(): TestSubject
+    {
+        return $this;
+    }
+
+    public function isString(): bool
+    {
+        return true;//is_string($this);
+    }
+}
+
 ```
 
 ## Advanced/edge case usage.
+
+### My app should just run without "command"s.
+Let's say your app is like a shell script and should just execute, but you still
+want CLI to type match arguments and provide options.
+
+Simply pass in an invokable object.
+Either pass in a [class that implements the `__invoke()`method](test/run_invokableClass.php)
+or by passing in an [anonymous function/closure](test/run_function.php).
+
+The function or `__invoke()` method will immediately execute when the app runs however,
+you can still require arguments of specific types, and the user can see help the same
+as any other method/"command".
+
+Note that CLI will not use __invoke or closure names in help docs to avoid,
+showing technical jargon to the user.
 
 ### Forced debug mode.
 During development, you may wish to always run in debug mode without typing --debug.
@@ -237,7 +348,6 @@ $cli->run(true);
 ```
 Or you may wish to prevent debug mode from working at all
 WARNING: Doing this removes the --debug option. If the user types --debug now the application won't run because it's now an invalid option.
-
 
 If you DO want both CLI and your class to receive the debug option by default simply
 add it to the global argv before it runs.
@@ -304,7 +414,7 @@ eg.
 ```bash
 ./vendor/bin/cli BHayes\\CLI\\Colour string Hello 93
 ```
-If the first input exactly matches the name of a class that can be auto loaded and instantiated,
+If the first input exactly matches the name of a class that can be auto-loaded and instantiated,
 then it will consume that argument and run the class.
 
 It will fail if the Class constructor has dependencies however,

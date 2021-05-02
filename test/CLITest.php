@@ -10,12 +10,6 @@ use PHPUnit\Framework\TestCase;
 
 class CLITest extends TestCase
 {
-
-    /**
-     * @var CLI
-     */
-    private $cli;
-
     /**
      * @var string
      */
@@ -31,7 +25,7 @@ class CLITest extends TestCase
      *
      * @param string $method
      * @param string $arguments
-     * @param mixed ...$expectedErrorMessages
+     * @param mixed  ...$expectedErrorMessages
      *
      * @return false|string
      */
@@ -111,21 +105,6 @@ class CLITest extends TestCase
         self::assertEquals(0, $exitCode, "A successful command should exit with code 0!");
 
         return $output;
-    }
-
-    /**
-     * Used only for testing the prompt function.
-     *
-     * @param $stringOrFile
-     *
-     * @return string
-     */
-    private function setupInput($stringOrFile): string
-    {
-        if (is_file($stringOrFile)) {
-            return $stringOrFile;
-        }
-        return 'data://text/plain,' . $stringOrFile;
     }
 
     /**
@@ -231,6 +210,12 @@ class CLITest extends TestCase
             );
             self::assertSame($expectedValue, $confirm);
         }
+    }
+
+    public function testConstructorCanNotBeRun()
+    {
+        self::assertFailureToExecute('__construct', '', "'__construct' is not a recognized command.");
+        self::assertFailureToExecute('__cOnstRuct', '', "'__cOnstRuct' is not a recognized command.");
     }
 
     /**
@@ -400,7 +385,7 @@ class CLITest extends TestCase
         $this->assertSuccessfulExecution(
             'throwsUserSuccess',
             '',
-            'Finished!',
+            'Done.',
             '✔', //the default icon for Success
             "\033[" . Colour::GREEN . "m" //success messages are green by default
         );
@@ -420,7 +405,16 @@ class CLITest extends TestCase
 
     public function testHelp()
     {
-        $this->assertSuccessfulExecution('', '--help', ...get_class_methods(TestSubject::class));
+        $help = $this->assertSuccessfulExecution('', '--help');
+        foreach (get_class_methods(TestSubject::class) as $classMethod) {
+            if (strpos($classMethod, '__') === 0) {
+                //magic methods should not get listed
+                self::assertStringNotContainsStringIgnoringCase($classMethod, $help);
+            } else {
+                //everything else should get listed
+                self::assertStringContainsString($classMethod, $help);
+            }
+        }
         $this->assertSuccessfulExecution('', '--help helpCheck', 'This method is used to test the --help function.');
         $this->assertSuccessfulExecution('', '--help noHelpCheck', 'No documentation');
     }
@@ -531,6 +525,47 @@ class CLITest extends TestCase
         );
         self::assertStringNotContainsString('the program crashed', $output);//no generic suppression message.
         self::assertStringNotContainsString('Stack trace:', $output);//and no debug mode used.
+    }
+
+    public function testInvokable()
+    {
+        $this->command = 'php test/run_invokableClass.php';
+        $this->assertSuccessfulExecution('', '5');
+
+        $failureToExecute = '' . $this->assertFailureToExecute('', 'five', 'must be of the type int');
+        self::assertTrue(strpos($failureToExecute, '__invoke') === false);
+        self::assertTrue(strpos($failureToExecute, 'class@anonymous') === false);
+        self::assertTrue(strpos($failureToExecute, '{{closure}}') === false);
+
+        //make sure the other function on the class is not able to be used.
+        $failureToExecute2 = $this->assertFailureToExecute('', 'youCantRunThis', 'must be of the type int');
+        self::assertEquals($failureToExecute, $failureToExecute2);
+    }
+
+    public function testFunction()
+    {
+        $this->command = 'php test/run_function.php';
+        $this->assertSuccessfulExecution('', '5');
+
+        $failureToExecute = '' . $this->assertFailureToExecute('', 'five', 'must be of the type int');
+        self::assertTrue(strpos($failureToExecute, '__invoke') === false);
+        self::assertTrue(strpos($failureToExecute, 'class@anonymous') === false);
+        self::assertTrue(strpos($failureToExecute, '{{closure}}') === false);
+    }
+
+    public function testReturnSelf()
+    {
+        $success = $this->assertSuccessfulExecution(
+            'returnself',
+            '',
+            //public properties should get printed
+            'apple', 'banana', 'carrot',
+            //including dynamically added and nested object properties.
+            'nestedObject','with','value'
+        );
+        //but private properties should not get printed.
+        self::assertStringNotContainsStringIgnoringCase('privateProperty', $success);
+        self::assertStringNotContainsStringIgnoringCase('This should not be seen!', $success);
     }
 
     public function testForBreakingChanges()

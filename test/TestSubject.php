@@ -1,4 +1,6 @@
 <?php
+/** @noinspection PhpUnusedParameterInspection */
+/** @noinspection PhpUnusedPrivateMethodInspection */
 
 declare(strict_types=1);
 
@@ -28,10 +30,16 @@ class TestSubject
 
     public $debug;
 
+    private $privateProperty = 'This should not be seen!';
+
+    public function __construct()
+    {
+        return __METHOD__. " was executed!\n";
+    }
+
     public function simple()
     {
-        echo __METHOD__ , " was executed!";
-        var_dump(func_get_args());
+        return __METHOD__ . " was executed!";
     }
 
     public function requiresTwo($required, $requiredAlso)
@@ -162,5 +170,21 @@ class TestSubject
         //the global arv should remain unmodified.
         global $argv;
         var_dump($argv);
+    }
+
+    public function __toString()
+    {
+        return __METHOD__. " was executed!\n";
+    }
+
+    public function returnSelf(): TestSubject
+    {
+        $this->nestedObject = (object)['with' => 'value', __METHOD__ . " was executed!\n"];
+        return $this;
+    }
+
+    public function isString(): bool
+    {
+        return true;//is_string($this);
     }
 }

@@ -8,7 +8,6 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
 use Throwable;
-use TypeError;
 
 /**
  * Class CLI
@@ -77,11 +76,21 @@ class CLI
     private $arguments;
 
     /**
+     * @var string
+     */
+    private $initiatorName;
+
+    /**
+     * @var string[]
+     */
+    private $bannedMethods = ['__construct', '__clone'];
+
+    /**
      * CLI constructor.
      *
      * Creates a reflection of the class for introspective execution of its methods by the terminal user.
      * Detects and prevents error reporting config from showing errors more than once in terminal output.
-     * Note: All errors/exceptions will be suppressed by default regardless unless they are of the type
+     * Note: All errors/exceptions will be suppressed by default unless they are of the types
      *  specified in the clientMessageExceptions.
      *
      * If debug mode is enabled no exceptions/errors are suppressed.
@@ -103,7 +112,9 @@ class CLI
         //get a reflection of said class
         try {
             $this->reflection = new ReflectionClass($this->subjectClass);
-        } catch (ReflectionException $reflectionException) {
+        }
+        /** @noinspection PhpRedundantCatchClauseInspection */
+        catch (ReflectionException $reflectionException) {
             $this->exitWith(
                 "Command Line Interface failed to initialize.",
                 $reflectionException
@@ -171,7 +182,7 @@ class CLI
             }
 
             //its a real error
-            $printMessage = "❌ Failed to execute '$this->subjectMethod', the program crashed." .
+            $printMessage = "❌ Failed to execute '{$this->printableCommandName()}', the program crashed." .
                 " Please contact the developers if this keeps happening.";
             $this->exitWith(
                 $printMessage,
@@ -188,22 +199,41 @@ class CLI
     private function execute()
     {
         try {
-            $result = $this->subjectClass->{$this->subjectMethod}(...$this->subjectArguments);
-            print_r($result);
+            $result = $this->subjectClass->{$this->subjectMethod}(...$this->subjectArguments) ?? '';
+            if (is_string($result)) {
+                echo $result;
+            } else {
+                echo json_encode($result, JSON_PRETTY_PRINT,JSON_UNESCAPED_SLASHES);
+            }
             echo "\n";
-            exit(0);
+
+            return $result;
         } catch (\TypeError $typeError) {
             //Important: is it a type error caused by bad user input?
             if (
-                stripos($typeError->getMessage(), $this->subjectMethod) !== false &&
+                //todo: this dodgy hack should probably get replaced with a real type check in future.
+                (
+                    stripos($typeError->getMessage(), $this->subjectMethod) !== false &&
                 isset($typeError->getTrace()[1]) &&
                 $typeError->getTrace()[1]['file'] === __FILE__ &&
                 $typeError->getTrace()[1]['function'] === 'execute'
+                )
+                ||
+                (
+                    $this->subjectMethod === '__invoke' && strpos($typeError->getMessage(), '{closure}') &&
+                    isset($typeError->getTrace()[2]) &&
+                    $typeError->getTrace()[2]['file'] === __FILE__ &&
+                    $typeError->getTrace()[2]['function'] === 'execute'
+                )
             ) {
                 //We caused the type error by trying to use the users input as a method argument,
                 // so lets tell the user its their fault while stripping sensitive info out.
                 $message = str_replace(
-                    ' passed to ' . get_class($this->subjectClass) . "::$this->subjectMethod()",
+                    [
+                        ' passed to ' . get_class($this->subjectClass) . "::$this->subjectMethod()",
+                        ' passed to class@anonymous::__invoke()',
+                        'passed to {closure}()',
+                    ],
                     '',
                     $typeError->getMessage()
                 );
@@ -357,7 +387,8 @@ class CLI
         }
         echo "Commands available:\n";
         foreach ($reflectionMethods as $class_method) {
-            if ($class_method->getName() == '__construct') {
+            //do not list any magic methods such as __construct or __toString
+            if (substr($class_method->getName(), 0, 2) === '__') {
                 continue;//construct is not listed
             }
             if (!$class_method->isPublic()) {
@@ -374,25 +405,49 @@ class CLI
     {
         if (!$this->reflectionMethod) {
             $doc = $this->reflection->getDocComment()
-                ?: "No documentation found for {$this->reflection->getShortName()}";
+                ?: "No documentation found for {$this->printableAppName()}";
             $this->printFormattedDocs($doc);
             $this->printUsage();
             return;
         }
 
-        $shortMethodName = $this->reflectionMethod->getShortName();
+        $commandName = $this->printableCommandName();
         $doc = $this->reflectionMethod->getDocComment()
-            ?: "No documentation found for $shortMethodName";
+            ?: "No documentation found for $commandName";
         $this->printFormattedDocs($doc);
         $reflectionParameters = $this->reflectionMethod->getParameters();
         if (empty($reflectionParameters)) {
-            echo "'$shortMethodName' does not require any parameters.\n";
+            echo "'$commandName' does not require any parameters.\n";
         } else {
-            echo "'$shortMethodName' has the following parameters:\n";
+            echo "'$commandName' has the following parameters:\n";
             foreach ($reflectionParameters as $reflectionParameter) {
                 echo $reflectionParameter, "\n";
             }
         }
+    }
+
+    private function printableAppName(): string
+    {
+        static $name;
+        if ($name) return $name;
+        $name = $this->reflection->getShortName();
+        //replace technical terms about invocable with the initiator name.
+        if (strpos($name, 'class@anonymous') !== false || $name === 'Closure') {
+            $name = $this->initiatorName;
+        }
+
+        return $name;
+    }
+
+    private function printableCommandName(): string
+    {
+        if (!$this->reflectionMethod) return $this->printableAppName();
+        static $name;
+        if ($name) return $name;
+        $name = $this->reflectionMethod->getShortName();
+        if ($name === '__invoke') $name = $this->printableAppName();
+
+        return $name;
     }
 
     /**
@@ -408,6 +463,12 @@ class CLI
 
         //remove argument 0 is the first word the user typed and only used for usage statement.
         $this->initiator = array_shift($args);
+        $this->initiatorName = basename($this->initiator);
+
+        //if the class itself is invokable than we inject the invoke as the method being called.
+        if (is_callable($this->subjectClass)) {
+            array_unshift($args, '__invoke');
+        }
 
         //if no arguments just skip all the processing and display usage
         if (empty($args)) {
@@ -481,6 +542,9 @@ class CLI
             $this->printAvailableCommands();
             exit(1);
         }
+        if (in_array(strtolower($this->subjectMethod), $this->bannedMethods)) {
+            $this->exitWith("'$this->subjectMethod' is not a recognized command.");
+        }
 
         //everything after that is a parameter for the function
         $this->subjectArguments = $args;
@@ -509,7 +573,7 @@ class CLI
             count($this->subjectArguments) > $this->reflectionMethod->getNumberOfParameters() &&
             $this->reflectionMethod->isVariadic() === false
         ) {
-            $message = "Too many arguments! '" . $this->subjectMethod .
+            $message = "Too many arguments! '" . $this->printableCommandName() .
                 "' can only accept " . $this->reflectionMethod->getNumberOfParameters() .
                 ' and you gave me ' . count($this->subjectArguments);
 
@@ -519,9 +583,7 @@ class CLI
                 ' You should consider using variadic functions if you need this.';
             }
 
-            $this->exitWith(
-                $message
-            );
+            $this->exitWith($message);
         }
 
         //prevent too few arguments instead of catching Argument error.
