@@ -12,7 +12,7 @@ require_once __DIR__ . '/../bin/_environment.php';
 if (php_sapi_name() == 'cli') {
 
     //attempt to construct the subject to run if a class name is specified as argument one.
-    $argumentOne = $argv[1];
+    $argumentOne = $argv[1] ?? null;
     if (class_exists($argumentOne)){
         $subject = new $argumentOne();
         //remove the argument before passing control over to the running class.
