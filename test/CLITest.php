@@ -539,7 +539,10 @@ class CLITest extends TestCase
 
         //make sure the other function on the class is not able to be used.
         $failureToExecute2 = $this->assertFailureToExecute('', 'youCantRunThis', 'must be of the type int');
-        self::assertEquals($failureToExecute, $failureToExecute2);
+        self::assertTrue(strpos($failureToExecute2, '__invoke') === false);
+        self::assertTrue(strpos($failureToExecute2, 'class@anonymous') === false);
+        self::assertTrue(strpos($failureToExecute2, '{{closure}}') === false);
+        self::assertTrue(strpos($failureToExecute2, 'youCantRunThis') === false);
     }
 
     public function testFunction()

@@ -95,12 +95,12 @@ class CLI
      *
      * If debug mode is enabled no exceptions/errors are suppressed.
      *
-     * @param object|null   $class if unspecified, $this is used.
-     * @param string[]      $clientMessageExceptions list of custom exceptions to use for user responses.
+     * @param object|null $class                   if unspecified, $this is used.
+     * @param string[]    $clientMessageExceptions list of custom exceptions to use for user responses.
      *
      * @throws Throwable only if debug mode is enabled.
      */
-    public function __construct(object $class = null, $clientMessageExceptions = [])
+    public function __construct(object $class = null, array $clientMessageExceptions = [])
     {
         //copy argv
         global $argv;
