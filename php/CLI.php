@@ -161,7 +161,7 @@ class CLI
         $this->debug = $debug;
         try {
             $this->prepare();
-            $this->execute();
+            return $this->execute();
         } catch (UserResponse $response) {
             $this->exitWith($response->message(), $response);
         } catch (Throwable $throwable) {
