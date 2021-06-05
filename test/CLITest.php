@@ -293,26 +293,26 @@ class CLITest extends TestCase
     public function testInt()
     {
         $this->assertSuccessfulExecution('requiresInt', '5');
-        $this->assertFailureToExecute('requiresInt', 'five', 'must be of the type int');
-        $this->assertFailureToExecute('requiresInt', '5.5', 'must be of the type int');
-        $this->assertFailureToExecute('requiresInt', '5five', 'must be of the type int');
-        $this->assertFailureToExecute('requiresInt', 'five5', 'must be of the type int');
+        $this->assertFailureToExecute('requiresInt', 'five', 'must be of', 'type int');
+        $this->assertFailureToExecute('requiresInt', '5.5', 'must be of', 'type int');
+        $this->assertFailureToExecute('requiresInt', '5five', 'must be of', 'type int');
+        $this->assertFailureToExecute('requiresInt', 'five5', 'must be of', 'type int');
     }
 
     public function testCaseInsensitiveCommandCall()
     {
         $this->assertSuccessfulExecution('reqUireSint', '5');
-        $this->assertFailureToExecute('RequiresinT', 'five', 'must be of the type int');
+        $this->assertFailureToExecute('RequiresinT', 'five', 'must be of', 'type int');
     }
 
     public function testBool()
     {
         $this->assertSuccessfulExecution('requiresBool', 'true');
         $this->assertSuccessfulExecution('requiresBool', 'false');
-        $this->assertFailureToExecute('requiresBool', 'not_a_bool', 'must be of the type bool');
-        $this->assertFailureToExecute('requiresBool', '1', 'must be of the type bool');
-        $this->assertFailureToExecute('requiresBool', '0', 'must be of the type bool');
-        $this->assertFailureToExecute('requiresBool', 'null', 'must be of the type bool');
+        $this->assertFailureToExecute('requiresBool', 'not_a_bool', 'must be of', 'type bool');
+        $this->assertFailureToExecute('requiresBool', '1', 'must be of', 'type bool');
+        $this->assertFailureToExecute('requiresBool', '0', 'must be of', 'type bool');
+        $this->assertFailureToExecute('requiresBool', 'null', 'must be of', 'type bool');
     }
 
     public function testFloat()
@@ -532,13 +532,13 @@ class CLITest extends TestCase
         $this->command = 'php test/run_invokableClass.php';
         $this->assertSuccessfulExecution('', '5');
 
-        $failureToExecute = '' . $this->assertFailureToExecute('', 'five', 'must be of the type int');
+        $failureToExecute = '' . $this->assertFailureToExecute('', 'five', 'must be of', 'type int');
         self::assertTrue(strpos($failureToExecute, '__invoke') === false);
         self::assertTrue(strpos($failureToExecute, 'class@anonymous') === false);
         self::assertTrue(strpos($failureToExecute, '{{closure}}') === false);
 
         //make sure the other function on the class is not able to be used.
-        $failureToExecute2 = $this->assertFailureToExecute('', 'youCantRunThis', 'must be of the type int');
+        $failureToExecute2 = $this->assertFailureToExecute('', 'youCantRunThis', 'must be of', 'type int');
         self::assertTrue(strpos($failureToExecute2, '__invoke') === false);
         self::assertTrue(strpos($failureToExecute2, 'class@anonymous') === false);
         self::assertTrue(strpos($failureToExecute2, '{{closure}}') === false);
@@ -550,7 +550,7 @@ class CLITest extends TestCase
         $this->command = 'php test/run_function.php';
         $this->assertSuccessfulExecution('', '5');
 
-        $failureToExecute = '' . $this->assertFailureToExecute('', 'five', 'must be of the type int');
+        $failureToExecute = '' . $this->assertFailureToExecute('', 'five', 'must be of', 'type int');
         self::assertTrue(strpos($failureToExecute, '__invoke') === false);
         self::assertTrue(strpos($failureToExecute, 'class@anonymous') === false);
         self::assertTrue(strpos($failureToExecute, '{{closure}}') === false);

@@ -63,7 +63,7 @@ class CLI
     /**
      * @var string[]
      */
-    private $clientMessageExceptions = [];
+    private $clientMessageExceptions;
 
     /**
      * @var bool
@@ -152,11 +152,12 @@ class CLI
      *   --help option that will display additional information about any given method.
      *   --debug option for devs to see all errors and stack traces.
      *
-     * @param bool $debug if true php errors/exceptions are thrown.
+     * @param bool|null $debug if true php errors/exceptions are thrown.
      *
      * @throws Throwable
+     * @noinspection PhpInconsistentReturnPointsInspection
      */
-    public function run($debug = null)
+    public function run(bool $debug = null)
     {
         $this->debug = $debug;
         try {
@@ -194,7 +195,7 @@ class CLI
             if (is_string($result)) {
                 echo $result;
             } else {
-                echo json_encode($result, JSON_PRETTY_PRINT,JSON_UNESCAPED_SLASHES);
+                echo json_encode($result, JSON_PRETTY_PRINT, JSON_UNESCAPED_SLASHES);
             }
             echo "\n";
 
@@ -211,7 +212,8 @@ class CLI
                 )
                 ||
                 (
-                    $this->subjectMethod === '__invoke' && strpos($typeError->getMessage(), '{closure}') &&
+                    $this->subjectMethod === '__invoke' &&
+                    strpos($typeError->getMessage(), '{closure}') &&
                     isset($typeError->getTrace()[2]) &&
                     $typeError->getTrace()[2]['file'] === __FILE__ &&
                     $typeError->getTrace()[2]['function'] === 'execute'
@@ -423,7 +425,9 @@ class CLI
     private function printableAppName(): string
     {
         static $name;
-        if ($name) return $name;
+        if ($name) {
+            return $name;
+        }
         $name = $this->reflection->getShortName();
         //replace technical terms about invocable with the initiator name.
         if (strpos($name, 'class@anonymous') !== false || $name === 'Closure') {
@@ -435,11 +439,17 @@ class CLI
 
     private function printableCommandName(): string
     {
-        if (!$this->reflectionMethod) return $this->printableAppName();
+        if (!$this->reflectionMethod) {
+            return $this->printableAppName();
+        }
         static $name;
-        if ($name) return $name;
+        if ($name) {
+            return $name;
+        }
         $name = $this->reflectionMethod->getShortName();
-        if ($name === '__invoke') $name = $this->printableAppName();
+        if ($name === '__invoke') {
+            $name = $this->printableAppName();
+        }
 
         return $name;
     }
