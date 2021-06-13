@@ -17,6 +17,8 @@ class CLITest extends TestCase
 
     public function setUp(): void
     {
+        //make sure tests dont break when run from the IDE and it decides to use a different working directory.
+        chdir(__DIR__ . '/..');
         $this->command = "php test/run_TestSubject.php";
     }
 
@@ -562,13 +564,27 @@ class CLITest extends TestCase
             'returnself',
             '',
             //public properties should get printed
-            'apple', 'banana', 'carrot',
+            'apple',
+            'banana',
+            'carrot',
             //including dynamically added and nested object properties.
-            'nestedObject','with','value'
+            'nestedObject',
+            'with',
+            'value'
         );
         //but private properties should not get printed.
         self::assertStringNotContainsStringIgnoringCase('privateProperty', $success);
         self::assertStringNotContainsStringIgnoringCase('This should not be seen!', $success);
+    }
+
+    public function testLoad()
+    {
+        $CLI = CLI::load('BHayes\\CLI\\Test\\TestSubject');
+        self::assertInstanceOf(CLI::class, $CLI);
+        self::assertStringContainsString(
+            "BHayes\CLI\Test\TestSubject::__set_state",
+            var_export($CLI, true)
+        );
     }
 
     public function testForBreakingChanges()

@@ -206,9 +206,9 @@ class CLI
                 //todo: this dodgy hack should probably get replaced with a real type check in future.
                 (
                     stripos($typeError->getMessage(), $this->subjectMethod) !== false &&
-                isset($typeError->getTrace()[1]) &&
-                $typeError->getTrace()[1]['file'] === __FILE__ &&
-                $typeError->getTrace()[1]['function'] === 'execute'
+                    isset($typeError->getTrace()[1]) &&
+                    $typeError->getTrace()[1]['file'] === __FILE__ &&
+                    $typeError->getTrace()[1]['function'] === 'execute'
                 )
                 ||
                 (
@@ -270,10 +270,10 @@ class CLI
     /**
      * Prompts the user for keyboard input.
      *
-     * @param string $message       a prompt messages to display
-     * @param string $default       if set will display in brackets and be returned if the user presses enter only.
-     * @param bool   $lowercase     if true returns input as lowercase
-     * @param string $inputStream   see readline doc block for more info.
+     * @param string $message     a prompt messages to display
+     * @param string $default     if set will display in brackets and be returned if the user presses enter only.
+     * @param bool   $lowercase   if true returns input as lowercase
+     * @param string $inputStream see readline doc block for more info.
      *
      * @return string
      */
@@ -587,8 +587,8 @@ class CLI
 
             if ($this->debug) {
                 $message .= Colour::string("\nDebug note: ", Colour::AT_BOLD) .
-                'Php normally allows excess parameters but BHayes\CLI intentionally prevents this behaviour. ' .
-                ' You should consider using variadic functions if you need this.';
+                    'Php normally allows excess parameters but BHayes\CLI intentionally prevents this behaviour. ' .
+                    ' You should consider using variadic functions if you need this.';
             }
 
             $this->exitWith($message);
@@ -654,7 +654,7 @@ class CLI
      * Prints text with with "\n" appended, with colour codes if supplied.
      *
      * @param string $text
-     * @param int ...$colours
+     * @param int    ...$colours
      */
     public static function printLine($text = '', int ...$colours)
     {
@@ -686,5 +686,40 @@ class CLI
         }
 
         return "UNKNOWN: $uname";
+    }
+
+    /**
+     * Attempts to autoload a class instead of requiring the use user to pass it in.
+     *
+     * @param string $className
+     *
+     * @return static
+     * @throws \Exception
+     * @throws Throwable
+     */
+    public static function load(string $className): CLI
+    {
+        if (class_exists($className)) {
+            return new static(new $className());
+        }
+        //search for the class in the autoload namespaces
+        foreach (self::getPSR4NameSpaces() as $nameSpace => $path) {
+            $fullyQualifiedClassName = "$nameSpace\\$className";
+            if (class_exists($fullyQualifiedClassName)) {
+                return new static(new $fullyQualifiedClassName());
+            }
+        }
+
+        throw new \Exception("Cant find $className sorry.");
+    }
+
+    private static function getPSR4NameSpaces(): array
+    {
+        if (!file_exists('composer.json') || !$composer = file_get_contents('composer.json')) {
+            return [];
+        }
+        $decode = json_decode($composer, true) ?: null;
+
+        return $decode['autoload']['psr-4'] ?? [];
     }
 }

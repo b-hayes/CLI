@@ -22,7 +22,7 @@ if (php_sapi_name() != 'cli') {
 $argumentOne = $argv[1] ?? null;
 if (class_exists($argumentOne)) {
     $subject = new $argumentOne();
-    //remove the argument before passing control over to the running class.
+    //remove the first argument before passing control over to the running class.
     unset($argv[1]);
     //reset the arrays so the missing argument doesnt break things.
     global $argv;
