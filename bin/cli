@@ -17,14 +17,28 @@ if (php_sapi_name() != 'cli') {
     throw new \Error("This is a command line tool only.");
 }
 
+$subject = null;
 
 //attempt to construct the subject to run if a class name is specified as argument one.
-$argumentOne = $argv[1] ?? null;
-if (class_exists($argumentOne)) {
-    $subject = new $argumentOne();
-    //remove the first argument before passing control over to the running class.
+$potentialClass = $argv[1] ?? null;
+if (class_exists($potentialClass)) {
+    $subject = new $potentialClass();
+} elseif(file_exists('composer.json') && $composer = file_get_contents('composer.json')) {
+    //search for the class in the autoload namespaces
+    $decode = json_decode($composer, true) ?: null;
+
+    foreach ($decode['autoload']['psr-4'] ?? [] as $nameSpace => $path) {
+        $fullyQualifiedClassName = "$nameSpace\\$potentialClass";
+        if (class_exists($fullyQualifiedClassName)) {
+            $subject = new $fullyQualifiedClassName();
+            break;
+        }
+    }
+}
+
+//clean up the arguments if we are loading a subject class to run.
+if ($subject) {
     unset($argv[1]);
-    //reset the arrays so the missing argument doesnt break things.
     global $argv;
     global $argc;
     $argv = array_values($argv);
@@ -32,4 +46,4 @@ if (class_exists($argumentOne)) {
 }
 
 
-(new CLI($subject ?? null))->run();
+(new CLI($subject))->run();

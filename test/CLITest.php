@@ -577,16 +577,6 @@ class CLITest extends TestCase
         self::assertStringNotContainsStringIgnoringCase('This should not be seen!', $success);
     }
 
-    public function testLoad()
-    {
-        $CLI = CLI::load('BHayes\\CLI\\Test\\TestSubject');
-        self::assertInstanceOf(CLI::class, $CLI);
-        self::assertStringContainsString(
-            "BHayes\CLI\Test\TestSubject::__set_state",
-            var_export($CLI, true)
-        );
-    }
-
     public function testForBreakingChanges()
     {
         self::assertTrue(true);
