@@ -704,7 +704,7 @@ class CLI
         }
         //search for the class in the autoload namespaces
         foreach (self::getPSR4NameSpaces() as $nameSpace => $path) {
-            $fullyQualifiedClassName = "$nameSpace$className";
+            $fullyQualifiedClassName = "$nameSpace\\$className";
             if (class_exists($fullyQualifiedClassName)) {
                 return new static(new $fullyQualifiedClassName());
             }
