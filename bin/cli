@@ -28,7 +28,7 @@ if (class_exists($potentialClass)) {
     $decode = json_decode($composer, true) ?: null;
 
     foreach ($decode['autoload']['psr-4'] ?? [] as $nameSpace => $path) {
-        $fullyQualifiedClassName = "$nameSpace\\$potentialClass";
+        $fullyQualifiedClassName = "$nameSpace$potentialClass";
         if (class_exists($fullyQualifiedClassName)) {
             $subject = new $fullyQualifiedClassName();
             break;
