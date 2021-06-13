@@ -398,29 +398,27 @@ try{
 ### CLI can run itself.
 If you don't inject a class CLI runs itself allowing you to use its prompt and
 colour print methods in bash scripts etc.
-I've provided vendor bin export for this purpose.
 ```bash
 ./vendor/bin/cli prompt Name? `git config user.name`
 ```
 You could install the package globally:
 ```
 composer global require b-hayes/cli
-cli `
 ```
-for all your other scripts to access shell commands
-to be able to use these if you want.
-
-The 'run' method won't do anything in this context however, 
-you can...
+Add the global project bin dir to your path, and you can use it globally.
+```
+cli prompt Name? `git config user.name`
+```
 
 ### Run any class by name.
 This is great for adhoc testing on random class objects in your project.
-eg.
+It can also automatically add the top level namepsace for you. Eg.
 ```bash
-./vendor/bin/cli BHayes\\CLI\\Colour string Hello 93
+cli MyClass
+# Instead of
+cli MyVendor\\MyProject\\MyClass
 ```
-If the first input exactly matches the name of a class that can be auto-loaded and instantiated,
-then it will consume that argument and run the class.
+If the first input matches the name of a class it will attempt to load it.
 
 It will fail if the Class constructor has dependencies however,
 I have thought about adding the ability for CLI to use a dependency resolver in the future.
