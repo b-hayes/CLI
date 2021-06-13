@@ -453,13 +453,13 @@ class CLITest extends TestCase
         $this->assertSuccessfulExecution(
             'checkOptions',
             '-ac --banana --debug',
-            'a: bool(true)',
+            'a: true',
             'b: NULL',
-            'c: bool(true)',
+            'c: true',
             'apple: NULL',
-            'banana: bool(true)',
+            'banana: true',
             'carrot: NULL',
-            'debug: bool(true)'//debug option should be allowed to pass to the subject class as well as to CLI itself.
+            'debug: true'//debug option should be allowed to pass to the subject class as well as to CLI itself.
         );
     }
 

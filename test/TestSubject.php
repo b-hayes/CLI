@@ -159,8 +159,7 @@ class TestSubject
     {
         echo __METHOD__, " was executed!\n";
         foreach ($this as $property => $value) {
-            echo $property,": ";
-            var_dump($value);
+            echo $property,": ", var_export($value),"\n";
         }
     }
 
