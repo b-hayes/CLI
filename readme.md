@@ -419,6 +419,7 @@ cli MyClass
 cli MyVendor\\MyProject\\MyClass
 ```
 If the first input matches the name of a class it will attempt to load it.
+Only PSR-4 namespaces are resolved, test/dev autolaods ignored.
 
 It will fail if the Class constructor has dependencies however,
 I have thought about adding the ability for CLI to use a dependency resolver in the future.
