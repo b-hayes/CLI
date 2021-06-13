@@ -667,21 +667,21 @@ class CLI
     public static function os(): string
     {
         $uname = php_uname();
-        if (stripos($uname, 'linux')) {
-            if (strpos($uname, 'Microsoft')) {
+        if (stripos($uname, 'linux') !== false) {
+            if (strpos($uname, 'Microsoft') !== false) {
                 return 'WSL';
             }
-            if (strpos($uname, 'microsoft')) {
+            if (strpos($uname, 'microsoft') !== false) {
                 return 'WSL';//more specifically its probably WSL version two
             }
             return 'Linux';
         }
 
-        if (stripos($uname, 'windows')) {
+        if (stripos($uname, 'windows') !== false) {
             return 'Windows';
         }
 
-        if (stripos($uname, 'darwin')) {
+        if (stripos($uname, 'darwin') !== false) {
             return 'MacOS';
         }
 
