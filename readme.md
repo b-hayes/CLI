@@ -402,7 +402,12 @@ I've provided vendor bin export for this purpose.
 ```bash
 ./vendor/bin/cli prompt Name? `git config user.name`
 ```
-You could install the package globally for all your other scripts to access shell commands
+You could install the package globally:
+```
+composer global require b-hayes/cli
+cli `
+```
+for all your other scripts to access shell commands
 to be able to use these if you want.
 
 The 'run' method won't do anything in this context however, 

@@ -687,39 +687,4 @@ class CLI
 
         return "UNKNOWN: $uname";
     }
-
-    /**
-     * Attempts to autoload a class instead of requiring the use user to pass it in.
-     *
-     * @param string $className
-     *
-     * @return static
-     * @throws \Exception
-     * @throws Throwable
-     */
-    public static function load(string $className): CLI
-    {
-        if (class_exists($className)) {
-            return new static(new $className());
-        }
-        //search for the class in the autoload namespaces
-        foreach (self::getPSR4NameSpaces() as $nameSpace => $path) {
-            $fullyQualifiedClassName = "$nameSpace\\$className";
-            if (class_exists($fullyQualifiedClassName)) {
-                return new static(new $fullyQualifiedClassName());
-            }
-        }
-
-        throw new \Exception("Cant find $className sorry.");
-    }
-
-    private static function getPSR4NameSpaces(): array
-    {
-        if (!file_exists('composer.json') || !$composer = file_get_contents('composer.json')) {
-            return [];
-        }
-        $decode = json_decode($composer, true) ?: null;
-
-        return $decode['autoload']['psr-4'] ?? [];
-    }
 }
