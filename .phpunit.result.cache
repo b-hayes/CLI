@@ -1,1 +1,0 @@
-C:37:"PHPUnit\Runner\DefaultTestResultCache":138:{a:2:{s:7:"defects";a:1:{s:33:"BHayes\CLI\Test\CLITest::testLoad";i:4;}s:5:"times";a:1:{s:33:"BHayes\CLI\Test\CLITest::testLoad";d:0.005;}}}

@@ -30,4 +30,4 @@ composer.phar
 ## BEGIN UNIT TEST IGNORES ##
 #############################
 test/report/*
-test/.phpunit.result.cache
+.phpunit.result.cache
