@@ -18,18 +18,23 @@ if (php_sapi_name() != 'cli') {
 }
 
 
-//attempt to construct the subject to run if a class name is specified as argument one.
+//first setup fallback so it grabs full arguments as it is now.
+$CLI = new CLI();
+
+//Then attempt to load argument one as a class to run.
 $argumentOne = $argv[1] ?? null;
-if (class_exists($argumentOne)) {
-    $subject = new $argumentOne();
-    //remove the first argument before passing control over to the running class.
+try {
+    //remove the first argument
     unset($argv[1]);
     //reset the arrays so the missing argument doesnt break things.
     global $argv;
     global $argc;
     $argv = array_values($argv);
     $argc -= 1;
+    //then attempt to load the class.
+    $CLI = CLI::load($argumentOne);
+} catch (\Throwable $e) {
+    //no go, fallback is used.
 }
 
-
-(new CLI($subject ?? null))->run();
+$CLI->run();
