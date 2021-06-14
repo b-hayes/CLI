@@ -365,7 +365,7 @@ class CLI
 
     private function printUsage()
     {
-        $usage = "Usage: " . $this->initiatorName . " [command] [-?][operands...]";
+        $usage = "usage: " . $this->initiatorName . " [command] [-?][operands...]";
         echo $usage, "\n";
         $this->printAvailableCommands();
         echo "Use --help for more information.\n";
