@@ -401,28 +401,28 @@ colour print methods in bash scripts etc.
 ```bash
 ./vendor/bin/cli prompt Name? `git config user.name`
 ```
-You could install the package globally:
-```
+You can install the package globally:
+```bash
 composer global require b-hayes/cli
 ```
 Add the global project bin dir to your path, and you can use it globally.
-```
+```bash
 cli prompt Name? `git config user.name`
 ```
 
 ### Run any class by name.
 This is great for adhoc testing on random class objects in your project.
-It can also automatically add the top level namepsace for you. Eg.
+It can also automatically add the projects top level namepsace for you. Eg.
 ```bash
 cli MyClass
 # Instead of
 cli MyVendor\\MyProject\\MyClass
 ```
 If the first input matches the name of a class it will attempt to load it.
-Only PSR-4 namespaces are resolved, test/dev autolaods ignored.
+It does this by reading the PSR-4 autoload paths from your `composer.json`.
 
 It will fail if the Class constructor has dependencies however,
-I have thought about adding the ability for CLI to use a dependency resolver in the future.
+I may add a way for it to use dependency containers in the future.
 
 ## Feedback is welcome.
 This is my first public composer package be gentle 😅.
