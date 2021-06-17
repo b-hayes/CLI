@@ -1,33 +1,12 @@
-
-###########################################
-##    AUTO GENERATED FILES    ##
-###########################################
-/temp
-#persistant storage will be outside of the git tracked folder
-#eg. ../persistent-storage
-#and on dev machines will have the project name added to the path
-#eg. ../persistent-storage/cli
-
-############################
-## BEGIN COMPOSER IGNORES ##
-############################
+# Composer
 composer.phar
 /vendor/
-
-# Commit your application's lock file https://getcomposer.org/doc/01-basic-usage.md#commit-your-composer-lock-file-to-version-control
-# You may choose to ignore a library lock file http://getcomposer.org/doc/02-libraries.md#lock-file
 #composer.lock
 
-############################
-## BEGIN INTELLIJ IGNORES ##
-############################
-## just ignore all now
-.idea/*
-## .idea/webResources.xml appears after setting resource root.. might want to specifically track this file
-## for dir settings only. However, when I did track this file it cause a new clone opened in phpstorm to get confused.
+# IDE / Editors
+/.idea/
+private.env.json
 
-#############################
-## BEGIN UNIT TEST IGNORES ##
-#############################
+# PhpUnit
 test/report/*
 .phpunit.result.cache
