@@ -23,6 +23,9 @@ $subject = null;
 $potentialClass = $argv[1] ?? null;
 if (class_exists($potentialClass)) {
     $subject = new $potentialClass();
+} elseif (fileExists($potentialClass)) {
+    //attempt to auto-load class based on its file name
+    $subject = str_replace(['/', '.php', getcwd()], ['\\','', ''], $potentialClass);
 } elseif(file_exists('composer.json') && $composer = file_get_contents('composer.json')) {
     //search for the class in the autoload namespaces
     $decode = json_decode($composer, true) ?: null;
