@@ -19,13 +19,13 @@ Here is what happens when CLI runs your class object.
 - Public methods of your Class become executable commands.
 - Automatic usage messages guiding the user on how to execute your class methods.
 - Anything returned by a method is printed and no output is suppressed.
-- When an object is returned, only public properties are printed. 
+- When an object is returned, only public properties are printed.
 - Required methods parameters will be enforced.
 - Scalar data types for method parameters will be enforced (try it).
 - Prevents the user from passing too many arguments unless the method is variadic. (Php allows it, but I don't.)
 - Help `--help` option will display your doc blocks if you have them.
 - Public vars/properties of your class become options/flags.
-  
+
 If your class implements [`__invoke()`](https://www.php.net/manual/en/language.oop5.magic.php#object.invoke) or you pass in an anonymous function/closure
 then your app immediately executes without the need for the user to type a method/command name.
 
@@ -41,7 +41,7 @@ Make a file with a shebang line (#!) at the top that tells your shell to run thi
 
 ```php
 #!/usr/bin/env php
-<?php //        👆 important 👇 
+<?php //        👆 important 👇
 require_once __DIR__ . '/../vendor/autoload.php';
 //just using anonymous class as a quick example, can be any class.
 $yourClass = new Class() {
@@ -342,14 +342,19 @@ Note that CLI will not use __invoke or closure names in help docs to avoid,
 showing technical jargon to the user.
 
 ### Forced debug mode.
-During development, you may wish to always run in debug mode without typing --debug.
+During development, you may wish to always run in debug mode without typing --debug all the time.
+Simple pass true for the 3rd param in the constructor.
 ```php
-$cli->run(true);
+$cli = new CLI($class, [], true);
 ```
-Or you may wish to prevent debug mode from working at all
-WARNING: Doing this removes the --debug option. If the user types --debug now the application won't run because it's now an invalid option.
 
-If you DO want both CLI and your class to receive the debug option by default simply
+Or you may wish to remove the debug option entirely by passing in `false` instead.
+```php
+$cli = new CLI($class, [], true);
+```
+If the user types --debug now the application won't run because it's now an invalid option.
+
+If you want to force debugging but have your class to receive the debug option
 add it to the global argv before it runs.
 ```php
 global $argv; //this is a built in var where php puts command line inputs
@@ -381,19 +386,6 @@ them potentially getting used as exit codes when building a PHP application.
 So I have forced non 0 exit codes, so you can continue to not think about it lol.
 
 For success, you can just do nothing, or return a string.
-
-### Force exit with 0.
-For whatever reason, you may want your app to always return 0.
-Simply force debug mode and exit manually in a try-catch.
-
-```php
-try{
-    $cli->run(true);
-    } catch(Throwable $e) {
-    //do your logging or special handling etc.
-    exit(0);//and then exit with 0 manually.
-    }
-```
 
 ### CLI can run itself.
 If you don't inject a class CLI runs itself allowing you to use its prompt and
