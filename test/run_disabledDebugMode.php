@@ -7,4 +7,4 @@ require_once __DIR__ . '/_environment.php';
     {
         echo __METHOD__, " was executed!";
     }
-}))->run(false);
+},[],false))->run();

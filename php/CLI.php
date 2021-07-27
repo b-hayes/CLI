@@ -98,10 +98,11 @@ class CLI
      * @param object|null $class                   if unspecified, $this is used.
      * @param string[]    $clientMessageExceptions list of custom exceptions to use for user responses.
      *
-     * @throws Throwable only if debug mode is enabled.
      */
-    public function __construct(object $class = null, array $clientMessageExceptions = [])
+    public function __construct(object $class = null, array $clientMessageExceptions = [], bool $debug = null)
     {
+        $this->debug = $debug;
+
         //copy argv
         global $argv;
         $this->arguments = $argv;
@@ -157,9 +158,8 @@ class CLI
      * @throws Throwable
      * @noinspection PhpInconsistentReturnPointsInspection
      */
-    public function run(bool $debug = null)
+    public function run()
     {
-        $this->debug = $debug;
         try {
             $this->prepare();
             return $this->execute();
