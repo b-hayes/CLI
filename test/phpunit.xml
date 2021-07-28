@@ -1,25 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/6.3/phpunit.xsd"
-        bootstrap=""
-        backupGlobals="false"
-        verbose="true">
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd" bootstrap="" backupGlobals="false" verbose="true">
+    <coverage includeUncoveredFiles="true" processUncoveredFiles="false">
+        <include>
+            <directory suffix=".php">../php</directory>
+        </include>
+        <exclude>
+            <file>autoload.php</file>
+            <directory suffix=".php">../test</directory>
+        </exclude>
+    </coverage>
     <testsuites>
         <testsuite name="all">
-            <directory suffix="Test.php">php</directory>
+            <directory suffix="Test.php">../test</directory>
         </testsuite>
     </testsuites>
     <php>
         <const name="PHPUNIT_TESTSUITE" value="true"/>
     </php>
-    <filter>
-      <whitelist processUncoveredFilesFromWhitelist="false" addUncoveredFilesFromWhitelist="true">
-        <directory suffix=".php">../php</directory>
-        <exclude>
-          <file>autoload.php</file>
-          <directory suffix=".php">../test</directory>
-        </exclude>
-      </whitelist>
-    </filter>
 </phpunit>

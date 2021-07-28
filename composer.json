@@ -29,7 +29,7 @@
         "phpunit/phpunit": "^8.5"
     },
     "scripts": {
-        "test": "phpunit -c test/phpunit.xml test",
+        "test": "phpunit -c test/phpunit.xml",
         "test-report": "echo Code coverage will not work for this project since tests are run via shell executions."
     },
     "bin": [

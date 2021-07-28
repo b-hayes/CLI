@@ -26,9 +26,6 @@ $potentialSubject = $argv[1] ?? null;
 If ($potentialSubject && class_exists($potentialSubject)) {
     $subject = new $potentialSubject();
 }
-if ($potentialSubject && is_file($potentialSubject)) {
-
-}
 
 //cleanup the arg v before we run the subject if it was loaded via an argument
 if ($subject) {
