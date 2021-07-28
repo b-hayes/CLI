@@ -198,7 +198,7 @@ class CLI
             if (is_string($result)) {
                 echo $result;
             } else {
-                echo json_encode($result, JSON_PRETTY_PRINT, JSON_UNESCAPED_SLASHES);
+                echo json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
             }
             echo "\n";
 
@@ -486,7 +486,7 @@ class CLI
         //if there is only one argument and it is a help option then just show help now and exit (faster)
         if (count($args) === 1 && $args[0] === '--help') {
             $this->printHelp();
-            exit(0);
+            exit(0);//todo: change all exits to throw an empty response
         }
 
         /*
