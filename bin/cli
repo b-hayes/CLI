@@ -19,34 +19,9 @@ if (php_sapi_name() != 'cli') {
 
 $subject = null;
 
-//attempt to construct the subject to run if a class name is specified as argument one.
-$potentialClass = $argv[1] ?? null;
-if (class_exists($potentialClass)) {
-    $subject = new $potentialClass();
-} elseif (fileExists($potentialClass)) {
-    //attempt to auto-load class based on its file name
-    $subject = str_replace(['/', '.php', getcwd()], ['\\','', ''], $potentialClass);
-} elseif(file_exists('composer.json') && $composer = file_get_contents('composer.json')) {
-    //search for the class in the autoload namespaces
-    $decode = json_decode($composer, true) ?: null;
-
-    foreach ($decode['autoload']['psr-4'] ?? [] as $nameSpace => $path) {
-        $fullyQualifiedClassName = "$nameSpace$potentialClass";
-        if (class_exists($fullyQualifiedClassName)) {
-            $subject = new $fullyQualifiedClassName();
-            break;
-        }
-    }
-}
-
-//clean up the arguments if we are loading a subject class to run.
-if ($subject) {
-    unset($argv[1]);
-    global $argv;
-    global $argc;
-    $argv = array_values($argv);
-    $argc -= 1;
-}
-
-
 (new CLI($subject))->run();
+
+var_dump($argv);
+if (empty($argv)) {
+    echo "Global cli wrapper can also accept a class name as the first argument and it will attempt to inject it for you.";
+}

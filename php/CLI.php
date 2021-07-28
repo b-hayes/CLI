@@ -97,6 +97,7 @@ class CLI
      *
      * @param object|null $class                   if unspecified, $this is used.
      * @param string[]    $clientMessageExceptions list of custom exceptions to use for user responses.
+     * @param bool|null   $debug if true php errors/exceptions are thrown.
      *
      */
     public function __construct(object $class = null, array $clientMessageExceptions = [], bool $debug = null)
@@ -153,14 +154,16 @@ class CLI
      *   --help option that will display additional information about any given method.
      *   --debug option for devs to see all errors and stack traces.
      *
-     * @param bool|null $debug if true php errors/exceptions are thrown.
-     *
      * @throws Throwable
      * @noinspection PhpInconsistentReturnPointsInspection
      */
     public function run()
     {
         try {
+            //prevent run recursion from running self
+            if ($this->subjectClass instanceof CLI) {
+                $this->bannedMethods[] = 'run';
+            }
             $this->prepare();
             return $this->execute();
         } catch (UserResponse $response) {
