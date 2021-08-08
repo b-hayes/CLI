@@ -43,7 +43,7 @@ Make a file with a shebang line (#!) at the top that tells your shell to run thi
 #!/usr/bin/env php
 <?php //        👆 important 👇
 require_once __DIR__ . '/../vendor/autoload.php';
-//just using anonymous class as a quick example, can be any class.
+//Just using anonymous class as a quick example. You can do this too when you just want to make a quick cli tool.
 $yourClass = new Class() {
     function hello(int $number = 0) {
         if ($number > 10) throw new \BHayes\CLI\UserErrorResponse("$number is too big for me!");
@@ -70,13 +70,14 @@ For those in windows who want to use powershell/cmd you will have to also make a
 php %~dp0/myAwesomeNewCliApp -- %*
 ```
 
-### Start a collection.
-I recommend keeping these files in a `/bin` folder in a personal project where
-all your awesome CLI applications will live
-and use git to synchronize them across your computers. 😉
+### 💡 Start a collection.
+I recommend keeping your cli applicant in a personal project tracked by version control where
+all your awesome CLI tools will live and add its `/bin` folder to your system path.
+
+I do this and use git to synchronize my scripts across computers. 😉
 
 ## Errors and Exceptions
-All errors are caught and suppressed with a generic error message
+All errors are caught and suppressed with a generic error message,
 unless debug mode is used (see debug mode) or UserResponse exceptions are thrown.
 
 Any UserResponse Exception with success code of 0 will simply print the success message,
@@ -87,13 +88,14 @@ terminal twice in debug mode.
 
 ## Responses to the user.
 You can display messages to the user however you want:
-- by echoing strings yourself and exiting manually.
-- by returning a string, array or anything else to print. (exits with code 0 success)
-- by throwing UserResponse exceptions. (recommended for errors)
+- by throwing UserResponse exceptions. **RECOMMENDED**
+- by echoing strings yourself and exiting manually. Not recommended.
+  - I advise against this and esp against the use of die. Exit codes are useful and don't want to forget them.
+- by returning a string, array or object to print.
+  - When returning data CLI always exits with code 0 success.
+  - If anything other than a string is returned it will be printed as a JSON string.
+  - If an object is returned only public properties are printed.
 
-I recommend using the provided UserResponse exception family for errors,
-so you don't have to print the message with a new line and then exit with
-a nonzero code manually.
 ```php
 throw new \BHayes\CLI\UserResponse('This has exit code 1 and no coloured output');
 throw new \BHayes\CLI\UserErrorResponse('Exit code 1 and text is printed in RED');
@@ -123,206 +125,6 @@ CLI has reserved some options.
 - -i does nothing but can not be used by your app.
   I have reserved it for the "interactive mode" that I am thinking about building in the future.
 
-## Example showcase.
-
-Save this example as a `testme` file and make it executable `chmod +x ./testme` and run with `./testme`
-
-Play with this to see a showcase of how type hinting dock blocks required and optional params
-user prompts and different outputs etc are used.
-
-```php
-<?php
-/** @noinspection PhpUnusedParameterInspection */
-/** @noinspection PhpUnusedPrivateMethodInspection */
-
-declare(strict_types=1);
-
-namespace BHayes\CLI\Test;
-
-use BHayes\CLI\UserErrorResponse;
-use BHayes\CLI\UserResponse;
-use BHayes\CLI\UserSuccessResponse;
-use BHayes\CLI\UserWarningResponse;
-
-/**
- * Class TestSubject
- *
- * This is just to test what methods and params on a class via CLI.
- *
- * @package BHayes\CLI\Test
- */
-class TestSubject
-{
-    public $a;
-    public $b;
-    public $c;
-
-    public $apple;
-    public $banana;
-    public $carrot;
-
-    public $debug;
-
-    private $privateProperty = 'This should not be seen!';
-
-    public function __construct()
-    {
-        return __METHOD__. " was executed!\n";
-    }
-
-    public function simple()
-    {
-        echo __METHOD__ , " was executed!";
-        var_dump(func_get_args());
-    }
-
-    public function requiresTwo($required, $requiredAlso)
-    {
-        echo __METHOD__ , " was executed with params $required $requiredAlso";
-        var_dump(func_get_args());
-    }
-
-    public function requiredAndOptional($required, $optional = null)
-    {
-        echo __METHOD__ , " was executed with $required, $optional";
-        var_dump(func_get_args());
-    }
-
-    public function allOptional(string $optionalString = '', int $optionalInt = 5, object $optionalObject = null)
-    {
-        echo __METHOD__, " was executed!";
-        var_dump(func_get_args());
-    }
-
-    private function aPrivateMethod()
-    {
-        echo __METHOD__ . " was executed!";
-    }
-
-    protected function aProtectedMethod()
-    {
-        echo __METHOD__ . " was executed!";
-    }
-
-    public function requiresInt(int $mustBeInt)
-    {
-        echo __METHOD__, " was executed!";
-        var_dump(func_get_args());
-    }
-
-    public function requiresBool(bool $mustBeBool)
-    {
-        echo __METHOD__, " was executed!";
-        var_dump(func_get_args());
-    }
-
-    public function requiresFloat(float $mustBeFloat)
-    {
-        echo __METHOD__, " was executed!";
-        var_dump(func_get_args());
-    }
-
-    public function throwsAnError()
-    {
-        throw new \Error(__METHOD__ . " hates you!");
-    }
-
-    public function typedVariadicFunction(int ...$amounts)
-    {
-        echo __METHOD__, " was executed!";
-        var_dump(func_get_args());
-    }
-
-    public function binCheck(int $exitCode)
-    {
-        echo __METHOD__ . " was executed!";
-        var_dump(func_get_args());
-        echo "\n";//because we are about to exit before cli can add the new line on the end of the output
-        exit($exitCode);
-    }
-
-    /**
-     * This method is used to test the --help function.
-     * It has a doc block that should be displayed to the user.
-     *
-     */
-    public function helpCheck()
-    {
-        echo __METHOD__, " was executed!";
-    }
-
-    public function noHelpCheck()// this one has no doc block to display
-    {
-        echo __METHOD__, " was executed!";
-    }
-
-    /**
-     * @throws UserResponse
-     */
-    public function throwsUserResponse()
-    {
-        throw new UserResponse(__METHOD__ . ' says hi!');
-    }
-
-    /**
-     * @throws UserResponse
-     */
-    public function throwsUserWarning()
-    {
-        throw new UserWarningResponse(__METHOD__ . ' says hi!');
-    }
-
-    /**
-     * @throws UserResponse
-     */
-    public function throwsUserError()
-    {
-        throw new UserErrorResponse(__METHOD__ . ' says hi!');
-    }
-
-    /**
-     * @throws UserResponse
-     */
-    public function throwsUserSuccess()
-    {
-        echo __METHOD__, " was executed!";
-        throw new UserSuccessResponse();
-    }
-
-    public function checkOptions()
-    {
-        echo __METHOD__, " was executed!\n";
-        foreach ($this as $property => $value) {
-            echo $property,": ";
-            var_dump($value);
-        }
-    }
-
-    public function dumpGlobals(...$args)
-    {
-        echo __METHOD__, " was executed!";
-        //the global arv should remain unmodified.
-        global $argv;
-        var_dump($argv);
-    }
-
-    public function __toString()
-    {
-        return __METHOD__. " was executed!\n";
-    }
-
-    public function returnSelf(): TestSubject
-    {
-        return $this;
-    }
-
-    public function isString(): bool
-    {
-        return true;//is_string($this);
-    }
-}
-
-```
 
 ## Advanced/edge case usage.
 
