@@ -26,7 +26,8 @@ Here is what happens when CLI runs your class object.
 - Help `--help` option will display your doc blocks if you have them.
 - Public vars/properties of your class become options/flags.
 
-If your class implements [`__invoke()`](https://www.php.net/manual/en/language.oop5.magic.php#object.invoke) or you pass in an anonymous function/closure
+If your class implements [__invoke()](https://www.php.net/manual/en/language.oop5.magic.php#object.invoke)
+or you pass in an [anonymous function](https://www.php.net/manual/en/language.types.callable.php) instead of a class,
 then your app immediately executes without the need for the user to type a method/command name.
 
 ## Additional Features.
@@ -159,7 +160,7 @@ If the user types --debug now the application won't run because it's now an inva
 If you want to force debugging but have your class to receive the debug option
 add it to the global argv before it runs.
 ```php
-global $argv; //this is a built in var where php puts command line inputs
+global $argv; //this is a built-in var where php puts command line inputs
 $argv[] = '--debug'; //manually add the --debug input as if the user typed it
 $cli->run();
 ```
@@ -206,7 +207,7 @@ cli prompt Name? `git config user.name`
 
 ### Run any class by name.
 This is great for adhoc testing on random class objects in your project.
-It can also automatically add the projects top level namepsace for you. Eg.
+It can also automatically add the projects top level namespace for you. Eg.
 ```bash
 cli MyClass
 # Instead of
