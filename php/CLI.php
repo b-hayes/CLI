@@ -15,8 +15,7 @@ use Throwable;
  * @package BHayes\CLI
  *
  * CLI allows you to interact with php class objects from the terminal,
- * allowing you to write terminal application simply by defining the class methods and,
- * creating an executable wrapper file.
+ * allowing you to write terminal application simply by defining the class methods.
  *
  */
 class CLI
@@ -119,7 +118,7 @@ class CLI
          *
          * In the default php cli installation both display and log errors are directed to stdout.
          * So we disable the log errors but only if both are enabled and no log file was configured.
-         * If the user has setup their own error log than we dont want to touch anything.
+         * If the user has set up their own error log than we don't want to touch anything.
          */
         if (
             ini_get('log_errors') &&
@@ -130,7 +129,7 @@ class CLI
         }
 
         /*
-         * If an exception is thrown of this type it's message will be printed for the user.
+         * If an exception is thrown of this type, it's message will be printed for the user.
          */
         $this->clientMessageExceptions = $clientMessageExceptions;
     }
@@ -146,11 +145,11 @@ class CLI
      * If the minimum required parameters are not met OR there are too many arguments then:
      *  - the arguments for the method are listed.
      *
-     * Options are matched to public properties defined int he subject class.
+     * Options are matched to public properties defined in the subject class.
      *  Options are processed according to: https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
      *
      * RESERVED OPTIONS
-     *  There are a number of reserved options that this CLI class uses such as the,
+     *  There are a number of reserved options that this CLI class uses:
      *   --help option that will display additional information about any given method.
      *   --debug option for devs to see all errors and stack traces.
      *
@@ -176,9 +175,8 @@ class CLI
                 }
             }
 
-            //its a real error
-            $printMessage = "❌ Failed to execute '{$this->printableCommandName()}', the program crashed." .
-                " Please contact the developers if this keeps happening.";
+            //it's a real error
+            $printMessage = "❌ Failed to execute '{$this->printableCommandName()}', the program crashed.";
             $this->exitWith(
                 $printMessage,
                 $throwable
@@ -250,7 +248,7 @@ class CLI
      *  Pass in your own resource handle if you want to consecutively read the next line of a single source.
      *
      * @param string $prompt      a prompt messages to display
-     * @param string $inputStream 'php://stdin' | 'data://text/plain,<your text>' | 'file://<path>' | <resource handle>
+     * @param string|resource $inputStream 'php://stdin' | 'data://text/plain,<your text>' | 'file://<path>' | <resource handle>
      *
      * @return string
      */
@@ -303,12 +301,12 @@ class CLI
      * Prompts the user for confirmation and returns true or false.
      *  Matches true with Y, YES and OK
      *  Matches false with N, NO
-     *  Matches are not case sensitive.
+     *  Matches are not case-sensitive.
      *  If input matches nothing the user is prompted again.
      *
      * @param string $message message to display to the user
-     * @param string $default default is 'Y' unless you change it. This wont change the true/false matching.
-     * @param string $inputStream
+     * @param string $default default is 'Y' unless you change it. This won't change the true/false matching.
+     * @param string|resource $inputStream
      *
      * @return bool
      */
@@ -391,7 +389,7 @@ class CLI
                 continue;//only public methods are listed
             }
             if ($this->subjectClass instanceof self && $class_method->getName() === 'run') {
-                continue;//dont list this method when you cant use it.
+                continue;//don't list this method when you can't use it.
             }
             echo "    - {$class_method->getName()}\n";
         }
@@ -554,7 +552,7 @@ class CLI
         }
         //prevent run command being run again causing a stack overflow.
         if ($this->subjectClass instanceof self && $this->subjectMethod === 'run') {
-            $this->exitWith("yeah nah cant do that here sorry mate.");
+            $this->exitWith("yeah nah. cant do that here sorry mate.");
         }
 
         //everything after that is a parameter for the function
@@ -590,8 +588,8 @@ class CLI
 
             if ($this->debug) {
                 $message .= Colour::string("\nDebug note: ", Colour::AT_BOLD) .
-                    'Php normally allows excess parameters but BHayes\CLI intentionally prevents this behaviour. ' .
-                    ' You should consider using variadic functions if you need this.';
+                    'Php normally allows excess parameters but ' . __CLASS__ . ' intentionally prevents this behaviour. ' .
+                    ' You should consider using variadic functions if you need this to work.';
             }
 
             $this->exitWith($message);
@@ -654,12 +652,12 @@ class CLI
     }
 
     /**
-     * Prints text with with "\n" appended, with colour codes if supplied.
+     * Prints text with "\n" appended, with colour codes if supplied.
      *
      * @param string $text
      * @param int    ...$colours
      */
-    public static function printLine($text = '', int ...$colours)
+    public static function printLine(string $text = '', int ...$colours)
     {
         if ($colours) {
             $text = Colour::string($text, ...$colours);
@@ -675,7 +673,7 @@ class CLI
                 return 'WSL';
             }
             if (strpos($uname, 'microsoft') !== false) {
-                return 'WSL';//more specifically its probably WSL version two
+                return 'WSLv2';//more specifically it's probably WSL version two
             }
             return 'Linux';
         }
