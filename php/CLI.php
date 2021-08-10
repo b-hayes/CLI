@@ -720,7 +720,7 @@ class CLI
      *
      * @throws UserResponse on first failed command if $throwUserResponseOnFailure is true
      */
-    public static function batchExec(array $commands, bool $throwUserResponseOnFailure): bool
+    public static function batchExec(array $commands, bool $throwUserResponseOnFailure = true): bool
     {
         $exec = true;
         foreach ($commands as $i => $command) {
