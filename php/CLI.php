@@ -708,4 +708,25 @@ class CLI
 
         return $exitCode === 0;
     }
+
+    /**
+     * Executes each string of an array as a shell command and returns true.
+     *  Throws a UserResponse with the exit code on the first failed command.
+     *  Optionally can return false if any command fails. (all commands will still be executed)
+     *
+     * @param array $commands
+     * @param bool $throwUserResponseOnFailure if set to false, call commands are executed even if one or more fail.
+     * @return bool
+     *
+     * @throws UserResponse on first failed command if $throwUserResponseOnFailure is true
+     */
+    public static function batchExec(array $commands, bool $throwUserResponseOnFailure): bool
+    {
+        $exec = true;
+        foreach ($commands as $i => $command) {
+            $exec = self::exec($command, $throwUserResponseOnFailure) && $exec;
+        }
+
+        return $exec;
+    }
 }

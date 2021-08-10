@@ -583,6 +583,12 @@ class CLITest extends TestCase
         self::markTestIncomplete();
     }
 
+    public function testBatchExec()
+    {
+        //todo: figure out how to test this, no idea how just yet.
+        self::markTestIncomplete();
+    }
+
     public function testForBreakingChanges()
     {
         self::assertTrue(true);
