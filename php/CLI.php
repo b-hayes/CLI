@@ -690,21 +690,22 @@ class CLI
     }
 
     /**
-     * Executes a shell command with pass_thru and returns the exit code.
-     * Throws a UserResponse with the exit code on failure.
+     * Executes a shell command with pass_thru and returns true.
+     *  Throws a UserResponse with the exit code on failure.
+     *  Optionally can return false on failure instead.
      *
      * @param string $command
      * @param bool $throwUserResponseOnFailure
-     * @return int
+     * @return bool
      * @throws UserResponse
      */
-    public static function exec(string $command, bool $throwUserResponseOnFailure = true): int
+    public static function exec(string $command, bool $throwUserResponseOnFailure = true): bool
     {
         passthru($command, $exitCode);
         if ($exitCode !== 0 && $throwUserResponseOnFailure) {
             throw new UserResponse("$command failed with exit code $exitCode", Colour::RED, 'X', $exitCode);
         }
 
-        return $exitCode;
+        return $exitCode === 0;
     }
 }
