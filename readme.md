@@ -219,6 +219,21 @@ It does this by reading the PSR-4 autoload paths from your `composer.json`.
 It will fail if the Class constructor has dependencies however,
 I may add a way for it to use dependency containers in the future.
 
+### Run a shell command.
+exec() runs shell commands and returns true on success or throws an exception.
+```php
+CLI::exec('sudo apt install php');
+```
+
+
+## Run a batch of shell commands.
+Run several commands and return true.
+By default throws an exception on the first failed command, however
+you can tell it to run all commands anyway and return false instead if any of them failed.
+```php
+CLI::batchExec(['sudo apt install php', 'sudo apt install composer']);
+```
+
 ## Feedback is welcome.
 This is my first public composer package be gentle 😅.
 
