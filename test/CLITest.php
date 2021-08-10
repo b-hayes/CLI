@@ -577,6 +577,12 @@ class CLITest extends TestCase
         self::assertStringNotContainsStringIgnoringCase('This should not be seen!', $success);
     }
 
+    public function testExec()
+    {
+        //todo: figure out how to test this, no idea how just yet.
+        self::markTestIncomplete();
+    }
+
     public function testForBreakingChanges()
     {
         self::assertTrue(true);

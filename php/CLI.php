@@ -688,4 +688,23 @@ class CLI
 
         return "UNKNOWN: $uname";
     }
+
+    /**
+     * Executes a shell command with pass_thru and returns the exit code.
+     * Throws a UserResponse with the exit code on failure.
+     *
+     * @param string $command
+     * @param bool $throwUserResponseOnFailure
+     * @return int
+     * @throws UserResponse
+     */
+    public static function exec(string $command, bool $throwUserResponseOnFailure = true): int
+    {
+        passthru($command, $exitCode);
+        if ($exitCode !== 0 && $throwUserResponseOnFailure) {
+            throw new UserResponse("$command failed with exit code $exitCode", Colour::RED, 'X', $exitCode);
+        }
+
+        return $exitCode;
+    }
 }
