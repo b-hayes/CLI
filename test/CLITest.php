@@ -345,7 +345,7 @@ class CLITest extends TestCase
         $output = $this->assertFailureToExecute(
             'throwsAnError',
             '',
-            'the program crashed. Please contact the developers'
+            'the program crashed.'
         );
         // they should also never see the stack trace or file and line info.
         $reflectionClass = new \ReflectionClass(TestSubject::class);
