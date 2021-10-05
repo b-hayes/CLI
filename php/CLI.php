@@ -285,7 +285,7 @@ class CLI
         $inputStream = 'php://stdin'
     ): string {
         if (strlen($default)) {
-            $message .= " [$default]";
+            $message .= " (press enter for '$default')>";
         }
         $readline = self::readline($message, $inputStream);
         if (strlen($readline) === 0) {
@@ -312,7 +312,7 @@ class CLI
      */
     public static function confirm(
         string $message = 'Continue?',
-        string $default = 'Y',
+        string $default = 'YES',
         $inputStream = 'php://stdin'
     ): bool {
         while (true) {
