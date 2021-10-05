@@ -285,7 +285,7 @@ class CLI
         $inputStream = 'php://stdin'
     ): string {
         if (strlen($default)) {
-            $message .= "[$default]";
+            $message .= " [$default]";
         }
         $readline = self::readline($message, $inputStream);
         if (strlen($readline) === 0) {
