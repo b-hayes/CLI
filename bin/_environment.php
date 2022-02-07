@@ -25,7 +25,8 @@ if (phpversion() < 7.2) {
 //check two locations for autoloader as it will be different when installed as a package.
 $realpath = realpath(__DIR__ . '/../vendor/autoload.php')//the normal path during development
     ?: realpath(__DIR__ . '/../../../autoload.php'); //the path if installed by a parent project
-//Note: the reason for not just using the current working directory is so that we dont load an incompatable set of depenacies if this package is run as a global commands inside other projects.
+//Note: the reason for not just using the current working directory is so that we dont load an incompatible set of dependencies
+// if this package is run as a global command inside other projects.
 
 if (!$realpath) {
     echo "can not find autoload.php, you might need to run composer install.\n";
