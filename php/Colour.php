@@ -53,10 +53,11 @@ class Colour
     public const AT_INVERSE = 7;
     public const AT_HIDDEN = 8;
 
-    public const RESET = 0;
+    public const RESET = 0;//revert the colours back to the terminals defaults.
 
-    //advanced colours not supported by all terminals
-    public const STRIKE_THROUGH = 9;//this one specifically requires UTF-8 Uni-char support
+    //Extended colours not supported by all terminals.
+    //see: https://misc.flogisoft.com/bash/tip_colors_and_formatting for more potential colours.
+    public const E_AT_STRIKE_THROUGH = 9;//requires UTF-8 Uni-char support
 
     public static function code(string $colourName): int
     {
