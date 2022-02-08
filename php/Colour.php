@@ -46,7 +46,6 @@ class Colour
     public const BG_LIGHT_CYAN = 106;
     public const BG_WHITE = 107;
 
-
     public const AT_BOLD = 1;
     public const AT_DIM = 2;
     public const AT_UNDERLINED = 4;
@@ -56,6 +55,8 @@ class Colour
 
     public const RESET = 0;
 
+    //advanced colours not supported by all terminals
+    public const STRIKE_THROUGH = 9;//this one specifically requires UTF-8 Uni-char support
 
     public static function code(string $colourName): int
     {
