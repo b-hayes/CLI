@@ -521,7 +521,7 @@ class CLI
             }
 
             //SHORT OPTIONS -abc
-            if (substr($arg, 0, 1) == "-") {
+            if (substr($arg, 0, 1) == "-" && !is_numeric(substr($arg, 1, 1))) {
                 $arg = substr($arg, 1); //remove dash
                 //multiple options can be grouped together eg -abc
                 foreach (str_split($arg) as $opt) {

@@ -295,6 +295,7 @@ class CLITest extends TestCase
     public function testInt()
     {
         $this->assertSuccessfulExecution('requiresInt', '5');
+        $this->assertSuccessfulExecution('requiresInt', '-5');
         $this->assertFailureToExecute('requiresInt', 'five', 'must be of', 'type int');
         $this->assertFailureToExecute('requiresInt', '5.5', 'must be of', 'type int');
         $this->assertFailureToExecute('requiresInt', '5five', 'must be of', 'type int');
