@@ -10,7 +10,7 @@ Simply define a PHP class and inject it into the CLI wrapper 😎.
 (new \BHayes\CLI\CLI( $yourClass ))->run();
 ```
 All your public class methods are now available as terminal commands.
-
+![https://i.imgur.com/uu8gQBr.gif](https://i.imgur.com/uu8gQBr.gif)
 Now you can just build your class methods instead of managing the interface. 👍
 
 ## Behaviours.
