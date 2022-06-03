@@ -17,14 +17,16 @@ Now you can just build your class methods instead of managing the interface. �
 Here is what happens when CLI runs your class object.
 
 - Public methods of your Class become executable commands.
-- Automatic usage messages guiding the user on how to execute your class methods.
-- Anything returned by a method is printed and no output is suppressed.
+- Automatically guides the user on how to execute your class methods.
+- Anything returned by a method is printed.
 - When an object is returned, only public properties are printed.
-- Required methods parameters will be enforced.
-- Scalar data types for method parameters will be enforced (try it).
+- Required  parameters are enforced.
+- Scalar data type hints are enforced (eg, bool must be true or false).
 - Prevents the user from passing too many arguments unless the method is variadic. (Php allows it, but I don't.)
 - Help `--help` option will display your doc blocks if you have them.
 - Public vars/properties of your class become options/flags.
+
+![https://i.imgur.com/dud6OVL.gif](https://i.imgur.com/dud6OVL.gif)
 
 If your class implements [__invoke()](https://www.php.net/manual/en/language.oop5.magic.php#object.invoke)
 or you pass in an [anonymous function](https://www.php.net/manual/en/language.types.callable.php) instead of a class,
@@ -72,8 +74,8 @@ php %~dp0/myAwesomeNewCliApp -- %*
 ```
 
 ### 💡 Start a collection.
-I recommend keeping your cli applicant in a personal project tracked by version control where
-all your awesome CLI tools will live and add its `/bin` folder to your system path.
+I recommend keeping your cli app in a personal project,
+and add its `/bin` folder to your system path.
 
 I do this and use git to synchronize my scripts across computers. 😉
 
