@@ -53,9 +53,8 @@ but not until I flesh out as much as I can for 7.2 users before moving on.
 
 ### Reserved Options.
 CLI has reserved some options:
-- --help. Just prints related doc blocks and exits without running your class.
+- --help. Just prints related doc blocks and exits without running your class. (might become prettier in future).
 - --debug. Debug mode, if enabled all exceptions/errors and their stack traces are printed.
-  ()
 - -i does nothing, yet. (I have ideas for an interactive mode).
 
 ![https://i.imgur.com/EXuX9Jx.gif](https://i.imgur.com/EXuX9Jx.gif)
@@ -230,9 +229,19 @@ Run several passthru commands and return true.
 CLI::batchPassThru(['sudo apt install php', 'sudo apt install composer']);
 ```
 
-## Feedback is welcome.
-This is my first public composer package be gentle 😅.
+## Support.
+Mainly just supporting my own use at the moment updating this project in my spare time.
 
-If this project gives you a 1up🍄 and would like to see some more automated features then,
+At some point higher PHP versions will be required but 
+I do intend to try and support php7.2 and 7.4 separately for a while
+even after moving to php8.1
+Eg. If I add a new feature that will also work in 7.2 I'll add it as a minor version update to the old version still
+allowing php7.2. (no guarantees tho).
+
+## Feedback && Contributions welcome.
+This is my first public composer package.
+Feel free to get in touch, create a fork or submit PR's.
+
+If this project gives you a 1up🍄 and just want to show some appreciation then,
 
 please [buy me a coffee. ☕😃 ![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate?business=bradozman%40gmail.com&item_name=%E2%98%95+Turning+Coffee++into+Code.&currency_code=AUD)
