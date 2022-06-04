@@ -9,8 +9,7 @@ Simply define a PHP class and inject it into the CLI wrapper 😎.
 ```php
 (new \BHayes\CLI\CLI( $yourClass ))->run();
 ```
-Now you can just build your class methods the type-hinted parameters,
-without managing the inputs, exit codes or printing usage hints! 😲
+Now you can just build your class methods, without managing inputs, exit codes or printing usage hints! 😲
 
 ![https://i.imgur.com/uu8gQBr.gif](https://i.imgur.com/uu8gQBr.gif)
 
