@@ -699,7 +699,7 @@ class CLI
      * @return bool
      * @throws UserResponse
      */
-    public static function exec(string $command, bool $throwUserResponseOnFailure = true): bool
+    public static function passThru(string $command, bool $throwUserResponseOnFailure = true): bool
     {
         passthru($command, $exitCode);
         if ($exitCode !== 0 && $throwUserResponseOnFailure) {
@@ -710,7 +710,7 @@ class CLI
     }
 
     /**
-     * Executes each string of an array as a shell command and returns true.
+     * Executes CLI::passThru() for each string in the array.
      *  Throws a UserResponse with the exit code on the first failed command.
      *  Optionally can return false if any command fails. (all commands will still be executed)
      *
@@ -720,11 +720,11 @@ class CLI
      *
      * @throws UserResponse on first failed command if $throwUserResponseOnFailure is true
      */
-    public static function batchExec(array $commands, bool $throwUserResponseOnFailure = true): bool
+    public static function batchPassThru(array $commands, bool $throwUserResponseOnFailure = true): bool
     {
         $exec = true;
         foreach ($commands as $i => $command) {
-            $exec = self::exec($command, $throwUserResponseOnFailure) && $exec;
+            $exec = self::passThru($command, $throwUserResponseOnFailure) && $exec;
         }
 
         return $exec;

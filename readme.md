@@ -9,44 +9,75 @@ Simply define a PHP class and inject it into the CLI wrapper 😎.
 ```php
 (new \BHayes\CLI\CLI( $yourClass ))->run();
 ```
-All your public class methods are now available as terminal commands.
+Now you can just build your class methods the type-hinted parameters,
+without managing the inputs, exit codes or printing usage hints! 😲
+
 ![https://i.imgur.com/uu8gQBr.gif](https://i.imgur.com/uu8gQBr.gif)
-Now you can just build your class methods instead of managing the interface. 👍
 
 ## Behaviours.
-Here is what happens when CLI runs your class object.
+Here is what happens when CLI runs your class object:
 
-- Public methods of your Class become executable commands.
-- Automatically guides the user on how to execute your class methods.
-- Anything returned by a method is printed.
-- When an object is returned, only public properties are printed.
-- Required  parameters are enforced.
-- Scalar data type hints are enforced (eg, bool must be true or false).
-- Prevents the user from passing too many arguments unless the method is variadic. (Php allows it, but I don't.)
-- Help `--help` option will display your doc blocks if you have them.
-- Public vars/properties of your class become options/flags.
+- Public methods are exposed as executable commands. 👍
+- Required inputs and data types are automatically enforced. 🙂
+- Automatically provides usage hints to guide the user. 😊
+- Print anything that is returned. (public properties only if an object). 😃 
+- Manages error messages with Shell exit codes! 😲
+- Maps your public properties to options/flags. 🤯
+- Easily print or return coloured strings and prompt for input/confirmations 😍
 
-![https://i.imgur.com/dud6OVL.gif](https://i.imgur.com/dud6OVL.gif)
+### Arguments.
+Arguments directly map to function definitions. 
+- Parameter types are strongly enforced (eg, bool must be 'true' or 'false' and int can not have decimal places).
+- Prevents the user from passing too many arguments, unless it is ...variadic. (php allows it but I don't)
 
-If your class implements [__invoke()](https://www.php.net/manual/en/language.oop5.magic.php#object.invoke)
+### Single function scripts.
+If you implement [__invoke()](https://www.php.net/manual/en/language.oop5.magic.php#object.invoke) method
 or you pass in an [anonymous function](https://www.php.net/manual/en/language.types.callable.php) instead of a class,
-then your app immediately executes without the need for the user to type a method/command name.
+then your app immediately executes without the need for the user input.
 
-## Additional Features.
-- Functions are provided for easily reading inputs, prompts, and confirmations and do not require PHP to have the readline extension installed.
-- Functions for generating/printing coloured strings.
-- Throwable responses for halting execution with coloured success/error/warning messages for the user.
-- Run any class by name in the terminal with the provided bin. 😲
+### Options/Flags
+Based on the [POSIX](https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html)
+standard, short options `-o` and long options `--longOption`
+are automatically created from public class properties.
+```php
+public $cats;
+if($this->cats) { echo "Cat mode enabled!"; }
+```
+
+![https://i.imgur.com/mGr1PIj.gif](https://i.imgur.com/mGr1PIj.gif)
+
+_CLI currently does not support options with arguments, yet._
+
+I planned to support this for php7.4 and higher using typehints,
+but not until I flesh out as much as I can for 7.2 users before moving on.
+
+### Reserved Options.
+CLI has reserved some options:
+- --help. Just prints related doc blocks and exits without running your class.
+- --debug. Debug mode, if enabled all exceptions/errors and their stack traces are printed.
+  ()
+- -i does nothing, yet. (I have ideas for an interactive mode).
+
+![https://i.imgur.com/EXuX9Jx.gif](https://i.imgur.com/EXuX9Jx.gif)
+
+### Exit codes and Errors.
+CLI will automatically return a non-zero exit code on failure.
+Error output is suppressed unless you use `--debug` mode
+or throw a [Response Exception](#Response Exceptions).
+
+## Dependencies
+CLI has no dependencies and does not force you to dependent on it in-case your class is also used for other things.
 
 ## Getting started example.
-For those unfamiliar with command-line scripts...
+For those unfamiliar with shell scripts...
+
 Make a file with a shebang line (#!) at the top that tells your shell to run this with PHP.
 
 ```php
 #!/usr/bin/env php
 <?php //        👆 important 👇
 require_once __DIR__ . '/../vendor/autoload.php';
-//Just using anonymous class as a quick example. You can do this too when you just want to make a quick cli tool.
+//Just using anonymous class as a quick single file example.
 $yourClass = new Class() {
     function hello(int $number = 0) {
         if ($number > 10) throw new \BHayes\CLI\UserErrorResponse("$number is too big for me!");
@@ -67,84 +98,64 @@ Now you can run it as a terminal application!
 ```
 CLI will guide the terminal user on how to run the available methods of your class.
 
-### Windows
-For those in windows who want to use powershell/cmd you will have to also make a batch file in the same location:
-```cmd
+### Windows Users
+For those who want to use powershell && cmd. Make a batch file containing:
+```
 php %~dp0/myAwesomeNewCliApp -- %*
 ```
 
 ### 💡 Start a collection.
 I recommend keeping your cli app in a personal project,
-and add its `/bin` folder to your system path.
+and add its `/bin` folder to your system path
+so all your CLI apps are globally accessible.
 
-I do this and use git to synchronize my scripts across computers. 😉
+I do this and use git to synchronize my personal devtools across computers. 😉
 
-## Errors and Exceptions
-All errors are caught and suppressed with a generic error message,
-unless debug mode is used (see debug mode) or UserResponse exceptions are thrown.
+## Error handling.
+CLI catches all errors by default and presents a generic program crashed message.
+You can use `--debug` to see the stack trace if needed.
 
-Any UserResponse Exception with success code of 0 will simply print the success message,
-regardless of debug mode.
+### Response Exceptions
+An error caused by input or an external factor,
+and you need to return a user response while also
+returning/remembering to use a **non-zero** exit code
+so the parent shell process knows the command has failed.
 
-CLI also detects and adjusts the default PHP error reporting config to prevent errors spitting output to the
-terminal twice in debug mode.
+Just throw a UserResponseException from anywhere in your stack and CLI takes care of it.
 
-## Responses to the user.
-You can display messages to the user however you want:
-- by throwing UserResponse exceptions. **RECOMMENDED**
-- by echoing strings yourself and exiting manually. Not recommended.
-  - I advise against this and esp against the use of die. Exit codes are useful and don't want to forget them.
-- by returning a string, array or object to print.
-  - When returning data CLI always exits with code 0 success.
-  - If anything other than a string is returned it will be printed as a JSON string.
-  - If an object is returned only public properties are printed.
+To make life easy I have provided several, including a success response,
+so you don't have to return two values all the way up the stack.
 
 ```php
-throw new \BHayes\CLI\UserResponse('This has exit code 1 and no coloured output');
+throw new \BHayes\CLI\UserResponse('This has an exit code of 1 and no coloured output');
 throw new \BHayes\CLI\UserErrorResponse('Exit code 1 and text is printed in RED');
 throw new \BHayes\CLI\UserWarningResponse('Exit code 1 and text is printed in YELLOW');
-//all responses have an exit code of 1 by default except this one 👇
+//IMPORTANT: all responses have an exit code of 1 by default except this one 👇
 throw new \BHayes\CLI\UserSuccessResponse('Exit code 0 and text is printed in GREEN');
 ```
 
-## Options/Flags
-Based on the [POSIX](https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html)
-standard CLI support short options `-o` and long options `--longOption`.
-
-Options are mapped to public class variables defined in your class.
-EG. If you want to have a --cats option for cats mode simply define the property
-`public cats` and then simply check if it's true.
+You can also specify colours, emojis and more specific error codes.
 ```php
-if($this->cats) { echo "Cat mode enabled!"; }
+throw new \BHayes\CLI\UserResponse('Printer failed!',\BHayes\CLI\Colour::BG_LIGHT_MAGENTA, '🖨🔥', 221);
 ```
+The separate icon string is for globally
+disabling emojis output on terminals with no UTF-8 support (in the future).
 
-*Note CLI currently does not support options with arguments (planned for php7.4 and higher).*
+Error code is last since its usually only important to have 0 or non-zero to indicate success/failure.
+(besides php 8 allows us to bypass order of arguments now)
 
-### Reserved Options.
-CLI has reserved some options.
-- --help. Just prints related doc blocks and exits without running your class.
-- --debug. Debug mode, if enabled no exceptions/errors are suppressed.
-  Your app can still use the debug option for its own purposes too.
-- -i does nothing but can not be used by your app.
-  I have reserved it for the "interactive mode" that I am thinking about building in the future.
-
-
-## Advanced/edge case usage.
-
-### My app should just run without "command"s.
-Let's say your app is like a shell script and should just execute, but you still
-want CLI to type match arguments and provide options.
-
-Simply pass in an invokable object.
-Either pass in a [class that implements the `__invoke()`method](test/run_invokableClass.php)
-or by passing in an [anonymous function/closure](test/run_function.php).
-
-The function or `__invoke()` method will immediately execute when the app runs however,
-you can still require arguments of specific types, and the user can see help the same
-as any other method/"command".
-
-Note that CLI will not use __invoke or closure names in help docs to avoid,
-showing technical jargon to the user.
+### Custom Response Exceptions.
+You might want to specify your own exceptions to be treated as CLI responses instead of the provided ones.
+Simply pass in a list of class names in the constructor:
+```php
+$cli = new CLI($class, [
+    MyCustomException::class,
+    SomeSpecificThirdPartyException::class,
+]);
+```
+**WARNING:** Remember that by default all PHP and Third party exceptions will have 0 as their code
+and report a success response as nobody every thinks of them being used for CLI exit codes.
+You will have to be vigilant and account for this manually.
 
 ### Forced debug mode.
 During development, you may wish to always run in debug mode without typing --debug all the time.
@@ -157,83 +168,66 @@ Or you may wish to remove the debug option entirely by passing in `false` instea
 ```php
 $cli = new CLI($class, [], true);
 ```
-If the user types --debug now the application won't run because it's now an invalid option.
+**Side effect:** If the user types --debug now the application won't run because it's now an invalid option.
 
-If you want to force debugging but have your class to receive the debug option
-add it to the global argv before it runs.
+To avoid this you can simulate someone typing it:
 ```php
 global $argv; //this is a built-in var where php puts command line inputs
 $argv[] = '--debug'; //manually add the --debug input as if the user typed it
 $cli->run();
 ```
 
-You can also prevent the debug option from working on CLI by specifying false in the run method.
-This means --debug option has no effect but can still be used
+You can also prevent the debug option entirely while still passing it to your app as a property.
 ```php
 $argv[] = '--debug'; //this will get passed to your application but have no effect on CLI
 $cli->run(false);//because debug has been explicitly disabled at run time.
 ```
+(supporting extreme edge case uses here and this will probably change.)
 
-### Custom exceptions for user responses.
-For many reasons, you may prefer to avoid your class being dependent on CLI UserResponse exceptions,
-and want to throw user response exceptions of your own.
+## CLI as a Global tool.
 
-You can give CLI a list of custom response exception types before it runs.
-```php
-new \BHayes\CLI\CLI($yourClass, [MySpecialUserException::class, MyOtherException::class]);
-```
-These and any Exceptions that inherit them will be treated the same UserResponse exceptions,
-however, the exit code will not be used if it is 0.
-
-This is because the default code of \Exception is 0 and nobody thinks about
-them potentially getting used as exit codes when building a PHP application.
-
-So I have forced non 0 exit codes, so you can continue to not think about it lol.
-
-For success, you can just do nothing, or return a string.
-
-### CLI can run itself.
-If you don't inject a class CLI runs itself allowing you to use its prompt and
-colour print methods in bash scripts etc.
+CLI comes with a vendor bin to run itself exposing
+its prompt and colour print methods in the terminal:
 ```bash
 ./vendor/bin/cli prompt Name? `git config user.name`
 ```
+
 You can install the package globally:
 ```bash
 composer global require b-hayes/cli
 ```
-Add the global project bin dir to your path, and you can use it globally.
+
+and then run it from anywhere without specifying the path:
 ```bash
 cli prompt Name? `git config user.name`
 ```
 
 ### Run any class by name.
-This is great for adhoc testing on random class objects in your project.
-It can also automatically add the projects top level namespace for you. Eg.
+This is great for adhoc testing on random class objects in a project your working on.
+It can also automatically add the projects top level namespace for you.
 ```bash
 cli MyClass
 # Instead of
 cli MyVendor\\MyProject\\MyClass
 ```
-If the first input matches the name of a class it will attempt to load it.
-It does this by reading the PSR-4 autoload paths from your `composer.json`.
+It does this by reading the `composer.json` file in the current directory.
 
-It will fail if the Class constructor has dependencies however,
-I may add a way for it to use dependency containers in the future.
+It will fail if the Class has a constructor with argument
+(I may add a way for it load dependencies in the future).
 
-### Run a shell command.
-exec() runs shell commands and returns true on success or throws an exception.
+## Running other shell commands.
+exec() is a wrapper for [passthru](https://www.php.net/manual/en/function.passthru.php)
+but, throws an Exception on failure.
 ```php
-CLI::exec('sudo apt install php');
+CLI::passThru('sudo apt install php');
 ```
 
+This provides an eay way to stop checking exit codes passthu and just handle an exception. 
 
-## Run a batch of shell commands.
-Run several commands and return true.
-By default throws an exception on the first failed command, however
-you can tell it to run all commands anyway and return false instead if any of them failed.
+### Run a batch of shell commands.
+Run several passthru commands and return true.
 ```php
-CLI::batchExec(['sudo apt install php', 'sudo apt install composer']);
+CLI::batchPassThru(['sudo apt install php', 'sudo apt install composer']);
 ```
 
 ## Feedback is welcome.
