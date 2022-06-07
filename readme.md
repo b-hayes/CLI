@@ -238,9 +238,8 @@ Eg. If I add a new feature that will also work in 7.2 I'll add it as a minor ver
 allowing php7.2. (no guarantees tho).
 
 ## Feedback && Contributions welcome.
-This is my first public composer package.
-Feel free to get in touch, create a fork or submit PR's.
+I am using the [MIT licence](LICENCE.md) so feel free to do what you want, however I do ask that you submit a PR if you make any improvments or fix any bugs.
 
-If this project gives you a 1up🍄 and just want to show some appreciation then,
+If this project gives you a 1up🍄 and you just want to show some appreciation then,
 
-please [buy me a coffee. ☕😃 ![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate?business=bradozman%40gmail.com&item_name=%E2%98%95+Turning+Coffee++into+Code.&currency_code=AUD)
+[buy me a coffee. ☕😃 ![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate?business=bradozman%40gmail.com&item_name=%E2%98%95+Turning+Coffee++into+Code.&currency_code=AUD)
