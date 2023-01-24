@@ -17,7 +17,7 @@ class CLITest extends TestCase
 
     public function setUp(): void
     {
-        //make sure tests dont break when run from the IDE and it decides to use a different working directory.
+        //make sure tests do not break when run from the IDE, and it decides to use a different working directory.
         chdir(__DIR__ . '/..');
         $this->command = "php test/run_TestSubject.php";
     }
@@ -164,7 +164,7 @@ class CLITest extends TestCase
             self::assertTrue(
                 substr_count($obGetClean, 'Continue?') === 3 &&
                 substr_count($obGetClean, 'Neither') === 3,
-                'The prompt message and default response should appear ever time invalid input is given.'
+                'The prompt message and default response should appear every time invalid input is given.'
             );
             self::assertTrue($confirm);
         }
@@ -238,7 +238,7 @@ class CLITest extends TestCase
             'arguments should not matter',
             'is not a recognized command'
         );
-        //only public methods should not be listed.
+        //only public methods should be listed.
         self::assertStringNotContainsString($output, 'aPrivateMethod');
         self::assertStringNotContainsString($output, 'aProtectedMethod');
 
@@ -598,6 +598,7 @@ class CLITest extends TestCase
     }
 
     //TODO: PHPv8 support:
+    //  need to update the captures for bad type responses
     //  test a method with the MIXED types when moving to php8
     //  test a method with the UNION types when moving to php8
 }

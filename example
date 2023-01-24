@@ -39,7 +39,7 @@ class Example
     }
 
     /**
-     * This method will accept any number of string arguments while the
+     * This method will accept any number of string arguments while
      * the others will fail if you pass them too many arguments.
      *
      * @param string ...$bunchOfStrings
