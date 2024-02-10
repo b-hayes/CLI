@@ -214,16 +214,16 @@ It will fail if the Class has a constructor with argument
 (I may add a way for it load dependencies in the future).
 
 ## Running other shell commands.
-exec() is a wrapper for [passthru](https://www.php.net/manual/en/function.passthru.php)
+A wrapper for [passthru](https://www.php.net/manual/en/function.passthru.php)
 but, throws an Exception on failure.
 ```php
 CLI::passThru('sudo apt install php');
 ```
 
-This provides an eay way to stop checking exit codes passthu and just handle an exception. 
+This provides an eay way to stop checking exit codes. Catch the exception if you want to handle it.
 
 ### Run a batch of shell commands.
-Run several passthru commands and return true.
+Run several passthru commands and return true. Throws an exception if any of them fail.
 ```php
 CLI::batchPassThru(['sudo apt install php', 'sudo apt install composer']);
 ```
