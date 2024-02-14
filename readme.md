@@ -242,4 +242,4 @@ I am using the [MIT licence](LICENCE.md) so feel free to do what you want, howev
 
 If this project gives you a 1up🍄 and you just want to show some appreciation then,
 
-[buy me a coffee. ☕😃 ![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate?business=bradozman%40gmail.com&item_name=%E2%98%95+Turning+Coffee++into+Code.&currency_code=AUD)
+[buy me a coffee. ☕😃 ![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate?business=no-reply%40b-hayes.com&item_name=%E2%98%95+Turning+Coffee++into+Code.&currency_code=AUD)
