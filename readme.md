@@ -231,14 +231,14 @@ CLI::batchPassThru(['sudo apt install php', 'sudo apt install composer']);
 ## Support.
 Mainly just supporting my own use at the moment updating this project in my spare time.
 
-At some point higher PHP versions will be required but 
+At some point higher PHP versions will be required, but 
 I do intend to try and support php7.2 and 7.4 separately for a while
 even after moving to php8.1
 Eg. If I add a new feature that will also work in 7.2 I'll add it as a minor version update to the old version still
 allowing php7.2. (no guarantees tho).
 
 ## Feedback && Contributions welcome.
-I am using the [MIT licence](LICENCE.md) so feel free to do what you want, however I do ask that you submit a PR if you make any improvments or fix any bugs.
+I am using the [MIT licence](LICENCE.md) so feel free to do what you want, however I do ask that you submit a PR if you make any improvements or fix any bugs.
 
 If this project gives you a 1up🍄 and you just want to show some appreciation then,
 
