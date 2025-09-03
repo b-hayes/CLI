@@ -46,7 +46,8 @@ class CLITest extends TestCase
             self::assertStringContainsString(
                 $expectedErrorMessage,
                 $output,
-                "Failure message does not contain appropriate message component. Expected: '$expectedErrorMessage'"
+                "Failure message does not contain appropriate message component. Expected: '$expectedErrorMessage'" .
+                "\nActual: '$output'"
             );
         }
 

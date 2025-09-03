@@ -7,7 +7,7 @@ namespace BHayes\CLI;
 if (file_exists('vendor/autoload.php')) {
     include_once 'vendor/autoload.php';
 }
-//manually include the this version of CLI files in case it is also installed as a project package.
+//manually include this version of CLI files in case it is also installed as a project package in the cwd.
 require_once __DIR__ . '/../php/UserResponse.php';
 foreach (glob(__DIR__ . '/../php/CLI.php') as $file) {
     require_once $file;
@@ -19,19 +19,25 @@ if (php_sapi_name() != 'cli') {
 
 $subject = null;
 if (count($argv) === 1) {
-    echo "This CLI bin wrapper if given a classname can attempt to load and run the class for you.";
+    echo "Specify a class name to run it as a CLI app.\n";
+    echo "Usage: ${argv[0]} <classname>\n";
+    exit(0);
 }
 
-$potentialSubject = $argv[1] ?? null;
-If ($potentialSubject && class_exists($potentialSubject)) {
-    $subject = new $potentialSubject();
+$potentialSubject = $argv[1];
+If (!class_exists($potentialSubject)) {
+    echo "Class '$potentialSubject' does not exist.\n";
+    echo " - check the spelling.\n";
+    echo " - try running 'composer dump-autoload' to generate the autoloader.\n";
+    echo CLI::class, "\n";
+    exit(1);
 }
 
-//cleanup the arg v before we run the subject if it was loaded via an argument
-if ($subject) {
-    unset($argv[1]);
-    $argv = array_values($argv);
-}
+$subject = new $potentialSubject();
+
+//clean up the argv before it's processed by the CLI class.
+unset($argv[1]);
+$argv = array_values($argv);
 
 (new CLI($subject))->run();
 
