@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection SpellCheckingInspection */
 
 declare(strict_types=1);
 
@@ -17,7 +17,7 @@ class CLITest extends TestCase
 
     public function setUp(): void
     {
-        //make sure tests dont break when run from the IDE and it decides to use a different working directory.
+        //make sure tests don't break when run from the IDE, and it decides to use a different working directory.
         chdir(__DIR__ . '/..');
         $this->command = "php test/run_TestSubject.php";
     }
@@ -34,7 +34,7 @@ class CLITest extends TestCase
     private function assertFailureToExecute(string $method, string $arguments, string ...$expectedErrorMessages)
     {
         ob_start();
-        passthru("{$this->command} $method $arguments", $exitCode);
+        passthru("$this->command $method $arguments", $exitCode);
         $output = ob_get_clean();
 
         self::assertStringContainsStringIgnoringCase(
@@ -69,7 +69,7 @@ class CLITest extends TestCase
     private function assertSuccessfulExecution($method, $arguments, ...$expectedResponseMessages)
     {
         ob_start();
-        passthru("{$this->command} $method $arguments", $exitCode);
+        passthru("$this->command $method $arguments", $exitCode);
         $output = ob_get_clean();
 
         //method should have been executed.
@@ -84,7 +84,7 @@ class CLITest extends TestCase
         //method should repeat all the values it was given so we know it received the correct data
         foreach (explode(' ', $arguments) as $arg) {
             if (substr($arg, 0, 1) === '-') {
-                //this is a --option / -o so it wont be used as an argument.
+                //this is a --option / -o, so it won't be used as an argument.
                 continue;
             }
             self::assertStringContainsString(
@@ -136,9 +136,9 @@ class CLITest extends TestCase
             substr_count($obGetClean, 'CATS') === 4,
             'The prompt message should appear with the default response shown every time.'
         );
-        self::assertEquals('Bill', $one);//case sensitive
+        self::assertEquals('Bill', $one);//case-sensitive
         self::assertEquals('ted', $two);//converted to lowercase
-        self::assertEquals('cats', $three);//default value is returned in lowercase
+        self::assertEquals('cats', $three);//the default value is returned in the lowercase
         self::assertEquals('Kate Williams', $four);//extra white space is trimmed
     }
 
@@ -156,7 +156,7 @@ class CLITest extends TestCase
             'Yes'
         ];
         foreach ($positiveInputs as $positiveInput) {
-            //confirmation should keep asking until a yes no ok response is given.
+            //confirmation should keep asking until a yes no OK response is given.
             $handle = fopen('data://text/plain,' . "hey\nyou\n$positiveInput\n", 'r');
             ob_start();
             $confirm = CLI::confirm('Continue?', 'Neither', $handle);
@@ -179,7 +179,7 @@ class CLITest extends TestCase
             'nO'
         ];
         foreach ($defaultInputs as $defaultInput) {
-            //confirmation should keep asking until a yes no ok response is given.
+            //confirmation should keep asking until a yes no OK response is given.
             $handle = fopen('data://text/plain,' . "NOPE\nNup!\n$defaultInput\n", 'r');
             ob_start();
             $confirm = CLI::confirm('Continue?', 'Neither', $handle);
@@ -200,7 +200,7 @@ class CLITest extends TestCase
             'Yes' => true
         ];
         foreach ($defaultInputs as $defaultInput => $expectedValue) {
-            //confirmation should keep asking until a yes no ok response is given.
+            //confirmation should keep asking until a yes no OK response is given.
             $handle = fopen('data://text/plain,' . "noway\nSure\n\n", 'r');
             ob_start();
             $confirm = CLI::confirm('Continue?', $defaultInput, $handle);
@@ -214,6 +214,7 @@ class CLITest extends TestCase
         }
     }
 
+    /** @noinspection SpellCheckingInspection */
     public function testConstructorCanNotBeRun()
     {
         self::assertFailureToExecute('__construct', '', "'__construct' is not a recognized command.");
@@ -221,7 +222,7 @@ class CLITest extends TestCase
     }
 
     /**
-     * Assert Behaviour: execute function by name.
+     * Assert Behaviour: execute a function by name.
      */
     public function testRunSimple()
     {
@@ -229,7 +230,7 @@ class CLITest extends TestCase
     }
 
     /**
-     * Failure if first argument does not match function name.
+     * Failure if the first argument does not match the function name.
      */
     public function testMethodDoesntExistOrCanNotBeAccessed()
     {
@@ -339,7 +340,7 @@ class CLITest extends TestCase
             "❌ Internal error information should be hidden rom the user!"
         );
 
-        //however with debug mode enabled we should provide the internal error details
+        //however, with debug mode enabled, we should provide the internal error details
         $this->assertFailureToExecute('throwsAnError', '--debug', 'throwsAnError hates you!');
 
         //A standard user should never see the real error message.
@@ -426,9 +427,9 @@ class CLITest extends TestCase
     {
         //the bin file is able to run a class by name if specified
 
-        //weather or not the user would scape slashes is base don the terminal shell they use.
+        //weather or not, the user would scape slashes is base down the terminal shell they use.
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            //using Windows to test so we dont need the added slashes
+            //using Windows to test, so we don't need the added slashes
             $className = TestSubject::class;
         } else {
             //we need to escape the slashes for unix shells
@@ -462,7 +463,7 @@ class CLITest extends TestCase
             'apple: NULL',
             'banana: true',
             'carrot: NULL',
-            'debug: true'//debug option should be allowed to pass to the subject class as well as to CLI itself.
+            'debug: true'//the debug option should be allowed to pass to the subject class as well as to CLI itself.
         );
     }
 
@@ -497,7 +498,7 @@ class CLITest extends TestCase
             '--debug',
             '--debug is not a valid option'
         );
-        //since debug mode is off there should be no stack trace or internal information.
+        //since debug mode is off, there should be no stack trace or internal information.
         self::assertStringNotContainsString(
             'Stack trace:',
             $output

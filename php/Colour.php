@@ -46,12 +46,12 @@ class Colour
     public const BG_LIGHT_CYAN = 106;
     public const BG_WHITE = 107;
 
-    public const AT_BOLD = 1;
-    public const AT_DIM = 2;
-    public const AT_UNDERLINED = 4;
-    public const AT_BLINK = 5;
-    public const AT_INVERSE = 7;
-    public const AT_HIDDEN = 8;
+    public const BOLD = 1;
+    public const DIM = 2;
+    public const UNDERLINED = 4;
+    public const BLINK = 5;
+    public const INVERSE = 7;
+    public const HIDDEN = 8;
 
     public const RESET = 0;//revert the colours back to the terminals defaults.
 
@@ -79,4 +79,10 @@ class Colour
 
         return "\033[" . implode(';', $colours) . "m$text\033[0m";
     }
+
+    public static function __callStatic(string $name, array $arguments): string
+    {
+        return self::string($arguments[0], self::code(strtoupper($name)));
+    }
+
 }

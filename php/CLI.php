@@ -25,64 +25,64 @@ class CLI
      *
      * @var object
      */
-    private $subjectClass;
+    private object $subjectClass;
 
     /**
      * @var ReflectionClass this is a reflection of the subjectClass.
      */
-    private $reflection;
+    private ReflectionClass $reflection;
 
     /**
      * @var string|null
      *
      * argument zero, usually the command typed into the terminal that initiated the execution of this script.
      */
-    private $initiator;
+    private ?string $initiator;
 
     /**
      * @var string|null
      */
-    private $subjectMethod;
+    private ?string $subjectMethod;
 
     /**
      * @var array the remaining input arguments after the function is determined.
      */
-    private $subjectArguments = [];
+    private array $subjectArguments = [];
 
     /**
-     * @var ReflectionMethod reflection of the method that will be executed with subjectArguments
+     * @var ReflectionMethod|null reflection of the method that will be executed with subjectArguments
      */
-    private $reflectionMethod;
+    private ?ReflectionMethod $reflectionMethod = null;
 
     /**
      * @var bool|null
      */
-    private $debug = null;
+    private ?bool $debug = null;
 
     /**
      * @var string[]
      */
-    private $clientMessageExceptions;
+    private array $clientMessageExceptions;
 
     /**
      * @var bool
      */
-    private $help = false;
+    private bool $help = false;
 
     /**
      * @var array
      */
-    private $arguments;
+    private array $arguments;
 
     /**
      * @var string
      */
-    private $initiatorName;
+    private string $initiatorName;
 
     /**
      * @var string[]
      */
-    private $bannedMethods = ['__construct', '__clone'];
+    private array $bannedMethods = ['__construct', '__clone'];
 
     /**
      * CLI constructor.
@@ -92,11 +92,11 @@ class CLI
      * Note: All errors/exceptions will be suppressed by default unless they are of the types
      *  specified in the clientMessageExceptions.
      *
-     * If debug mode is enabled no exceptions/errors are suppressed.
+     * If debug mode is enabled, no exceptions/errors are suppressed.
      *
      * @param object|null $class                   if unspecified, $this is used.
      * @param string[]    $clientMessageExceptions list of custom exceptions to use for user responses.
-     * @param bool|null   $debug if true php errors/exceptions are thrown.
+     * @param bool|null   $debug if true, php errors/exceptions are thrown.
      *
      */
     public function __construct(object $class = null, array $clientMessageExceptions = [], bool $debug = null)
@@ -114,11 +114,11 @@ class CLI
         $this->reflection = new ReflectionClass($this->subjectClass);
 
         /*
-         * We only want to see errors once in terminal window.
+         * We only want to see errors once in a terminal window.
          *
          * In the default php cli installation both display and log errors are directed to stdout.
-         * So we disable the log errors but only if both are enabled and no log file was configured.
-         * If the user has set up their own error log than we don't want to touch anything.
+         * So we disable the log errors, but only if both are enabled and no log file was configured.
+         * If the user has set up their own error log, then we don't want to touch anything.
          */
         if (
             ini_get('log_errors') &&
@@ -191,40 +191,30 @@ class CLI
      */
     private function execute()
     {
+        $methodName = $this->reflectionMethod->getName();
         try {
-            $result = $this->subjectClass->{$this->subjectMethod}(...$this->subjectArguments) ?? '';
+            $calledOnLine = __LINE__ + 1;//Must be just before calling the subject method.
+            $result = $this->subjectClass->{$methodName}(...$this->subjectArguments) ?? '';
             if (is_string($result)) {
                 echo $result;
             } else {
-                echo json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+                echo json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
             }
             echo "\n";
 
             return $result;
         } catch (\TypeError $typeError) {
-            //Important: is it a type error caused by bad user input?
+            //Check if we caused the error by trying to execute with the user's input.
             if (
-                //todo: this dodgy hack should probably get replaced with a real type check in future.
                 (
-                    stripos($typeError->getMessage(), $this->subjectMethod) !== false &&
-                    isset($typeError->getTrace()[1]) &&
-                    $typeError->getTrace()[1]['file'] === __FILE__ &&
-                    $typeError->getTrace()[1]['function'] === 'execute'
-                )
-                ||
-                (
-                    $this->subjectMethod === '__invoke' &&
-                    strpos($typeError->getMessage(), '{closure}') &&
-                    isset($typeError->getTrace()[2]) &&
-                    $typeError->getTrace()[2]['file'] === __FILE__ &&
-                    $typeError->getTrace()[2]['function'] === 'execute'
+                    $typeError->getTrace()[0]['file'] === __FILE__ &&
+                    $typeError->getTrace()[0]['function'] === $methodName
                 )
             ) {
-                //We caused the type error by trying to use the users input as a method argument,
-                // so lets tell the user its their fault while stripping sensitive info out.
+                //Use the type error to tell the user their input is invalid.
                 $message = str_replace(
                     [
-                        ' passed to ' . get_class($this->subjectClass) . "::$this->subjectMethod()",
+                        ' passed to ' . get_class($this->subjectClass) . "::{$methodName}()",
                         ' passed to class@anonymous::__invoke()',
                         'passed to {closure}()',
                     ],
@@ -242,9 +232,9 @@ class CLI
 
     /**
      * Reads a single line from standard input.
-     * Similar to standard readline function without the need for the php extension.
+     * Similar to a standard readline function without the need for the php extension.
      * Note:
-     *  If you pass in a string then a resource handle is created and discarded after reading the first line.
+     *  If you pass in a string, then a resource handle is created and discarded after reading the first line.
      *  Pass in your own resource handle if you want to consecutively read the next line of a single source.
      *
      * @param string $prompt      a prompt messages to display
@@ -273,7 +263,7 @@ class CLI
      *
      * @param string $message     a prompt messages to display
      * @param string $default     if set will display in brackets and be returned if the user presses enter only.
-     * @param bool   $lowercase   if true returns input as lowercase
+     * @param bool   $lowercase   if true, returns input as lowercase
      * @param string $inputStream see readline doc block for more info.
      *
      * @return string
@@ -302,10 +292,10 @@ class CLI
      *  Matches true with Y, YES and OK
      *  Matches false with N, NO
      *  Matches are not case-sensitive.
-     *  If input matches nothing the user is prompted again.
+     *  If input matches nothing, the user is prompted again.
      *
      * @param string $message message to display to the user
-     * @param string $default default is 'Y' unless you change it. This won't change the true/false matching.
+     * @param string $default
      * @param string|resource $inputStream
      *
      * @return bool
@@ -329,19 +319,19 @@ class CLI
     }
 
     /**
-     * Displays error message depending on input and debug settings.
+     * Displays an error message depending on input and debug settings.
      *
-     * - prints $printMessage in red with an X emoji.
+     * - Prints $printMessage in red with an X emoji.
      * - if debug mode and there is an exception, the exception is thrown for error reporting.
      * - if throwable the code is used as an exit code, but not 0, if 0 exit code is 1.
-     * - only UserResponse can use 0 as an exit code.
+     * - Only UserResponse can use 0 as an exit code.
      *
-     * @param string|null    $printMessage If null the exception message is used.
+     * @param string $printMessage If null, the exception message is used.
      * @param Throwable|null $throwable
      *
      * @throws Throwable
      */
-    private function exitWith(string $printMessage, ?Throwable $throwable = null)
+    private function exitWith(string $printMessage, ?Throwable $throwable = null): void
     {
         self::printLine($printMessage);
 
@@ -364,15 +354,23 @@ class CLI
         exit($exitCode);
     }
 
-    private function printUsage()
+    private function printUsage(string $scriptName, array $availableMethods): void
     {
-        $usage = "usage: " . $this->initiatorName . " [command] [-?][operands...]";
-        echo $usage, "\n";
-        $this->printAvailableCommands();
+        echo "Usage: $scriptName <command> [options] [arguments]\n";
+        echo "Available commands:\n";
+        foreach ($this->reflection->getMethods() as $method) {
+            echo "  - {$method->getName()}";
+            $docComment = $method->getDocComment();
+            if ($docComment && preg_match('/\/\*\*\s*\*\s*(.+?)(?:\s*\*|$)/s', $docComment, $matches)) {
+                $description = trim($matches[1]);
+                echo Colour::string("\t# $description", Colour::DIM);
+            }
+            echo "\n";
+        }
         echo "Use --help for more information.\n";
     }
 
-    private function printAvailableCommands()
+    private function printAvailableCommands(): void
     {
         $reflectionMethods = $this->reflection->getMethods();
         if (empty($reflectionMethods)) {
@@ -398,7 +396,7 @@ class CLI
     /**
      * Prints doc blocks or derives details from the class definition to guide the user.
      */
-    private function printHelp()
+    private function printHelp(): void
     {
         if (!$this->reflectionMethod) {
             $doc = $this->reflection->getDocComment()
@@ -461,7 +459,7 @@ class CLI
      * @throws Throwable
      * @throws UserWarningResponse
      */
-    private function prepare()
+    private function prepare(): void
     {
         //[ PROCESSING ARGUMENTS ]
         $args = $this->arguments;
@@ -587,7 +585,7 @@ class CLI
                 ' and you gave me ' . count($this->subjectArguments);
 
             if ($this->debug) {
-                $message .= Colour::string("\nDebug note: ", Colour::AT_BOLD) .
+                $message .= Colour::string("\nDebug note: ", Colour::BOLD) .
                     'Php normally allows excess parameters but ' . __CLASS__ . ' intentionally prevents this behaviour. ' .
                     ' You should consider using variadic functions if you need this to work.';
             }
@@ -625,21 +623,19 @@ class CLI
             if (empty($reflectionType) || $reflectionType === 'string' || $reflectionType === 'mixed') {
                 continue;//no conversion needed.
             }
-            if ($reflectionType !== 'string') {
-                if ($this->reflectionMethod->isVariadic()) {
-                    //all remaining params will also be the same type.
-                    while ($pos < count($this->subjectArguments)) {
-                        $this->subjectArguments[$pos] = json_decode($this->subjectArguments[$pos]);
-                        $pos++;
-                    }
-                } else {
+            if ($this->reflectionMethod->isVariadic()) {
+                //all remaining params will also be the same type.
+                while ($pos < count($this->subjectArguments)) {
                     $this->subjectArguments[$pos] = json_decode($this->subjectArguments[$pos]);
+                    $pos++;
                 }
+            } else {
+                $this->subjectArguments[$pos] = json_decode($this->subjectArguments[$pos]);
             }
         }
     }
 
-    private function printFormattedDocs(string $doc)
+    private function printFormattedDocs(string $doc): void
     {
         $docLines = explode("\n", $doc);
         foreach ($docLines as $docLine) {
@@ -657,7 +653,7 @@ class CLI
      * @param string $text
      * @param int    ...$colours
      */
-    public static function printLine(string $text = '', int ...$colours)
+    public static function printLine(string $text = '', int ...$colours): void
     {
         if ($colours) {
             $text = Colour::string($text, ...$colours);
@@ -673,7 +669,7 @@ class CLI
                 return 'WSL';
             }
             if (strpos($uname, 'microsoft') !== false) {
-                return 'WSLv2';//more specifically it's probably WSL version two
+                return 'WSLv2';//more specifically, it's probably WSL version two
             }
             return 'Linux';
         }
@@ -718,12 +714,12 @@ class CLI
      * @param bool $throwUserResponseOnFailure if set to false, call commands are executed even if one or more fail.
      * @return bool
      *
-     * @throws UserResponse on first failed command if $throwUserResponseOnFailure is true
+     * @throws UserResponse on the first failed command if $throwUserResponseOnFailure is true
      */
     public static function batchPassThru(array $commands, bool $throwUserResponseOnFailure = true): bool
     {
         $exec = true;
-        foreach ($commands as $i => $command) {
+        foreach ($commands as $command) {
             $exec = self::passThru($command, $throwUserResponseOnFailure) && $exec;
         }
 

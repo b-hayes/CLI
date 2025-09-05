@@ -8,6 +8,7 @@ require_once 'vendor/autoload.php';
 $class = new class {
     public function __invoke(int $number)
     {
+        var_dump(__CLASS__);
         echo __METHOD__ . " was executed! Your number was $number";
     }
 

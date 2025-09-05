@@ -3,11 +3,11 @@
 
 namespace BHayes\CLI;
 
-//to allow this to run any class by name as a global command, first check for a localized autoloader.
+//to allow this to run any class by name as a global command, first check for a localised autoloader.
 if (file_exists('vendor/autoload.php')) {
     include_once 'vendor/autoload.php';
 }
-//manually include the this version of CLI files in case it is also installed as a project package.
+//manually include this version of CLI files in case it is also installed as a project package.
 require_once __DIR__ . '/../php/UserResponse.php';
 foreach (glob(__DIR__ . '/../php/CLI.php') as $file) {
     require_once $file;
@@ -17,21 +17,28 @@ if (php_sapi_name() != 'cli') {
     throw new \Error("This is a command line tool only.");
 }
 
-$subject = null;
 if (count($argv) === 1) {
     echo "This CLI bin wrapper if given a classname can attempt to load and run the class for you.";
+    exit(1);
 }
 
-$potentialSubject = $argv[1] ?? null;
-If ($potentialSubject && class_exists($potentialSubject)) {
-    $subject = new $potentialSubject();
+$potentialSubject = $argv[1];
+if (is_file($potentialSubject)) {
+    $content = file_get_contents($potentialSubject);
+    preg_match('/class\s+([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)/i', $content, $matches);
+
+    $class = $matches[1] ?? throw new \Error("$potentialSubject does not container a class definition.");
+    preg_match('/namespace\s+([^;]+)/i', $content, $namespaceMatches);
+    $class = $namespaceMatches[1] ? "$namespaceMatches[1]\\$class" : $class;
+    require_once $potentialSubject;
+    $potentialSubject = $class;
 }
 
-//cleanup the arg v before we run the subject if it was loaded via an argument
-if ($subject) {
-    unset($argv[1]);
-    $argv = array_values($argv);
-}
+$subject = new $potentialSubject();
 
-(new CLI($subject))->run();
+//remove the class param from the argv before we run it.
+unset($argv[1]);
+$argv = array_values($argv);
+
+(new CLI(new $subject()))->run();
 
